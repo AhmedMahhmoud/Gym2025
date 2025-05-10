@@ -1,0 +1,23 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - prefer_const_constructors # Enforces use of `const`
+    - prefer_const_literals_to_create_immutables # Use `const` lists/maps where possible
+    - prefer_final_fields # Makes fields immutable where possible
+    - always_declare_return_types # Enforces return type declarations
+    - avoid_print # Encourages using logs instead of print statements
+    - require_trailing_commas # Enforces better formatting
+    - sort_constructors_first # Improves readability in classes
+    - avoid_unnecessary_containers # Removes redundant containers
+    - prefer_single_quotes # Consistency in string quotes
+    - avoid_empty_else # Prevents unnecessary empty `else` blocks
+    - unnecessary_null_checks # Removes redundant null checks
+    - use_super_parameters # Encourages cleaner constructor parameters
+
+analyzer:
+  errors:
+    prefer_const_constructors: warning
+    prefer_const_literals_to_create_immutables: error
+    prefer_final_fields: warning
+    always_declare_return_types: warning
