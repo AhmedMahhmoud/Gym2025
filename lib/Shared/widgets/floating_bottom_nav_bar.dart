@@ -155,11 +155,11 @@ class _FloatingBottomNavBarState extends State<FloatingBottomNavBar>
 }
 
 class FloatingNavBarItem {
-  final IconData icon;
-  final String label;
 
   FloatingNavBarItem({
     required this.icon,
     required this.label,
   });
+  final IconData icon;
+  final String label;
 }

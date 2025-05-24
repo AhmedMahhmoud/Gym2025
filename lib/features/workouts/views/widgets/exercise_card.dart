@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gym/features/workouts/data/models/exercise_model.dart';
+import 'package:gym/features/exercises/data/models/exercises.dart';
 
 class ExerciseCard extends StatelessWidget {
-  final ExerciseModel exercise;
+  final Exercise exercise;
   final VoidCallback onTap;
 
   const ExerciseCard({
@@ -36,19 +36,19 @@ class ExerciseCard extends StatelessWidget {
                   const Icon(Icons.chevron_right),
                 ],
               ),
-              if (exercise.muscleGroup != null) ...[
+              if (exercise.primaryMuscle.isNotEmpty) ...[  // Changed from muscleGroup to primaryMuscle
                 const SizedBox(height: 8),
                 Text(
-                  'Muscle Group: ${exercise.muscleGroup}',
+                  'Muscle Group: ${exercise.primaryMuscle}',  // Changed from muscleGroup to primaryMuscle
                   style: TextStyle(
                     color: Colors.grey[600],
                   ),
                 ),
               ],
-              if (exercise.description != null) ...[
+              if (exercise.description.isNotEmpty) ...[  // Changed from description != null
                 const SizedBox(height: 8),
                 Text(
-                  exercise.description!,
+                  exercise.description,  // Changed from description!
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -56,7 +56,7 @@ class ExerciseCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (exercise.imageUrl != null) ...[
+              if (exercise.imageUrl != null && exercise.imageUrl!.isNotEmpty) ...[  // Added check for empty string
                 const SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),

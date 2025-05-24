@@ -12,15 +12,11 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
-
-  // Define the screens for navigation
-  final List<Widget> _screens = [
-    const Home(),
-    const WorkoutsFeature(),
-    const Scaffold(
-      body: Center(child: Text('Profile Screen')),
-    ),
-  ];
+  final List<bool> _initialized = [
+    true,
+    false,
+    false
+  ]; // Track initialization state
 
   // Define the navigation bar items
   final List<FloatingNavBarItem> _navItems = [
@@ -41,7 +37,29 @@ class _MainScaffoldState extends State<MainScaffold> {
   void _onNavItemTapped(int index) {
     setState(() {
       _currentIndex = index;
+      _initialized[index] = true; // Mark the page as initialized when accessed
     });
+  }
+
+  Widget _buildPage(int index) {
+    // Only build the page if it's been initialized or is the current page
+    if (!_initialized[index] && index != _currentIndex) {
+      return const SizedBox
+          .shrink(); // Return empty widget for uninitialized pages
+    }
+
+    switch (index) {
+      case 0:
+        return const Home();
+      case 1:
+        return const WorkoutsFeature();
+      case 2:
+        return const Scaffold(
+          body: Center(child: Text('Profile Screen')),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   @override
@@ -49,18 +67,18 @@ class _MainScaffoldState extends State<MainScaffold> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: List.generate(_navItems.length, _buildPage),
       ),
       bottomNavigationBar: FloatingBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onNavItemTapped,
-        items: _navItems, // Ensure the items are passed correctly
+        items: _navItems,
         backgroundColor: Theme.of(context).primaryColor,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
         margin: const EdgeInsets.fromLTRB(30, 0, 30, 16),
       ),
-      extendBody: true, // Ensure the floating effect works
+      extendBody: true,
     );
   }
 }

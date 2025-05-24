@@ -7,6 +7,7 @@ import 'package:gym/features/exercises/view/screens/exercises_display_page.dart'
 import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
 import 'package:gym/features/workouts/cubits/workouts_state.dart';
 import 'package:gym/features/workouts/data/models/workout_model.dart';
+import 'package:gym/features/workouts/views/screens/workout_details_screen.dart';
 import 'package:gym/features/workouts/views/widgets/error_message.dart';
 import 'package:gym/features/workouts/views/widgets/loading_indicator.dart';
 
@@ -41,6 +42,15 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
 
   void _navigateToExercises(WorkoutModel workout) {
     context.read<WorkoutsCubit>().setCurrentWorkout(workout);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) => BlocProvider.value(
+          value: context.read<WorkoutsCubit>(),
+          child: const WorkoutDetailsScreen(),
+        ),
+      ),
+    );
   }
 
   void _createWorkout() {
@@ -185,18 +195,18 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-                      child: Text(
-                        'You didn\'t add workouts yet for "${state.currentPlan?.title}"',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white70,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                    // Padding(
+                    //   padding: const EdgeInsets.symmetric(horizontal: 30),
+                    //   child: Text(
+                    //     'Add workout',
+                    //     style: const TextStyle(
+                    //       fontSize: 22,
+                    //       fontWeight: FontWeight.bold,
+                    //       color: Colors.white70,
+                    //     ),
+                    //     textAlign: TextAlign.center,
+                    //   ),
+                    // ),
                     const SizedBox(height: 20),
                     CustomElevatedButton(
                       onPressed: () {
@@ -229,7 +239,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                           ElasticInWidget(
                             child: CustomElevatedButton(
                               onPressed: _createWorkout,
-                              text: 'Confirm Workout',
+                              text: 'Add',
                             ),
                           ),
                         ],

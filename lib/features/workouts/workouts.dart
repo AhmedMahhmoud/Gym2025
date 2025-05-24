@@ -14,7 +14,6 @@ class WorkoutsFeature extends StatelessWidget {
       create: (context) => WorkoutsCubit(
         repository: WorkoutsRepository(
           dioService: DioService(),
-          useStaticData: true, // Use static data
         ),
       ), // Load plans immediately
       child: const PlansScreen(),

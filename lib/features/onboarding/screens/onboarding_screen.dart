@@ -148,13 +148,12 @@ class OnboardingPage extends StatelessWidget {
               width: 160,
               child: ElevatedButton(
                 onPressed: () async {
-                  await StorageService.setHasSeenOnboarding(true);
-                  
+                  final storage = StorageService();
+                  await storage.setHasSeenOnboarding(true);
+
                   if (context.mounted) {
                     Navigator.pushReplacementNamed(
-                      context, 
-                      RouteNames.auth_screen_route
-                    );
+                        context, RouteNames.auth_screen_route);
                   }
                 },
                 style: ElevatedButton.styleFrom(

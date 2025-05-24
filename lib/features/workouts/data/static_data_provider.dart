@@ -1,9 +1,11 @@
-import 'package:gym/features/workouts/data/models/exercise_model.dart';
+import 'package:gym/features/exercises/data/models/exercises.dart';
 import 'package:gym/features/workouts/data/models/plan_model.dart';
 import 'package:gym/features/workouts/data/models/set_model.dart';
 import 'package:gym/features/workouts/data/models/workout_model.dart';
 
 class StaticWorkoutsData {
+  static final Map<String, List<SetModel>> _exerciseSets = {};
+
   // Static Plans
   static List<PlanModel> getPlans() {
     return [
@@ -38,63 +40,79 @@ class StaticWorkoutsData {
   }
 
   // Static Exercises
-  static List<ExerciseModel> getAllExercises() {
+  static List<Exercise> getAllExercises() {
     return [
-      ExerciseModel(
+      Exercise(
         id: 'ex1',
         name: 'Bench Press',
-        muscleGroup: 'Chest',
+        primaryMuscle: 'Chest',
         description: 'Compound exercise for chest, shoulders, and triceps',
+        videoUrl: '',
+        category: 'Compound',
       ),
-      ExerciseModel(
+      Exercise(
         id: 'ex2',
         name: 'Squat',
-        muscleGroup: 'Legs',
+        primaryMuscle: 'Legs',
         description: 'Compound exercise for quadriceps, hamstrings, and glutes',
+        videoUrl: '',
+        category: 'Compound',
       ),
-      ExerciseModel(
+      Exercise(
         id: 'ex3',
         name: 'Deadlift',
-        muscleGroup: 'Back',
+        primaryMuscle: 'Back',
         description: 'Compound exercise for back, glutes, and hamstrings',
+        videoUrl: '',
+        category: 'Compound',
       ),
-      ExerciseModel(
+      Exercise(
         id: 'ex4',
         name: 'Shoulder Press',
-        muscleGroup: 'Shoulders',
+        primaryMuscle: 'Shoulders',
         description: 'Compound exercise for shoulders and triceps',
+        videoUrl: '',
+        category: 'Compound',
       ),
-      ExerciseModel(
+      Exercise(
         id: 'ex5',
         name: 'Pull-up',
-        muscleGroup: 'Back',
+        primaryMuscle: 'Back',
         description: 'Compound exercise for back and biceps',
+        videoUrl: '',
+        category: 'Compound',
       ),
-      ExerciseModel(
+      Exercise(
         id: 'ex6',
         name: 'Bicep Curl',
-        muscleGroup: 'Arms',
+        primaryMuscle: 'Arms',
         description: 'Isolation exercise for biceps',
+        videoUrl: '',
+        category: 'Isolation',
       ),
-      ExerciseModel(
+      Exercise(
         id: 'ex7',
         name: 'Tricep Extension',
-        muscleGroup: 'Arms',
+        primaryMuscle: 'Arms',
         description: 'Isolation exercise for triceps',
+        videoUrl: '',
+        category: 'Isolation',
       ),
-      ExerciseModel(
+      Exercise(
         id: 'ex8',
         name: 'Leg Press',
-        muscleGroup: 'Legs',
+        primaryMuscle: 'Legs',
         description: 'Compound exercise for quadriceps and glutes',
+        videoUrl: '',
+        category: 'Compound',
       ),
     ];
   }
 
   // Static Exercises for a Workout
-  static List<ExerciseModel> getExercisesForWorkout(String workoutId) {
+  static List<Exercise> getExercisesForWorkout(String workoutId) {
     final allExercises = getAllExercises();
-    
+
     switch (workoutId) {
       case 'workout1': // Push Day
         return [
@@ -119,22 +137,10 @@ class StaticWorkoutsData {
   }
 
   // Static Sets for an Exercise
-  static List<SetModel> getSetsForExercise(String workoutId, String exerciseId) {
-    switch (exerciseId) {
-      case 'ex1': // Bench Press
-        return [
-          SetModel(id: 'set1', exerciseId: 'ex1', reps: 12, weight: 60.0, restTime: 60),
-          SetModel(id: 'set2', exerciseId: 'ex1', reps: 10, weight: 70.0, restTime: 60),
-          SetModel(id: 'set3', exerciseId: 'ex1', reps: 8, weight: 80.0, restTime: 90),
-        ];
-      case 'ex2': // Squat
-        return [
-          SetModel(id: 'set4', exerciseId: 'ex2', reps: 12, weight: 80.0, restTime: 90),
-          SetModel(id: 'set5', exerciseId: 'ex2', reps: 10, weight: 100.0, restTime: 120),
-        ];
-      default:
-        return [];
-    }
+  static List<SetModel> getSetsForExercise(
+      String workoutId, String exerciseId) {
+    final key = '$workoutId-$exerciseId';
+    return _exerciseSets[key] ?? [];
   }
 
   // Helper method to create a new plan
@@ -151,18 +157,28 @@ class StaticWorkoutsData {
 
   // Helper method to create a new set
   static SetModel createSet({
+    required String workoutId,
     required String exerciseId,
-    required int reps,
+    int? reps,
+    int? duration,
     required double weight,
     int? restTime,
   }) {
     final newId = 'set${DateTime.now().millisecondsSinceEpoch}';
     return SetModel(
       id: newId,
+      workoutId: workoutId,
       exerciseId: exerciseId,
       reps: reps,
+      duration: duration,
       weight: weight,
       restTime: restTime,
     );
+  }
+
+  static void updateSetsForExercise(
+      String workoutId, String exerciseId, List<SetModel> sets) {
+    final key = '$workoutId-$exerciseId';
+    _exerciseSets[key] = sets;
   }
 }

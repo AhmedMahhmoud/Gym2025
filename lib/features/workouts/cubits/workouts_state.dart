@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
-import 'package:gym/features/workouts/data/models/exercise_model.dart';
+import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
+import 'package:gym/features/exercises/data/models/exercises.dart';
 import 'package:gym/features/workouts/data/models/plan_model.dart';
+import 'package:gym/features/workouts/data/models/plan_response.dart';
 import 'package:gym/features/workouts/data/models/set_model.dart';
 import 'package:gym/features/workouts/data/models/workout_model.dart';
 
@@ -9,14 +11,14 @@ enum WorkoutsStatus { initial, loading, success, error }
 class WorkoutsState extends Equatable {
   final WorkoutsStatus status;
   final String? errorMessage;
-  final List<PlanModel> plans;
+  final List<PlanResponse> plans;
   final List<WorkoutModel> workouts;
-  final List<ExerciseModel> exercises;
-  final List<ExerciseModel> selectedExercises;
+  final List<Exercise> exercises;
+  final List<Exercise> selectedExercises;
   final List<SetModel> sets;
-  final PlanModel? currentPlan;
+  final PlanResponse? currentPlan;
   final WorkoutModel? currentWorkout;
-  final ExerciseModel? currentExercise;
+  final Exercise? currentExercise;
 
   const WorkoutsState({
     this.status = WorkoutsStatus.initial,
@@ -34,14 +36,14 @@ class WorkoutsState extends Equatable {
   WorkoutsState copyWith({
     WorkoutsStatus? status,
     String? errorMessage,
-    List<PlanModel>? plans,
+    List<PlanResponse>? plans,
     List<WorkoutModel>? workouts,
-    List<ExerciseModel>? exercises,
-    List<ExerciseModel>? selectedExercises,
+    List<Exercise>? exercises,
+    List<Exercise>? selectedExercises,
     List<SetModel>? sets,
-    PlanModel? currentPlan,
+    PlanResponse? currentPlan,
     WorkoutModel? currentWorkout,
-    ExerciseModel? currentExercise,
+    Exercise? currentExercise,
     bool clearError = false,
     bool clearCurrentPlan = false,
     bool clearCurrentWorkout = false,
@@ -56,8 +58,10 @@ class WorkoutsState extends Equatable {
       selectedExercises: selectedExercises ?? this.selectedExercises,
       sets: sets ?? this.sets,
       currentPlan: clearCurrentPlan ? null : currentPlan ?? this.currentPlan,
-      currentWorkout: clearCurrentWorkout ? null : currentWorkout ?? this.currentWorkout,
-      currentExercise: clearCurrentExercise ? null : currentExercise ?? this.currentExercise,
+      currentWorkout:
+          clearCurrentWorkout ? null : currentWorkout ?? this.currentWorkout,
+      currentExercise:
+          clearCurrentExercise ? null : currentExercise ?? this.currentExercise,
     );
   }
 

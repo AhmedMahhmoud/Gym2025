@@ -1,7 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym/features/workouts/cubits/workouts_state.dart';
-import 'package:gym/features/workouts/data/models/exercise_model.dart';
+import 'package:gym/features/exercises/data/models/exercises.dart';
 import 'package:gym/features/workouts/data/models/plan_model.dart';
+import 'package:gym/features/workouts/data/models/plan_response.dart';
 import 'package:gym/features/workouts/data/models/set_model.dart';
 import 'package:gym/features/workouts/data/models/workout_model.dart';
 import 'package:gym/features/workouts/data/workouts_repository.dart';
@@ -12,6 +13,21 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   WorkoutsCubit({required WorkoutsRepository repository})
       : _repository = repository,
         super(const WorkoutsState());
+  void updateExercise(Exercise updatedExercise) {
+    final updatedExercises = List<Exercise>.from(state.selectedExercises);
+    final index =
+        updatedExercises.indexWhere((e) => e.id == updatedExercise.id);
+    if (index != -1) {
+      updatedExercises[index] = updatedExercise;
+      emit(state.copyWith(selectedExercises: updatedExercises));
+    }
+  }
+
+  void deleteExercise(String exerciseId) {
+    final updatedExercises = List<Exercise>.from(state.selectedExercises)
+      ..removeWhere((e) => e.id == exerciseId);
+    emit(state.copyWith(selectedExercises: updatedExercises));
+  }
 
   // Load all plans
   Future<void> loadPlans() async {
@@ -27,21 +43,23 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         ));
       },
       (plansData) {
-        final plans =
-            plansData.map((plan) => PlanModel.fromJson(plan)).toList();
         emit(state.copyWith(
           status: WorkoutsStatus.success,
-          plans: plans,
+          plans: plansData,
         ));
       },
     );
   }
 
+  void updateExercisesOrder(List<Exercise> updatedExercises) {
+    emit(state.copyWith(selectedExercises: updatedExercises));
+  }
+
   // Create a new plan
-  Future<void> createPlan(String title) async {
+  Future<void> createPlan(String title, {String? notes}) async {
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
 
-    final result = await _repository.createPlan(title);
+    final result = await _repository.createPlan(title, notes: notes);
 
     result.fold(
       (failure) {
@@ -51,13 +69,11 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         ));
       },
       (response) {
-        final newPlan = PlanModel.fromJson(response);
-        final updatedPlans = List<PlanModel>.from(state.plans)..add(newPlan);
-
+        final List<PlanResponse> plans = state.plans..add(response);
         emit(state.copyWith(
           status: WorkoutsStatus.success,
-          plans: updatedPlans,
-          currentPlan: newPlan,
+          plans: plans,
+          currentPlan: response,
         ));
       },
     );
@@ -90,7 +106,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   }
 
   // Set current plan
-  void setCurrentPlan(PlanModel plan) {
+  void setCurrentPlan(PlanResponse plan) {
     emit(state.copyWith(
       currentPlan: plan,
       clearCurrentWorkout: true,
@@ -186,7 +202,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       },
       (exercisesData) {
         final exercises = exercisesData
-            .map((exercise) => ExerciseModel.fromJson(exercise))
+            .map((exercise) => Exercise.fromJson(exercise))
             .toList();
         emit(state.copyWith(
           status: WorkoutsStatus.success,
@@ -211,7 +227,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       },
       (exercisesData) {
         final selectedExercises = exercisesData
-            .map((exercise) => ExerciseModel.fromJson(exercise))
+            .map((exercise) => Exercise.fromJson(exercise))
             .toList();
         emit(state.copyWith(
           status: WorkoutsStatus.success,
@@ -266,7 +282,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       },
       (exercisesData) {
         final selectedExercises = exercisesData
-            .map((exercise) => ExerciseModel.fromJson(exercise))
+            .map((exercise) => Exercise.fromJson(exercise))
             .toList();
 
         // Find the exercise in the full list to set as current
@@ -285,27 +301,28 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   }
 
   // Set current exercise
-  void setCurrentExercise(ExerciseModel exercise) {
+  void setCurrentExercise(Exercise exercise) {
     emit(state.copyWith(currentExercise: exercise));
-    if (state.currentWorkout != null) {
-      loadSetsForExercise(state.currentWorkout!.id, exercise.id);
-    }
+    loadSetsForExercise(exercise.workoutId, exercise.id);
   }
 
   // Load sets for an exercise
   Future<void> loadSetsForExercise(String workoutId, String exerciseId) async {
+    print('Loading sets for workout $workoutId and exercise $exerciseId');
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
 
     final result = await _repository.getSetsForExercise(workoutId, exerciseId);
 
     result.fold(
       (failure) {
+        print('Failed to load sets: ${failure.message}');
         emit(state.copyWith(
           status: WorkoutsStatus.error,
           errorMessage: 'Failed to load sets: ${failure.message}',
         ));
       },
       (setsData) {
+        print('Successfully loaded ${setsData.length} sets');
         final sets = setsData.map((set) => SetModel.fromJson(set)).toList();
         emit(state.copyWith(
           status: WorkoutsStatus.success,
@@ -350,28 +367,51 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           errorMessage: 'Failed to add set: ${failure.message}',
         ));
       },
-      (response) async {
-        await _loadSetsAfterAddingSet();
+      (sets) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          sets: sets,
+        ));
       },
     );
   }
 
-  // Helper method to load sets after adding one
-  Future<void> _loadSetsAfterAddingSet() async {
-    final setsResult = await _repository.getSetsForExercise(
+  // Add duration-based set to exercise
+  Future<void> addDurationSetToExercise({
+    required int duration,
+    required double weight,
+    int? restTime,
+  }) async {
+    if (state.currentWorkout == null || state.currentExercise == null) {
+      emit(state.copyWith(
+        status: WorkoutsStatus.error,
+        errorMessage: 'No workout or exercise selected',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+
+    final setData = {
+      'duration': duration,
+      'weight': weight,
+      if (restTime != null) 'restTime': restTime,
+    };
+
+    final result = await _repository.addSetToExercise(
       state.currentWorkout!.id,
       state.currentExercise!.id,
+      setData,
     );
 
-    setsResult.fold(
+    result.fold(
       (failure) {
         emit(state.copyWith(
           status: WorkoutsStatus.error,
-          errorMessage: 'Failed to reload sets: ${failure.message}',
+          errorMessage: 'Failed to add set: ${failure.message}',
         ));
       },
-      (setsData) {
-        final sets = setsData.map((set) => SetModel.fromJson(set)).toList();
+      (sets) {
         emit(state.copyWith(
           status: WorkoutsStatus.success,
           sets: sets,
@@ -384,4 +424,94 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   void reset() {
     emit(const WorkoutsState());
   }
+
+  void addExerciseToWorkoutLocally(Exercise exercise) {
+    final updatedExercises = List<Exercise>.from(state.selectedExercises)
+      ..add(exercise);
+    emit(state.copyWith(selectedExercises: updatedExercises));
+  }
+
+  // Edit set
+  Future<void> editSet({
+    required String setId,
+    required double weight,
+    required int? reps,
+    required int? duration,
+    int? restTime,
+  }) async {
+    if (state.currentWorkout == null || state.currentExercise == null) {
+      emit(state.copyWith(
+        status: WorkoutsStatus.error,
+        errorMessage: 'No workout or exercise selected',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+
+    final setData = {
+      'weight': weight,
+      if (reps != null) 'reps': reps,
+      if (duration != null) 'duration': duration,
+      if (restTime != null) 'restTime': restTime,
+    };
+
+    final result = await _repository.updateSet(
+      state.currentWorkout!.id,
+      state.currentExercise!.id,
+      setId,
+      setData,
+    );
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to update set: ${failure.message}',
+        ));
+      },
+      (sets) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          sets: sets,
+        ));
+      },
+    );
+  }
+
+  // Delete set
+  Future<void> deleteSet(String setId) async {
+    if (state.currentWorkout == null || state.currentExercise == null) {
+      emit(state.copyWith(
+        status: WorkoutsStatus.error,
+        errorMessage: 'No workout or exercise selected',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+
+    final result = await _repository.deleteSet(
+      state.currentWorkout!.id,
+      state.currentExercise!.id,
+      setId,
+    );
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to delete set: ${failure.message}',
+        ));
+      },
+      (sets) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          sets: sets,
+        ));
+      },
+    );
+  }
 }
+
+// Add this method to your WorkoutsCubit class

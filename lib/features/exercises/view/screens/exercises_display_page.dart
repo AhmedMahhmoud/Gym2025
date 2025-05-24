@@ -14,10 +14,8 @@ class ExercisesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ExercisesCubit(exerciseRepository: ExercisesRepository())
-        ..loadExercises(),
-      child: BlocConsumer<ExercisesCubit, ExercisesState>(
+    return 
+     BlocConsumer<ExercisesCubit, ExercisesState>(
         listener: (context, state) {
           if (state.status == ExerciseStatus.error) {
             CustomSnackbar.show(context, state.errorMessage.toString(),
@@ -44,7 +42,7 @@ class ExercisesScreen extends StatelessWidget {
             ],
           ));
         },
-      ),
+      
     );
   }
 }

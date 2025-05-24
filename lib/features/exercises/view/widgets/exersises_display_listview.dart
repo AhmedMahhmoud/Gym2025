@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gym/core/utils/shared_utils.dart';
 import 'package:gym/features/exercises/data/models/exercises.dart';
 import 'package:gym/features/exercises/view/widgets/exercise_pop_widget.dart';
 import 'package:gym/routes/route_names.dart';
@@ -27,7 +28,7 @@ class ExerciseListView extends StatelessWidget {
             itemCount: isLoading ? 6 : exercises.length,
             itemBuilder: (context, index) {
               final exercise = isLoading ? Exercise.fake() : exercises[index];
-              final imageUrl = _extractThumbnail(exercise.videoUrl);
+              final imageUrl = SharedUtils.extractThumbnail(exercise.videoUrl);
 
               return PopAnimatedCard(
                 exercise: exercise,
@@ -41,14 +42,5 @@ class ExerciseListView extends StatelessWidget {
             }),
       ),
     );
-  }
-
-  String _extractThumbnail(String url) {
-    final uri = Uri.tryParse(url);
-    if (uri != null && uri.host.contains('youtube.com')) {
-      final videoId = uri.queryParameters['v'];
-      return 'https://img.youtube.com/vi/$videoId/0.jpg';
-    }
-    return '';
   }
 }

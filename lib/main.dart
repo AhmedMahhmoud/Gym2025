@@ -1,11 +1,14 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/core/network/connectivity.dart';
 import 'package:gym/core/services/storage_service.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/features/auth/view/screens/auth_screen.dart';
+import 'package:gym/features/exercises/data/repo/exercises_repo.dart';
+import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:gym/features/home/view/screens/home.dart';
 import 'package:gym/features/onboarding/screens/onboarding_screen.dart';
 import 'package:gym/shared/widgets/main_scaffold.dart';
@@ -24,20 +27,32 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final storage = StorageService();
   bool? _hasSeenOnboarding;
+  bool? _isSignedIn;
   final ConnectivityService _connectivityService = ConnectivityService();
   @override
   void initState() {
     super.initState();
-    _checkOnboardingStatus();
+    _checkIsTokenAvailable();
   }
 
-  Future<void> _checkOnboardingStatus() async {
-    final seen = await StorageService.getHasSeenOnboarding();
+  Future<bool> _checkOnboardingStatus() async {
+    final seen = await storage.getHasSeenOnboarding();
     log('User seen onboarding? $seen');
-    setState(() {
-      _hasSeenOnboarding = seen; // Update state once data is available
-    });
+    return seen;
+  }
+
+  _checkIsTokenAvailable() async {
+    final String? isTokenActive = await storage.getAuthToken();
+    if (isTokenActive == null) {
+      _isSignedIn = false;
+      _hasSeenOnboarding = await _checkOnboardingStatus();
+      setState(() {});
+    } else {
+      _isSignedIn = true;
+      setState(() {});
+    }
   }
 
   @override
@@ -49,18 +64,25 @@ class _MyAppState extends State<MyApp> {
         return Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            MaterialApp(
-              theme: AppTheme.darkTheme,
-              debugShowCheckedModeBanner: false,
-              onGenerateRoute: OnPageRoute.generateRoute,
-              home: _hasSeenOnboarding == null
-                  ? const Scaffold(
-                      backgroundColor: Colors.black,
-                      body: Center(child: CircularProgressIndicator()),
-                    ) // 🟡 Show loading while waiting
-                  : _hasSeenOnboarding!
-                      ? const MainScaffold()
-                      : const OnboardingScreen(),
+            BlocProvider(
+              create: (context) => ExercisesCubit(
+                exerciseRepository: ExercisesRepository(),
+              )..loadExercises(),
+              child: MaterialApp(
+                theme: AppTheme.darkTheme,
+                debugShowCheckedModeBanner: false,
+                onGenerateRoute: OnPageRoute.generateRoute,
+                home: _isSignedIn == null
+                    ? const Scaffold(
+                        backgroundColor: Colors.black,
+                        body: Center(child: CircularProgressIndicator()),
+                      ) // 🟡 Show loading while waiting
+                    : _isSignedIn!
+                        ? const MainScaffold()
+                        : !_hasSeenOnboarding!
+                            ? const OnboardingScreen()
+                            : const AuthScreen(),
+              ),
             ),
             Directionality(
               textDirection: TextDirection.ltr,

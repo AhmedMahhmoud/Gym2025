@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:gym/features/exercises/data/models/exercises.dart';
 import 'package:gym/features/exercises/data/repo/exercises_repo.dart';
@@ -33,7 +35,7 @@ class ExercisesCubit extends Cubit<ExercisesState> {
             // Group by category
             byCategory.putIfAbsent(exercise.category, () => []).add(exercise);
           }
-
+          log(exercises.toString());
           emit(
             state.copyWith(
               status: ExerciseStatus.success,

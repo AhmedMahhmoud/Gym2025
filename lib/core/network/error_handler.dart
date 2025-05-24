@@ -38,23 +38,34 @@ class ErrorHandler {
   }
 
   static Failure _handleResponseError(int? statusCode, dynamic data) {
+    // Default message if data is null, not a map, or doesn't contain 'message'
+    String defaultMessage;
+    String? message =
+        (data is Map<String, dynamic> && data.containsKey('message'))
+            ? data['message'] as String?
+            : null;
+
     switch (statusCode) {
       case 400:
+        defaultMessage = 'Bad request';
         return BadRequestFailure(
-          message: data['message'] ?? 'Bad request',
+          message: message ?? defaultMessage,
           statusCode: statusCode,
         );
       case 401:
+        defaultMessage = 'Unauthorized access';
         return UnauthorizedFailure(
-          message: data['message'] ?? 'Unauthorized access',
+          message: message ?? defaultMessage,
         );
       case 404:
+        defaultMessage = 'Resource not found';
         return NotFoundFailure(
-          message: data['message'] ?? 'Resource not found',
+          message: message ?? defaultMessage,
         );
       default:
+        defaultMessage = 'Server error';
         return ServerFailure(
-          message: data['message'] ?? 'Server error',
+          message: message ?? defaultMessage,
           statusCode: statusCode,
         );
     }
