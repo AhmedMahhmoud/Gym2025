@@ -375,35 +375,53 @@ class _PlansScreenState extends State<PlansScreen> {
                             ],
                           ),
                         )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: state.plans.length,
-                          itemBuilder: (context, index) {
-                            final plan = state.plans[index];
-                            final isDeleting = _isDeleting[plan.id] ?? false;
-                            return AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              switchOutCurve: Curves.easeOut,
-                              switchInCurve: Curves.easeIn,
-                              transitionBuilder:
-                                  (Widget child, Animation<double> animation) {
-                                if (!isDeleting) {
-                                  return FadeIn(
-                                    duration: const Duration(milliseconds: 500),
-                                    child: child,
+                      : Column(
+                          children: [
+                            if (state.status == WorkoutsStatus.loading)
+                              Container(
+                                width: double.infinity,
+                                height: 4,
+                                margin: const EdgeInsets.only(bottom: 16),
+                                child: const LinearProgressIndicator(
+                                  backgroundColor: AppColors.primary,
+                                ),
+                              ),
+                            Expanded(
+                              child: ListView.builder(
+                                padding: const EdgeInsets.all(16),
+                                itemCount: state.plans.length,
+                                itemBuilder: (context, index) {
+                                  final plan = state.plans[index];
+                                  final isDeleting =
+                                      _isDeleting[plan.id] ?? false;
+                                  return AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    switchOutCurve: Curves.easeOut,
+                                    switchInCurve: Curves.easeIn,
+                                    transitionBuilder: (Widget child,
+                                        Animation<double> animation) {
+                                      if (!isDeleting) {
+                                        return FadeIn(
+                                          duration:
+                                              const Duration(milliseconds: 500),
+                                          child: child,
+                                        );
+                                      }
+                                      return FadeOut(
+                                        curve: Curves.easeOut,
+                                        child: child,
+                                      );
+                                    },
+                                    child: isDeleting
+                                        ? Container(
+                                            key:
+                                                ValueKey('${plan.id}_deleting'))
+                                        : _buildPlanCard(plan, index),
                                   );
-                                }
-                                return FadeOut(
-                                  curve: Curves.easeOut,
-                                  child: child,
-                                );
-                              },
-                              child: isDeleting
-                                  ? Container(
-                                      key: ValueKey('${plan.id}_deleting'))
-                                  : _buildPlanCard(plan, index),
-                            );
-                          },
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                 ),
               ],
@@ -457,6 +475,7 @@ class _PlansScreenState extends State<PlansScreen> {
   }
 
   Widget _buildPlanCard(PlanResponse plan, int index) {
+    final isDeleting = _isDeleting[plan.id] ?? false;
     return Card(
       key: ValueKey(plan.id),
       elevation: 5,
@@ -476,30 +495,44 @@ class _PlansScreenState extends State<PlansScreen> {
           ),
           borderRadius: BorderRadius.circular(15),
         ),
-        child: ListTile(
-          title: Text(
-            plan.title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.white,
+        child: Column(
+          children: [
+            ListTile(
+              title: Text(
+                plan.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+              subtitle: plan.notes != null
+                  ? Text(
+                      plan.notes!,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    )
+                  : null,
+              trailing: const Icon(
+                Icons.chevron_right,
+                color: Colors.white70,
+              ),
+              onTap: () => _navigateToWorkouts(plan),
+              onLongPress: () => _showDeleteConfirmationDialog(plan),
             ),
-          ),
-          subtitle: plan.notes != null
-              ? Text(
-                  plan.notes!,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                )
-              : null,
-          trailing: const Icon(
-            Icons.chevron_right,
-            color: Colors.white70,
-          ),
-          onTap: () => _navigateToWorkouts(plan),
-          onLongPress: () => _showDeleteConfirmationDialog(plan),
+            if (isDeleting)
+              Container(
+                width: double.infinity,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 8),
+                child: const LinearProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  backgroundColor: AppColors.primary,
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -571,6 +604,20 @@ class _PlansScreenState extends State<PlansScreen> {
   }
 
   void _deletePlan(PlanResponse plan) {
-    // Implement delete functionality
+    setState(() {
+      _isDeleting[plan.id] = true;
+    });
+
+    // Call the cubit to delete the plan
+    _workoutsCubit.deletePlan(plan.id).then((_) {
+      setState(() {
+        _isDeleting.remove(plan.id);
+      });
+    }).catchError((error) {
+      setState(() {
+        _isDeleting.remove(plan.id);
+      });
+      _showErrorSnackBar('Failed to delete plan: $error');
+    });
   }
 }

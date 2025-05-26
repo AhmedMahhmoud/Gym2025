@@ -6,6 +6,7 @@ import 'package:gym/features/workouts/data/models/plan_response.dart';
 import 'package:gym/features/workouts/data/models/set_model.dart';
 import 'package:gym/features/workouts/data/static_data_provider.dart';
 import 'package:gym/features/exercises/data/models/exercises.dart';
+import 'package:gym/features/workouts/data/models/workout_model.dart';
 
 class WorkoutsRepository {
   final DioService _dioService;
@@ -34,26 +35,18 @@ class WorkoutsRepository {
   }
 
   // Create a new workout in a plan
-  Future<Either<Failure, Map<String, dynamic>>> createWorkout(
+  Future<Either<Failure, WorkoutModel>> createWorkout(
       String planId, String title) async {
-    if (useStaticData) {
-      try {
-        final newWorkout = StaticWorkoutsData.createWorkout(planId, title);
-        return Right(newWorkout.toJson());
-      } catch (e) {
-        return Left(BadRequestFailure(message: 'Failed to create workout: $e'));
-      }
-    }
-
     try {
       final response = await _dioService.post(
-        '/workouts',
+        '/api/Workouts',
         data: {
-          'planId': planId,
           'title': title,
+          'planId': planId,
         },
       );
-      return Right(response.data);
+
+      return Right(WorkoutModel.fromJson(response.data));
     } catch (e) {
       return Left(ErrorHandler.handle(e));
     }
@@ -180,21 +173,15 @@ class WorkoutsRepository {
   }
 
   // Get workouts for a plan
-  Future<Either<Failure, List<Map<String, dynamic>>>> getWorkoutsForPlan(
+  Future<Either<Failure, List<WorkoutModel>>> getWorkoutsForPlan(
       String planId) async {
-    if (useStaticData) {
-      try {
-        final workouts = StaticWorkoutsData.getWorkoutsForPlan(planId);
-        return Right(workouts.map((w) => w.toJson()).toList());
-      } catch (e) {
-        return Left(BadRequestFailure(message: 'Failed to get workouts: $e'));
-      }
-    }
-
     try {
-      final response = await _dioService.get('/plans/$planId/workouts');
-      return Right(
-          List<Map<String, dynamic>>.from(response.data['data'] ?? []));
+      final response = await _dioService.get('/api/Workouts/$planId');
+      final List<dynamic> workoutsData = response.data;
+      final workouts = workoutsData
+          .map((workout) => WorkoutModel.fromJson(workout))
+          .toList();
+      return Right(workouts);
     } catch (e) {
       return Left(ErrorHandler.handle(e));
     }
@@ -214,9 +201,10 @@ class WorkoutsRepository {
     }
 
     try {
-      final response = await _dioService.get('/workouts/$workoutId/exercises');
+      final response = await _dioService.get('/api/Workouts/$workoutId');
+      final workout = WorkoutModel.fromJson(response.data);
       return Right(
-          List<Map<String, dynamic>>.from(response.data['data'] ?? []));
+          workout.workoutExercises.map((we) => we.exercise.toJson()).toList());
     } catch (e) {
       return Left(ErrorHandler.handle(e));
     }
@@ -304,6 +292,42 @@ class WorkoutsRepository {
       return Right(updatedSets);
     } catch (e) {
       return Left(BadRequestFailure(message: e.toString()));
+    }
+  }
+
+  // Delete plan
+  Future<Either<Failure, void>> deletePlan(String planId) async {
+    try {
+      final response = await _dioService.delete('/api/Plans/$planId');
+      return const Right(null);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  // Delete workout
+  Future<Either<Failure, void>> deleteWorkout(String workoutId) async {
+    try {
+      await _dioService.delete('/api/Workouts/$workoutId');
+      return const Right(null);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  // Add multiple exercises to workout
+  Future<Either<Failure, void>> addExercisesToWorkout(
+    String workoutId,
+    List<String> exerciseIds,
+  ) async {
+    try {
+      await _dioService.post(
+        '/api/Workouts/$workoutId/exercises',
+        data: {'exerciseId': exerciseIds, 'customExerciseId': []},
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
     }
   }
 }

@@ -50,6 +50,7 @@ class _MyAppState extends State<MyApp> {
       _hasSeenOnboarding = await _checkOnboardingStatus();
       setState(() {});
     } else {
+      _hasSeenOnboarding = true;
       _isSignedIn = true;
       setState(() {});
     }

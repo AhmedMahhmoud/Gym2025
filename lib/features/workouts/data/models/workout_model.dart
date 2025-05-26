@@ -1,12 +1,18 @@
+import 'package:gym/features/exercises/data/models/exercises.dart';
+
 class WorkoutModel {
   final String id;
   final String planId;
   final String title;
+  final DateTime date;
+  final List<WorkoutExercise> workoutExercises;
 
   WorkoutModel({
     required this.id,
     required this.planId,
     required this.title,
+    required this.date,
+    this.workoutExercises = const [],
   });
 
   factory WorkoutModel.fromJson(Map<String, dynamic> json) {
@@ -14,6 +20,11 @@ class WorkoutModel {
       id: json['id'],
       planId: json['planId'],
       title: json['title'],
+      date: DateTime.parse(json['date']),
+      workoutExercises: (json['workoutExercises'] as List<dynamic>?)
+              ?.map((e) => WorkoutExercise.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 
@@ -22,6 +33,52 @@ class WorkoutModel {
       'id': id,
       'planId': planId,
       'title': title,
+      'date': date.toIso8601String(),
+      'workoutExercises': workoutExercises.map((e) => e.toJson()).toList(),
+    };
+  }
+}
+
+class WorkoutExercise {
+  final String id;
+  final String workoutId;
+  final String exerciseId;
+  final Exercise exercise;
+  final String? customExerciseId;
+  final dynamic customExercise;
+  final List<dynamic> sets;
+
+  WorkoutExercise({
+    required this.id,
+    required this.workoutId,
+    required this.exerciseId,
+    required this.exercise,
+    this.customExerciseId,
+    this.customExercise,
+    this.sets = const [],
+  });
+
+  factory WorkoutExercise.fromJson(Map<String, dynamic> json) {
+    return WorkoutExercise(
+      id: json['id'],
+      workoutId: json['workoutId'],
+      exerciseId: json['exerciseId'],
+      exercise: Exercise.fromJson(json['exercise']),
+      customExerciseId: json['customExerciseId'],
+      customExercise: json['customExercise'],
+      sets: json['sets'] ?? [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'workoutId': workoutId,
+      'exerciseId': exerciseId,
+      'exercise': exercise.toJson(),
+      'customExerciseId': customExerciseId,
+      'customExercise': customExercise,
+      'sets': sets,
     };
   }
 }

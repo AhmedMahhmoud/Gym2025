@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/features/exercises/view/screens/exercises_display_page.dart';
+import 'package:gym/features/home/view/widgets/signout.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -14,21 +16,27 @@ class Home extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Hello',
-                  style: TextStyle(fontSize: 27),
+                Row(
+                  children: [
+                    Text(
+                      'Hello',
+                      style: TextStyle(fontSize: 27),
+                    ),
+                    SizedBox(
+                      width: 7,
+                    ),
+                    Text(
+                      'Ahmed,',
+                      style: TextStyle(
+                          fontSize: 27,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    )
+                  ],
                 ),
-                SizedBox(
-                  width: 7,
-                ),
-                Text(
-                  'Ahmed,',
-                  style: TextStyle(
-                      fontSize: 27,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                )
+                SignOutBtn()
               ],
             ),
             SizedBox(

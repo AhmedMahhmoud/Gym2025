@@ -22,6 +22,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
   String? _selectedCategory;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  final List<String> _selectedExerciseIds = [];
 
   @override
   void dispose() {
@@ -63,10 +64,19 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
 
     try {
       workoutsCubit.addExerciseToWorkoutLocally(exercise);
-      Navigator.pop(context);
+      _selectedExerciseIds.add(exercise.id);
+      CustomSnackbar.show(
+        context,
+        '${exercise.name} added to workout',
+        isError: false,
+      );
+      // Force rebuild of the bottom sheet
+      setState(() {});
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to add exercise')),
+      CustomSnackbar.show(
+        context,
+        'Failed to add exercise',
+        isError: true,
       );
     }
   }
@@ -96,53 +106,77 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
   Widget build(BuildContext context) {
     return BlocBuilder<ExercisesCubit, ExercisesState>(
       builder: (context, state) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _isSelectingCategory
-                        ? 'Select Category'
-                        : 'Select Exercise',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      if (!_isSelectingCategory)
-                        IconButton(
-                          onPressed: _goBackToCategories,
-                          icon: const Icon(Icons.arrow_back),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return WillPopScope(
+              onWillPop: () async {
+                if (_selectedExerciseIds.isNotEmpty) {
+                  final workoutsCubit = context.read<WorkoutsCubit>();
+                  await workoutsCubit
+                      .addExercisesToWorkout(_selectedExerciseIds);
+                  _selectedExerciseIds.clear();
+                }
+                return true;
+              },
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _isSelectingCategory
+                              ? 'Select Category'
+                              : 'Select Exercise',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(FontAwesomeIcons.circleXmark),
-                      ),
+                        Row(
+                          children: [
+                            if (!_isSelectingCategory)
+                              IconButton(
+                                onPressed: _goBackToCategories,
+                                icon: const Icon(Icons.arrow_back),
+                              ),
+                            IconButton(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                if (_selectedExerciseIds.isNotEmpty) {
+                                  final workoutsCubit =
+                                      context.read<WorkoutsCubit>();
+                                  await workoutsCubit.addExercisesToWorkout(
+                                      _selectedExerciseIds);
+                                }
+                              },
+                              icon: const Icon(FontAwesomeIcons.circleXmark),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    const Divider(),
+                    if (_isSelectingCategory) ...[
+                      _buildCategorySelection(state),
+                    ] else ...[
+                      _buildExerciseSelection(context, state),
                     ],
-                  )
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 5),
-              const Divider(),
-              if (_isSelectingCategory) ...[
-                _buildCategorySelection(state),
-              ] else ...[
-                _buildExerciseSelection(context, state),
-              ],
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -209,6 +243,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
 
   Widget _buildExerciseSelection(BuildContext context, ExercisesState state) {
     final filteredExercises = _getFilteredExercises(state);
+    final workoutsCubit = context.read<WorkoutsCubit>();
+    final selectedExercises = workoutsCubit.state.selectedExercises;
 
     return Expanded(
       child: Column(
@@ -260,39 +296,52 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
                     itemCount: filteredExercises.length,
                     itemBuilder: (context, index) {
                       final exercise = filteredExercises[index];
+                      final isAdded =
+                          selectedExercises.any((e) => e.id == exercise.id);
+
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        color: AppColors.background,
+                        color: isAdded
+                            ? AppColors.background.withOpacity(0.5)
+                            : AppColors.background,
                         child: ListTile(
                           title: Text(
                             exercise.name,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color:
+                                  Colors.white.withOpacity(isAdded ? 0.7 : 1.0),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           subtitle: Text(
                             exercise.primaryMuscle ?? '',
-                            style: const TextStyle(color: Colors.white70),
+                            style: TextStyle(
+                              color: Colors.white70
+                                  .withOpacity(isAdded ? 0.7 : 1.0),
+                            ),
                           ),
                           leading: IconButton(
-                              icon: const Icon(
-                                FontAwesomeIcons.circleInfo,
-                                color: Colors.white70,
-                              ),
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                    context, RouteNames.exercise_details_route,
-                                    arguments: [
-                                      exercise,
-                                      SharedUtils.extractThumbnail(
-                                          exercise.videoUrl)
-                                    ]);
-                              }),
+                            icon: Icon(
+                              FontAwesomeIcons.circleInfo,
+                              color: Colors.white70
+                                  .withOpacity(isAdded ? 0.7 : 1.0),
+                            ),
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                RouteNames.exercise_details_route,
+                                arguments: [
+                                  exercise,
+                                  SharedUtils.extractThumbnail(
+                                      exercise.videoUrl)
+                                ],
+                              );
+                            },
+                          ),
                           trailing: IconButton(
-                            icon: const Icon(
-                              Icons.add_circle,
-                              color: AppColors.primary,
+                            icon: Icon(
+                              isAdded ? Icons.check_circle : Icons.add_circle,
+                              color: isAdded ? Colors.green : AppColors.primary,
                             ),
                             onPressed: () =>
                                 _addExerciseToWorkout(context, exercise),

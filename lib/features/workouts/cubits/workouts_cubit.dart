@@ -83,26 +83,26 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   Future<void> deletePlan(String planId) async {
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
 
-    // final result = await _repository.deletePlan(planId);
+    final result = await _repository.deletePlan(planId);
 
-    // result.fold(
-    //   (failure) {
-    //     emit(state.copyWith(
-    //       status: WorkoutsStatus.error,
-    //       errorMessage: 'Failed to delete plan: ${failure.message}',
-    //     ));
-    //   },
-    //   (_) {
-    //     final updatedPlans = List<PlanModel>.from(state.plans)
-    //       ..removeWhere((plan) => plan.id == planId);
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to delete plan: ${failure.message}',
+        ));
+      },
+      (_) {
+        final updatedPlans = List<PlanResponse>.from(state.plans)
+          ..removeWhere((plan) => plan.id == planId);
 
-    //     emit(state.copyWith(
-    //       status: WorkoutsStatus.success,
-    //       plans: updatedPlans,
-    //       clearCurrentPlan: state.currentPlan?.id == planId,
-    //     ));
-    //   },
-    // );
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          plans: updatedPlans,
+          clearCurrentPlan: state.currentPlan?.id == planId,
+        ));
+      },
+    );
   }
 
   // Set current plan
@@ -129,9 +129,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         ));
       },
       (workoutsData) {
-        final workouts = workoutsData
-            .map((workout) => WorkoutModel.fromJson(workout))
-            .toList();
+        final workouts = workoutsData;
         emit(state.copyWith(
           status: WorkoutsStatus.success,
           workouts: workouts,
@@ -165,7 +163,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         ));
       },
       (response) {
-        final newWorkout = WorkoutModel.fromJson(response);
+        final newWorkout = response;
         final updatedWorkouts = List<WorkoutModel>.from(state.workouts)
           ..add(newWorkout);
 
@@ -180,11 +178,22 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
   // Set current workout
   void setCurrentWorkout(WorkoutModel workout) {
+    print('Setting current workout: ${workout.title}');
+    print('Workout exercises count: ${workout.workoutExercises.length}');
+
+    // Extract exercises from workoutExercises
+    final exercises =
+        workout.workoutExercises.map((we) => we.exercise).toList();
+
+    print('Extracted exercises count: ${exercises.length}');
+    print(
+        'First exercise name: ${exercises.isNotEmpty ? exercises.first.name : 'No exercises'}');
+
     emit(state.copyWith(
       currentWorkout: workout,
       clearCurrentExercise: true,
+      selectedExercises: exercises,
     ));
-    loadExercisesForWorkout(workout.id);
   }
 
   // Load all exercises
@@ -509,6 +518,114 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           status: WorkoutsStatus.success,
           sets: sets,
         ));
+      },
+    );
+  }
+
+  // Load workouts for current plan
+  Future<void> loadWorkouts() async {
+    if (state.currentPlan == null) {
+      emit(state.copyWith(
+        status: WorkoutsStatus.error,
+        errorMessage: 'No plan selected',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+
+    final result = await _repository.getWorkoutsForPlan(state.currentPlan!.id);
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to load workouts: ${failure.message}',
+        ));
+      },
+      (workouts) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          workouts: workouts,
+        ));
+      },
+    );
+  }
+
+  // Delete workout
+  Future<void> deleteWorkout(String workoutId) async {
+    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+
+    final result = await _repository.deleteWorkout(workoutId);
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to delete workout: ${failure.message}',
+        ));
+      },
+      (_) {
+        final updatedWorkouts = List<WorkoutModel>.from(state.workouts)
+          ..removeWhere((workout) => workout.id == workoutId);
+
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          workouts: updatedWorkouts,
+          clearCurrentWorkout: state.currentWorkout?.id == workoutId,
+        ));
+      },
+    );
+  }
+
+  // Add multiple exercises to workout
+  Future<void> addExercisesToWorkout(List<String> exerciseIds) async {
+    if (state.currentWorkout == null) {
+      emit(state.copyWith(
+        status: WorkoutsStatus.error,
+        errorMessage: 'No workout selected',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+
+    final result = await _repository.addExercisesToWorkout(
+      state.currentWorkout!.id,
+      exerciseIds,
+    );
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to add exercises: ${failure.message}',
+        ));
+      },
+      (_) async {
+        // Get the exercises from the state
+        final currentExercises = List<Exercise>.from(state.selectedExercises);
+
+        // Get the new exercises from the full exercises list
+        final newExercises =
+            state.exercises.where((e) => exerciseIds.contains(e.id)).toList();
+
+        // Combine current and new exercises, avoiding duplicates
+        final updatedExercises = [...currentExercises];
+        for (final exercise in newExercises) {
+          if (!updatedExercises.any((e) => e.id == exercise.id)) {
+            updatedExercises.add(exercise);
+          }
+        }
+
+        // Update the state with the combined exercises
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          selectedExercises: updatedExercises,
+        ));
+
+        // Reload the workout to get the latest data
+        await loadWorkoutsForPlan(state.currentPlan!.id);
       },
     );
   }

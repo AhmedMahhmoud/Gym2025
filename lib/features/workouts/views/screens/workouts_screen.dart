@@ -22,16 +22,13 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   final _titleController = TextEditingController();
   bool _isAddingWorkout = false;
   final Map<String, bool> _isDeleting = {};
+  late WorkoutsCubit _workoutsCubit;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (context.read<WorkoutsCubit>().state.currentPlan != null) {
-        context.read<WorkoutsCubit>().loadWorkoutsForPlan(
-            context.read<WorkoutsCubit>().state.currentPlan!.id);
-      }
-    });
+    _workoutsCubit = context.read<WorkoutsCubit>();
+    _workoutsCubit.loadWorkouts();
   }
 
   @override
@@ -41,12 +38,12 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   }
 
   void _navigateToExercises(WorkoutModel workout) {
-    context.read<WorkoutsCubit>().setCurrentWorkout(workout);
+    _workoutsCubit.setCurrentWorkout(workout);
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (ctx) => BlocProvider.value(
-          value: context.read<WorkoutsCubit>(),
+          value: _workoutsCubit,
           child: const WorkoutDetailsScreen(),
         ),
       ),
@@ -54,12 +51,26 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   }
 
   void _createWorkout() {
-    if (_titleController.text.isNotEmpty &&
-        context.read<WorkoutsCubit>().state.currentPlan != null) {
-      context.read<WorkoutsCubit>().createWorkout(_titleController.text);
-      _titleController.clear();
+    if (_titleController.text.isNotEmpty) {
       setState(() {
-        _isAddingWorkout = false;
+        _isAddingWorkout = true;
+      });
+
+      _workoutsCubit.createWorkout(_titleController.text).then((_) {
+        _titleController.clear();
+        setState(() {
+          _isAddingWorkout = false;
+        });
+      }).catchError((error) {
+        setState(() {
+          _isAddingWorkout = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create workout: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
       });
     }
   }
@@ -132,22 +143,20 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       _isDeleting[workout.id] = true;
     });
 
-    // Simulate local deletion after animation
-    Future.delayed(const Duration(milliseconds: 500), () {
-      final updatedWorkouts =
-          List<WorkoutModel>.from(context.read<WorkoutsCubit>().state.workouts)
-            ..removeWhere((w) => w.id == workout.id);
-      context.read<WorkoutsCubit>().emit(
-            context.read<WorkoutsCubit>().state.copyWith(
-                  workouts: updatedWorkouts,
-                  clearCurrentWorkout:
-                      context.read<WorkoutsCubit>().state.currentWorkout?.id ==
-                          workout.id,
-                ),
-          );
+    _workoutsCubit.deleteWorkout(workout.id).then((_) {
       setState(() {
         _isDeleting.remove(workout.id);
       });
+    }).catchError((error) {
+      setState(() {
+        _isDeleting.remove(workout.id);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete workout: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
     });
   }
 
@@ -155,10 +164,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: BlocSelector<WorkoutsCubit, WorkoutsState, String?>(
-          selector: (state) => state.currentPlan?.title,
-          builder: (context, title) => Text(title ?? 'Workouts'),
-        ),
+        title: Text(_workoutsCubit.state.currentPlan?.title ?? 'Workouts'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
         bottom: true,
@@ -168,6 +176,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.errorMessage ?? 'An error occurred'),
+                  backgroundColor: Colors.red,
                 ),
               );
             }
@@ -175,46 +184,25 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           builder: (context, state) {
             if (state.status == WorkoutsStatus.loading &&
                 state.workouts.isEmpty) {
-              return const LoadingIndicator();
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
             }
 
             if (state.status == WorkoutsStatus.error &&
                 state.workouts.isEmpty) {
-              return ErrorMessage(
-                message: state.errorMessage ?? 'Failed to load workouts',
-                onRetry: () => state.currentPlan != null
-                    ? context
-                        .read<WorkoutsCubit>()
-                        .loadWorkoutsForPlan(state.currentPlan!.id)
-                    : null,
-              );
-            }
-
-            if (state.workouts.isEmpty && !_isAddingWorkout) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 30),
-                    //   child: Text(
-                    //     'Add workout',
-                    //     style: const TextStyle(
-                    //       fontSize: 22,
-                    //       fontWeight: FontWeight.bold,
-                    //       color: Colors.white70,
-                    //     ),
-                    //     textAlign: TextAlign.center,
-                    //   ),
-                    // ),
-                    const SizedBox(height: 20),
-                    CustomElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _isAddingWorkout = true;
-                        });
-                      },
-                      text: 'Add Workout',
+                    Text(
+                      state.errorMessage ?? 'Failed to load workouts',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => _workoutsCubit.loadWorkouts(),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
@@ -224,106 +212,275 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
             return Column(
               children: [
                 if (_isAddingWorkout)
-                  FadeInWidget(
+                  FadeIn(
                     duration: const Duration(milliseconds: 500),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          CustomTextField(
+                          TextField(
                             controller: _titleController,
-                            labelText: 'Workout Title',
-                            hintText: 'e.g., Push',
+                            decoration: InputDecoration(
+                              labelText: 'Workout Title',
+                              floatingLabelStyle: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                                color: Colors.white,
+                              ),
+                              hintText: 'e.g., Push Day',
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.1),
+                              labelStyle: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                              hintStyle: const TextStyle(color: Colors.white38),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 15,
+                              ),
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            onTapOutside: (event) =>
+                                FocusScope.of(context).unfocus(),
+                            autofocus: true,
                           ),
                           const SizedBox(height: 20),
-                          ElasticInWidget(
-                            child: CustomElevatedButton(
-                              onPressed: _createWorkout,
-                              text: 'Add',
+                          if (state.status == WorkoutsStatus.loading)
+                            Container(
+                              width: double.infinity,
+                              height: 4,
+                              margin: const EdgeInsets.only(bottom: 20),
+                              child: const LinearProgressIndicator(
+                                backgroundColor: AppColors.primary,
+                              ),
+                            )
+                          else
+                            ElasticIn(
+                              duration: const Duration(milliseconds: 800),
+                              child: ElevatedButton(
+                                onPressed: _createWorkout,
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 40,
+                                    vertical: 15,
+                                  ),
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ).copyWith(
+                                  backgroundColor: MaterialStateProperty.all(
+                                    Colors.transparent,
+                                  ),
+                                  overlayColor: MaterialStateProperty.all(
+                                    Colors.white.withOpacity(0.1),
+                                  ),
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Theme.of(context).primaryColor,
+                                        Theme.of(context)
+                                            .primaryColor
+                                            .withOpacity(0.7),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Theme.of(context)
+                                            .primaryColor
+                                            .withOpacity(0.5),
+                                        blurRadius: 10,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 30,
+                                    vertical: 15,
+                                  ),
+                                  child: const Text(
+                                    'Create Workout',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
                   ),
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: state.workouts.length,
-                    itemBuilder: (context, index) {
-                      final workout = state.workouts[index];
-                      final isDeleting = _isDeleting[workout.id] ?? false;
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        switchOutCurve: Curves.easeOut,
-                        switchInCurve: Curves.easeIn,
-                        transitionBuilder:
-                            (Widget child, Animation<double> animation) {
-                          if (!isDeleting) {
-                            return FadeInWidget(
-                              duration:
-                                  Duration(milliseconds: 500 + (index * 100)),
-                              child: child,
+                  child: state.workouts.isEmpty && !_isAddingWorkout
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FadeIn(
+                                duration: const Duration(milliseconds: 800),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 30),
+                                  child: Text(
+                                    "Add New Workout",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white70,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              SlideInUp(
+                                duration: const Duration(milliseconds: 1000),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _isAddingWorkout = true;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 40,
+                                      vertical: 15,
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ).copyWith(
+                                    backgroundColor: MaterialStateProperty.all(
+                                      Colors.transparent,
+                                    ),
+                                    overlayColor: MaterialStateProperty.all(
+                                      Colors.white.withOpacity(0.1),
+                                    ),
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.textSecondary,
+                                          AppColors.backgroundSurface
+                                              .withOpacity(0.7),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.buttonText
+                                              .withOpacity(0.5),
+                                          blurRadius: 2,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    padding: const EdgeInsets.all(15),
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: state.workouts.length,
+                          itemBuilder: (context, index) {
+                            final workout = state.workouts[index];
+                            final isDeleting = _isDeleting[workout.id] ?? false;
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              switchOutCurve: Curves.easeOut,
+                              switchInCurve: Curves.easeIn,
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                if (!isDeleting) {
+                                  return FadeIn(
+                                    duration: const Duration(milliseconds: 500),
+                                    child: child,
+                                  );
+                                }
+                                return FadeOut(
+                                  curve: Curves.easeOut,
+                                  child: child,
+                                );
+                              },
+                              child: isDeleting
+                                  ? Container(
+                                      key: ValueKey('${workout.id}_deleting'))
+                                  : _buildWorkoutCard(workout, index),
                             );
-                          }
-                          return FadeOut(
-                            curve: Curves.easeOut,
-                            child: child,
-                          );
-                        },
-                        child: isDeleting
-                            ? Container(key: ValueKey('${workout.id}_deleting'))
-                            : _buildWorkoutCard(workout, index),
-                      );
-                    },
-                  ),
+                          },
+                        ),
                 ),
               ],
             );
           },
         ),
       ),
-      floatingActionButton:
-          context.read<WorkoutsCubit>().state.workouts.isNotEmpty &&
-                  !_isAddingWorkout
-              ? Padding(
-                  padding: const EdgeInsets.only(bottom: 100),
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      setState(() {
-                        _isAddingWorkout = true;
-                      });
-                    },
-                    elevation: 1,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.textSecondary,
-                            AppColors.backgroundSurface.withOpacity(0.7),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.buttonText.withOpacity(0.5),
-                            blurRadius: 2,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(15),
-                      child: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 30,
-                      ),
+      floatingActionButton: _workoutsCubit.state.workouts.isNotEmpty
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 100),
+              child: FloatingActionButton(
+                onPressed: () {
+                  setState(() {
+                    _isAddingWorkout = true;
+                  });
+                },
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).primaryColor,
+                        Theme.of(context).primaryColor.withOpacity(0.7),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).primaryColor.withOpacity(0.5),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
                   ),
-                )
-              : null,
+                  padding: const EdgeInsets.all(15),
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+              ),
+            )
+          : null,
       floatingActionButtonLocation:
           FloatingActionButtonLocation.miniCenterFloat,
     );
@@ -356,6 +513,13 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
               fontWeight: FontWeight.bold,
               fontSize: 18,
               color: Colors.white,
+            ),
+          ),
+          subtitle: Text(
+            'Date: ${workout.date.toString().split(' ')[0]}',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
             ),
           ),
           trailing: const Icon(

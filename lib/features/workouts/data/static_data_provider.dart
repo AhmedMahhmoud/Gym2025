@@ -19,21 +19,11 @@ class StaticWorkoutsData {
   static List<WorkoutModel> getWorkoutsForPlan(String planId) {
     switch (planId) {
       case 'plan1':
-        return [
-          WorkoutModel(id: 'workout1', planId: 'plan1', title: 'Push Day'),
-          WorkoutModel(id: 'workout2', planId: 'plan1', title: 'Pull Day'),
-          WorkoutModel(id: 'workout3', planId: 'plan1', title: 'Leg Day'),
-        ];
+        return [];
       case 'plan2':
-        return [
-          WorkoutModel(id: 'workout4', planId: 'plan2', title: 'Upper Body'),
-          WorkoutModel(id: 'workout5', planId: 'plan2', title: 'Lower Body'),
-        ];
+        return [];
       case 'plan3':
-        return [
-          WorkoutModel(id: 'workout6', planId: 'plan3', title: 'Full Body A'),
-          WorkoutModel(id: 'workout7', planId: 'plan3', title: 'Full Body B'),
-        ];
+        return [];
       default:
         return [];
     }
@@ -150,10 +140,6 @@ class StaticWorkoutsData {
   }
 
   // Helper method to create a new workout
-  static WorkoutModel createWorkout(String planId, String title) {
-    final newId = 'workout${DateTime.now().millisecondsSinceEpoch}';
-    return WorkoutModel(id: newId, planId: planId, title: title);
-  }
 
   // Helper method to create a new set
   static SetModel createSet({

@@ -30,12 +30,6 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
   void initState() {
     super.initState();
     _workoutsCubit = context.read<WorkoutsCubit>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_workoutsCubit.state.currentWorkout != null) {
-        _workoutsCubit
-            .loadExercisesForWorkout(_workoutsCubit.state.currentWorkout!.id);
-      }
-    });
   }
 
   void _navigateToExerciseSets(Exercise exercise) {
@@ -165,6 +159,13 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
             }
           },
           builder: (context, state) {
+            print(
+                'WorkoutDetailsScreen - Current workout: ${state.currentWorkout?.title}');
+            print(
+                'WorkoutDetailsScreen - Selected exercises count: ${state.selectedExercises.length}');
+            print(
+                'WorkoutDetailsScreen - First exercise: ${state.selectedExercises.isNotEmpty ? state.selectedExercises.first.name : 'No exercises'}');
+
             if (state.status == WorkoutsStatus.loading &&
                 state.selectedExercises.isEmpty) {
               return const LoadingIndicator();
@@ -188,10 +189,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                   children: [
                     const Text(
                       'No exercises added yet',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white70,
-                      ),
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
