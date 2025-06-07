@@ -6,7 +6,24 @@ import 'package:gym/features/workouts/data/models/plan_response.dart';
 import 'package:gym/features/workouts/data/models/set_model.dart';
 import 'package:gym/features/workouts/data/models/workout_model.dart';
 
-enum WorkoutsStatus { initial, loading, success, error }
+enum WorkoutsStatus {
+  initial,
+  loading,
+  success,
+  error,
+  loadingPlans,
+  loadingWorkouts,
+  loadingExercises,
+  loadingSets,
+  addingSet,
+  addingExercise,
+  creatingPlan,
+  creatingWorkout,
+  deletingPlan,
+  deletingWorkout,
+  deletingExercise,
+  deletingSet,
+}
 
 class WorkoutsState extends Equatable {
   final WorkoutsStatus status;
@@ -19,6 +36,7 @@ class WorkoutsState extends Equatable {
   final PlanResponse? currentPlan;
   final WorkoutModel? currentWorkout;
   final Exercise? currentExercise;
+  final WorkoutExercise? currentWorkoutExercise;
 
   const WorkoutsState({
     this.status = WorkoutsStatus.initial,
@@ -31,6 +49,7 @@ class WorkoutsState extends Equatable {
     this.currentPlan,
     this.currentWorkout,
     this.currentExercise,
+    this.currentWorkoutExercise,
   });
 
   WorkoutsState copyWith({
@@ -44,6 +63,7 @@ class WorkoutsState extends Equatable {
     PlanResponse? currentPlan,
     WorkoutModel? currentWorkout,
     Exercise? currentExercise,
+    WorkoutExercise? currentWorkoutExercise,
     bool clearError = false,
     bool clearCurrentPlan = false,
     bool clearCurrentWorkout = false,
@@ -62,6 +82,8 @@ class WorkoutsState extends Equatable {
           clearCurrentWorkout ? null : currentWorkout ?? this.currentWorkout,
       currentExercise:
           clearCurrentExercise ? null : currentExercise ?? this.currentExercise,
+      currentWorkoutExercise:
+          currentWorkoutExercise ?? this.currentWorkoutExercise,
     );
   }
 
@@ -77,5 +99,6 @@ class WorkoutsState extends Equatable {
         currentPlan,
         currentWorkout,
         currentExercise,
+        currentWorkoutExercise,
       ];
 }

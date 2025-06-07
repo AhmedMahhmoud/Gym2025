@@ -2,30 +2,30 @@ class SetModel {
   final String id;
   final String workoutId;
   final String exerciseId;
+  final double weight;
   final int? reps;
   final int? duration;
-  final double weight;
-  final int? restTime; // in seconds
+  final int? restTime;
 
   SetModel({
     required this.id,
     required this.workoutId,
     required this.exerciseId,
+    required this.weight,
     this.reps,
     this.duration,
-    required this.weight,
     this.restTime,
   });
 
   factory SetModel.fromJson(Map<String, dynamic> json) {
     return SetModel(
-      id: json['id'] as String,
-      workoutId: json['workoutId'] as String,
-      exerciseId: json['exerciseId'] as String,
-      reps: json['reps'] as int?,
-      duration: json['duration'] as int?,
-      weight: (json['weight'] as num).toDouble(),
-      restTime: json['restTime'] as int?,
+      id: json['id'],
+      workoutId: json['workoutId'] ?? '',
+      exerciseId: json['exerciseId'] ?? '',
+      weight: json['weight'].toDouble(),
+      reps: json['repetitions'],
+      duration: json['duration'],
+      restTime: json['restTime'],
     );
   }
 
@@ -34,9 +34,9 @@ class SetModel {
       'id': id,
       'workoutId': workoutId,
       'exerciseId': exerciseId,
-      'reps': reps,
-      'duration': duration,
       'weight': weight,
+      'repetitions': reps,
+      'duration': duration,
       'restTime': restTime,
     };
   }

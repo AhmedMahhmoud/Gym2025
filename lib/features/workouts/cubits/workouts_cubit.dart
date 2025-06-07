@@ -31,7 +31,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
   // Load all plans
   Future<void> loadPlans() async {
-    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+    emit(state.copyWith(status: WorkoutsStatus.loadingPlans, clearError: true));
 
     final result = await _repository.getPlans();
 
@@ -57,7 +57,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
   // Create a new plan
   Future<void> createPlan(String title, {String? notes}) async {
-    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+    emit(state.copyWith(status: WorkoutsStatus.creatingPlan, clearError: true));
 
     final result = await _repository.createPlan(title, notes: notes);
 
@@ -81,7 +81,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
   // Delete a plan
   Future<void> deletePlan(String planId) async {
-    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+    emit(state.copyWith(status: WorkoutsStatus.deletingPlan, clearError: true));
 
     final result = await _repository.deletePlan(planId);
 
@@ -112,12 +112,16 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       clearCurrentWorkout: true,
       clearCurrentExercise: true,
     ));
-    loadWorkoutsForPlan(plan.id);
+    // Only load workouts if we don't have any for this plan
+    if (state.workouts.isEmpty) {
+      loadWorkoutsForPlan(plan.id);
+    }
   }
 
   // Load workouts for a plan
   Future<void> loadWorkoutsForPlan(String planId) async {
-    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+    emit(state.copyWith(
+        status: WorkoutsStatus.loadingWorkouts, clearError: true));
 
     final result = await _repository.getWorkoutsForPlan(planId);
 
@@ -148,7 +152,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       return;
     }
 
-    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+    emit(state.copyWith(
+        status: WorkoutsStatus.creatingWorkout, clearError: true));
 
     final result = await _repository.createWorkout(
       state.currentPlan!.id,
@@ -162,8 +167,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           errorMessage: 'Failed to create workout: ${failure.message}',
         ));
       },
-      (response) {
-        final newWorkout = response;
+      (newWorkout) {
+        // Add the new workout to the existing list
         final updatedWorkouts = List<WorkoutModel>.from(state.workouts)
           ..add(newWorkout);
 
@@ -311,34 +316,23 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
   // Set current exercise
   void setCurrentExercise(Exercise exercise) {
-    emit(state.copyWith(currentExercise: exercise));
-    loadSetsForExercise(exercise.workoutId, exercise.id);
-  }
+    if (state.currentWorkout == null) return;
 
-  // Load sets for an exercise
-  Future<void> loadSetsForExercise(String workoutId, String exerciseId) async {
-    print('Loading sets for workout $workoutId and exercise $exerciseId');
-    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
-
-    final result = await _repository.getSetsForExercise(workoutId, exerciseId);
-
-    result.fold(
-      (failure) {
-        print('Failed to load sets: ${failure.message}');
-        emit(state.copyWith(
-          status: WorkoutsStatus.error,
-          errorMessage: 'Failed to load sets: ${failure.message}',
-        ));
-      },
-      (setsData) {
-        print('Successfully loaded ${setsData.length} sets');
-        final sets = setsData.map((set) => SetModel.fromJson(set)).toList();
-        emit(state.copyWith(
-          status: WorkoutsStatus.success,
-          sets: sets,
-        ));
-      },
+    // Find the corresponding WorkoutExercise
+    final workoutExercise = state.currentWorkout!.workoutExercises.firstWhere(
+      (we) => we.exercise.id == exercise.id,
+      orElse: () => throw Exception('WorkoutExercise not found'),
     );
+
+    // Get sets from the workout exercise
+    final sets =
+        workoutExercise.sets.map((set) => SetModel.fromJson(set)).toList();
+
+    emit(state.copyWith(
+      currentExercise: exercise,
+      currentWorkoutExercise: workoutExercise,
+      sets: sets,
+    ));
   }
 
   // Add set to exercise
@@ -347,7 +341,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     required double weight,
     int? restTime,
   }) async {
-    if (state.currentWorkout == null || state.currentExercise == null) {
+    if (state.currentWorkout == null || state.currentWorkoutExercise == null) {
       emit(state.copyWith(
         status: WorkoutsStatus.error,
         errorMessage: 'No workout or exercise selected',
@@ -355,17 +349,17 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       return;
     }
 
-    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+    emit(state.copyWith(status: WorkoutsStatus.addingSet, clearError: true));
 
     final setData = {
-      'reps': reps,
       'weight': weight,
+      'repetitions': reps,
+      'duration': null,
       if (restTime != null) 'restTime': restTime,
     };
 
     final result = await _repository.addSetToExercise(
-      state.currentWorkout!.id,
-      state.currentExercise!.id,
+      state.currentWorkoutExercise!.id,
       setData,
     );
 
@@ -376,10 +370,52 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           errorMessage: 'Failed to add set: ${failure.message}',
         ));
       },
-      (sets) {
+      (newSets) {
+        // Append new sets to existing sets
+        final updatedSets = [...state.sets, ...newSets];
+
+        // Update the workout exercise with new sets
+        final updatedWorkoutExercise = WorkoutExercise(
+          id: state.currentWorkoutExercise!.id,
+          workoutId: state.currentWorkoutExercise!.workoutId,
+          exerciseId: state.currentWorkoutExercise!.exerciseId,
+          exercise: state.currentWorkoutExercise!.exercise,
+          customExerciseId: state.currentWorkoutExercise!.customExerciseId,
+          customExercise: state.currentWorkoutExercise!.customExercise,
+          sets: updatedSets.map((set) => set.toJson()).toList(),
+        );
+
+        // Update the workout with the updated exercise
+        final updatedWorkoutExercises =
+            state.currentWorkout!.workoutExercises.map((we) {
+          if (we.id == updatedWorkoutExercise.id) {
+            return updatedWorkoutExercise;
+          }
+          return we;
+        }).toList();
+
+        final updatedWorkout = WorkoutModel(
+          id: state.currentWorkout!.id,
+          planId: state.currentWorkout!.planId,
+          title: state.currentWorkout!.title,
+          date: state.currentWorkout!.date,
+          workoutExercises: updatedWorkoutExercises,
+        );
+
+        // Update the workouts list
+        final updatedWorkouts = state.workouts.map((w) {
+          if (w.id == updatedWorkout.id) {
+            return updatedWorkout;
+          }
+          return w;
+        }).toList();
+
         emit(state.copyWith(
           status: WorkoutsStatus.success,
-          sets: sets,
+          sets: updatedSets,
+          currentWorkoutExercise: updatedWorkoutExercise,
+          currentWorkout: updatedWorkout,
+          workouts: updatedWorkouts,
         ));
       },
     );
@@ -391,7 +427,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     required double weight,
     int? restTime,
   }) async {
-    if (state.currentWorkout == null || state.currentExercise == null) {
+    if (state.currentWorkout == null || state.currentWorkoutExercise == null) {
       emit(state.copyWith(
         status: WorkoutsStatus.error,
         errorMessage: 'No workout or exercise selected',
@@ -402,14 +438,14 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
 
     final setData = {
-      'duration': duration,
       'weight': weight,
+      'repetitions': null,
+      'duration': duration,
       if (restTime != null) 'restTime': restTime,
     };
 
     final result = await _repository.addSetToExercise(
-      state.currentWorkout!.id,
-      state.currentExercise!.id,
+      state.currentWorkoutExercise!.id,
       setData,
     );
 
@@ -420,10 +456,52 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           errorMessage: 'Failed to add set: ${failure.message}',
         ));
       },
-      (sets) {
+      (newSets) {
+        // Append new sets to existing sets
+        final updatedSets = [...state.sets, ...newSets];
+
+        // Update the workout exercise with new sets
+        final updatedWorkoutExercise = WorkoutExercise(
+          id: state.currentWorkoutExercise!.id,
+          workoutId: state.currentWorkoutExercise!.workoutId,
+          exerciseId: state.currentWorkoutExercise!.exerciseId,
+          exercise: state.currentWorkoutExercise!.exercise,
+          customExerciseId: state.currentWorkoutExercise!.customExerciseId,
+          customExercise: state.currentWorkoutExercise!.customExercise,
+          sets: updatedSets.map((set) => set.toJson()).toList(),
+        );
+
+        // Update the workout with the updated exercise
+        final updatedWorkoutExercises =
+            state.currentWorkout!.workoutExercises.map((we) {
+          if (we.id == updatedWorkoutExercise.id) {
+            return updatedWorkoutExercise;
+          }
+          return we;
+        }).toList();
+
+        final updatedWorkout = WorkoutModel(
+          id: state.currentWorkout!.id,
+          planId: state.currentWorkout!.planId,
+          title: state.currentWorkout!.title,
+          date: state.currentWorkout!.date,
+          workoutExercises: updatedWorkoutExercises,
+        );
+
+        // Update the workouts list
+        final updatedWorkouts = state.workouts.map((w) {
+          if (w.id == updatedWorkout.id) {
+            return updatedWorkout;
+          }
+          return w;
+        }).toList();
+
         emit(state.copyWith(
           status: WorkoutsStatus.success,
-          sets: sets,
+          sets: updatedSets,
+          currentWorkoutExercise: updatedWorkoutExercise,
+          currentWorkout: updatedWorkout,
+          workouts: updatedWorkouts,
         ));
       },
     );
@@ -435,9 +513,43 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   }
 
   void addExerciseToWorkoutLocally(Exercise exercise) {
-    final updatedExercises = List<Exercise>.from(state.selectedExercises)
-      ..add(exercise);
-    emit(state.copyWith(selectedExercises: updatedExercises));
+    if (state.currentWorkout == null) return;
+
+    // Create a new WorkoutExercise for the exercise
+    final workoutExercise = WorkoutExercise(
+      id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+      workoutId: state.currentWorkout!.id,
+      exerciseId: exercise.id,
+      exercise: exercise,
+      sets: [],
+    );
+
+    // Update the current workout with the new exercise
+    final updatedWorkout = WorkoutModel(
+      id: state.currentWorkout!.id,
+      planId: state.currentWorkout!.planId,
+      title: state.currentWorkout!.title,
+      date: state.currentWorkout!.date,
+      workoutExercises: [
+        ...state.currentWorkout!.workoutExercises,
+        workoutExercise
+      ],
+    );
+
+    // Update the workouts list
+    final updatedWorkouts = state.workouts.map((w) {
+      if (w.id == updatedWorkout.id) {
+        return updatedWorkout;
+      }
+      return w;
+    }).toList();
+
+    emit(state.copyWith(
+      currentWorkout: updatedWorkout,
+      workouts: updatedWorkouts,
+      selectedExercises:
+          updatedWorkout.workoutExercises.map((we) => we.exercise).toList(),
+    ));
   }
 
   // Edit set
@@ -460,7 +572,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
     final setData = {
       'weight': weight,
-      if (reps != null) 'reps': reps,
+      if (reps != null) 'repetitions': reps,
       if (duration != null) 'duration': duration,
       if (restTime != null) 'restTime': restTime,
     };
@@ -554,7 +666,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
   // Delete workout
   Future<void> deleteWorkout(String workoutId) async {
-    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+    emit(state.copyWith(
+        status: WorkoutsStatus.deletingWorkout, clearError: true));
 
     final result = await _repository.deleteWorkout(workoutId);
 
@@ -602,30 +715,32 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           errorMessage: 'Failed to add exercises: ${failure.message}',
         ));
       },
-      (_) async {
-        // Get the exercises from the state
-        final currentExercises = List<Exercise>.from(state.selectedExercises);
+      (updatedWorkoutExercises) {
+        // Create a new workout with the updated exercises
+        final updatedWorkout = WorkoutModel(
+          id: state.currentWorkout!.id,
+          planId: state.currentWorkout!.planId,
+          title: state.currentWorkout!.title,
+          date: state.currentWorkout!.date,
+          workoutExercises: updatedWorkoutExercises,
+        );
 
-        // Get the new exercises from the full exercises list
-        final newExercises =
-            state.exercises.where((e) => exerciseIds.contains(e.id)).toList();
-
-        // Combine current and new exercises, avoiding duplicates
-        final updatedExercises = [...currentExercises];
-        for (final exercise in newExercises) {
-          if (!updatedExercises.any((e) => e.id == exercise.id)) {
-            updatedExercises.add(exercise);
+        // Update only the workouts for the current plan
+        final updatedWorkouts = state.workouts.map((w) {
+          if (w.id == updatedWorkout.id) {
+            return updatedWorkout;
           }
-        }
+          return w;
+        }).toList();
 
-        // Update the state with the combined exercises
+        // Update the state with the new workout and exercises
         emit(state.copyWith(
           status: WorkoutsStatus.success,
-          selectedExercises: updatedExercises,
+          currentWorkout: updatedWorkout,
+          workouts: updatedWorkouts,
+          selectedExercises:
+              updatedWorkoutExercises.map((we) => we.exercise).toList(),
         ));
-
-        // Reload the workout to get the latest data
-        await loadWorkoutsForPlan(state.currentPlan!.id);
       },
     );
   }

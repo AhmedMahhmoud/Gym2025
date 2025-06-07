@@ -58,16 +58,34 @@ class WorkoutExercise {
     this.sets = const [],
   });
 
-  factory WorkoutExercise.fromJson(Map<String, dynamic> json) {
+  factory WorkoutExercise.fromJson(Map<String, dynamic> json,
+      {String? workoutID}) {
     return WorkoutExercise(
       id: json['id'],
-      workoutId: json['workoutId'],
+      workoutId: json['workoutId'] ?? workoutID,
       exerciseId: json['exerciseId'],
-      exercise: Exercise.fromJson(json['exercise']),
+      exercise: json['exercise'] != null
+          ? Exercise.fromJson(json['exercise'])
+          : Exercise(
+              id: json['exerciseId'],
+              name: json['exerciseTitle'],
+              description: '',
+              videoUrl: '',
+              primaryMuscle: '',
+              category: ''),
       customExerciseId: json['customExerciseId'],
       customExercise: json['customExercise'],
       sets: json['sets'] ?? [],
     );
+  }
+  static List<WorkoutExercise> parseWorkoutExercises(json,
+      {String? workoutID}) {
+    final list = json as List;
+    return list
+        .map(
+          (e) => WorkoutExercise.fromJson(e, workoutID: workoutID),
+        )
+        .toList();
   }
 
   Map<String, dynamic> toJson() {

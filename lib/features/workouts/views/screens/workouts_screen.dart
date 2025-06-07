@@ -28,7 +28,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   void initState() {
     super.initState();
     _workoutsCubit = context.read<WorkoutsCubit>();
-    _workoutsCubit.loadWorkouts();
+    if (_workoutsCubit.state.workouts.isEmpty) {
+      _workoutsCubit.loadWorkouts();
+    }
   }
 
   @override
@@ -56,7 +58,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         _isAddingWorkout = true;
       });
 
-      _workoutsCubit.createWorkout(_titleController.text).then((_) {
+      _workoutsCubit.createWorkout(_titleController.text).then((newWorkout) {
         _titleController.clear();
         setState(() {
           _isAddingWorkout = false;
@@ -171,6 +173,18 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       body: SafeArea(
         bottom: true,
         child: BlocConsumer<WorkoutsCubit, WorkoutsState>(
+          listenWhen: (previous, current) =>
+              (current.status == WorkoutsStatus.creatingWorkout &&
+                  previous.status != WorkoutsStatus.creatingWorkout) ||
+              (current.status == WorkoutsStatus.deletingWorkout &&
+                  previous.status != WorkoutsStatus.deletingWorkout) ||
+              (current.status == WorkoutsStatus.error &&
+                  (previous.status == WorkoutsStatus.creatingWorkout ||
+                      previous.status == WorkoutsStatus.deletingWorkout)),
+          buildWhen: (previous, current) =>
+              current.status == WorkoutsStatus.success ||
+              current.status == WorkoutsStatus.creatingWorkout ||
+              current.status == WorkoutsStatus.deletingWorkout,
           listener: (context, state) {
             if (state.status == WorkoutsStatus.error) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -513,13 +527,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
               fontWeight: FontWeight.bold,
               fontSize: 18,
               color: Colors.white,
-            ),
-          ),
-          subtitle: Text(
-            'Date: ${workout.date.toString().split(' ')[0]}',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
             ),
           ),
           trailing: const Icon(

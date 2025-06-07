@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gym/Shared/ui/custom_snackbar.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/core/widgets/dialogs/input_dialog_container.dart';
 
@@ -25,6 +26,8 @@ class _AddSetDialogState extends State<AddSetDialog> {
   final _restTimeController = TextEditingController();
   final _durationController = TextEditingController();
   bool _isRepsBased = true;
+  bool _isWeightInKg = true;
+  bool _isDurationInMinutes = true;
 
   @override
   void dispose() {
@@ -42,44 +45,54 @@ class _AddSetDialogState extends State<AddSetDialog> {
     final restTime = int.tryParse(_restTimeController.text);
 
     if (weight == null || weight <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid weight')),
-      );
+      CustomSnackbar.show(context, 'Please enter a valid weight',
+          isError: true);
       return;
+    }
+
+    // Convert weight if needed
+    var finalWeight = weight;
+    if (!_isWeightInKg) {
+      finalWeight = weight * 0.453592; // Convert lbs to kg
+    }
+
+    // Convert rest time if needed
+    var finalRestTime = restTime;
+    if (finalRestTime != null && _isDurationInMinutes) {
+      finalRestTime = finalRestTime * 60; // Convert minutes to seconds
     }
 
     if (_isRepsBased) {
       if (reps == null || reps <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter a valid number of reps')),
-        );
+        CustomSnackbar.show(context, 'Please enter a valid number of reps',
+            isError: true);
         return;
       }
       widget.onAdd(
-        weight: weight,
+        weight: finalWeight,
         reps: reps,
         duration: null,
-        restTime: restTime,
+        restTime: finalRestTime,
       );
     } else {
       if (duration == null || duration <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter a valid duration')),
-        );
+        CustomSnackbar.show(context, 'Please enter a valid duration',
+            isError: true);
         return;
       }
+      // Convert duration if needed
+      var finalDuration = duration;
+      if (_isDurationInMinutes) {
+        finalDuration = duration * 60; // Convert minutes to seconds
+      }
       widget.onAdd(
-        weight: weight,
+        weight: finalWeight,
         reps: null,
-        duration: duration,
-        restTime: restTime,
+        duration: finalDuration,
+        restTime: finalRestTime,
       );
     }
 
-    _weightController.clear();
-    _repsController.clear();
-    _durationController.clear();
-    _restTimeController.clear();
     Navigator.pop(context);
   }
 
@@ -132,21 +145,55 @@ class _AddSetDialogState extends State<AddSetDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _weightController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Weight (kg)',
-                labelStyle: TextStyle(color: Colors.white70),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white30),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _weightController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Weight',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                    ),
+                    onTapOutside: (event) => FocusScope.of(context).unfocus(),
+                  ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ToggleButtons(
+                    isSelected: [_isWeightInKg, !_isWeightInKg],
+                    onPressed: (index) {
+                      setState(() {
+                        _isWeightInKg = index == 0;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    selectedColor: Colors.white,
+                    fillColor: AppColors.primary,
+                    children: const [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('kg'),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('lbs'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              onTapOutside: (event) => FocusScope.of(context).unfocus(),
+              ],
             ),
             const SizedBox(height: 16),
             if (_isRepsBased)
@@ -166,36 +213,104 @@ class _AddSetDialogState extends State<AddSetDialog> {
                 ),
               )
             else
-              TextField(
-                controller: _durationController,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: 'Duration (seconds)',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white30),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _durationController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Duration',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        enabledBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white30),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                      ),
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ToggleButtons(
+                      isSelected: [_isDurationInMinutes, !_isDurationInMinutes],
+                      onPressed: (index) {
+                        setState(() {
+                          _isDurationInMinutes = index == 0;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      selectedColor: Colors.white,
+                      fillColor: AppColors.primary,
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('min'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('sec'),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _restTimeController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Rest Time (seconds)',
-                labelStyle: TextStyle(color: Colors.white70),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white30),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _restTimeController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Rest Time',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                    ),
+                  ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ToggleButtons(
+                    isSelected: [_isDurationInMinutes, !_isDurationInMinutes],
+                    onPressed: (index) {
+                      setState(() {
+                        _isDurationInMinutes = index == 0;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    selectedColor: Colors.white,
+                    fillColor: AppColors.primary,
+                    children: const [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('min'),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('sec'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
             const SizedBox(height: 24),
             Row(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym/Shared/ui/custom_snackbar.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
 import 'package:gym/features/workouts/cubits/workouts_state.dart';
@@ -32,6 +33,8 @@ class _SetsScreenState extends State<SetsScreen> {
     _repsController.clear();
     _weightController.clear();
     _restTimeController.clear();
+    bool isDurationInMinutes = true;
+    bool isWeightInKg = true;
 
     showGeneralDialog(
       context: context,
@@ -82,43 +85,121 @@ class _SetsScreenState extends State<SetsScreen> {
                         autofocus: true,
                       ),
                       const SizedBox(height: 16),
-                      TextField(
-                        controller: _weightController,
-                        decoration: InputDecoration(
-                          labelText: 'Weight (kg)',
-                          labelStyle: const TextStyle(color: Colors.white70),
-                          hintText: 'e.g., 60.5',
-                          filled: true,
-                          fillColor: AppColors.background,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _weightController,
+                              decoration: InputDecoration(
+                                labelText: 'Weight',
+                                labelStyle:
+                                    const TextStyle(color: Colors.white70),
+                                hintText: 'e.g., 60.5',
+                                filled: true,
+                                fillColor: AppColors.background,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(Icons.fitness_center,
+                                    color: Colors.white70),
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           ),
-                          prefixIcon: const Icon(Icons.fitness_center,
-                              color: Colors.white70),
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        style: const TextStyle(color: Colors.white),
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ToggleButtons(
+                              isSelected: [isWeightInKg, !isWeightInKg],
+                              onPressed: (index) {
+                                setState(() {
+                                  isWeightInKg = index == 0;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              selectedColor: Colors.white,
+                              fillColor: AppColors.primary,
+                              children: const [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text('kg'),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text('lbs'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
-                      TextField(
-                        controller: _restTimeController,
-                        decoration: InputDecoration(
-                          hintText: 'e.g., 60',
-                          filled: true,
-                          fillColor: AppColors.background,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _restTimeController,
+                              decoration: InputDecoration(
+                                labelText: 'Rest Time',
+                                labelStyle:
+                                    const TextStyle(color: Colors.white70),
+                                hintText: isDurationInMinutes
+                                    ? 'e.g., 2'
+                                    : 'e.g., 120',
+                                filled: true,
+                                fillColor: AppColors.background,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(Icons.timer,
+                                    color: Colors.white70),
+                              ),
+                              keyboardType: TextInputType.number,
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           ),
-                          prefixIcon:
-                              const Icon(Icons.timer, color: Colors.white70),
-                        ),
-                        keyboardType: TextInputType.number,
-                        style: const TextStyle(color: Colors.white),
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ToggleButtons(
+                              isSelected: [
+                                isDurationInMinutes,
+                                !isDurationInMinutes
+                              ],
+                              onPressed: (index) {
+                                setState(() {
+                                  isDurationInMinutes = index == 0;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              selectedColor: Colors.white,
+                              fillColor: AppColors.primary,
+                              children: const [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text('min'),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text('sec'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -136,11 +217,23 @@ class _SetsScreenState extends State<SetsScreen> {
                                   _weightController.text.isNotEmpty) {
                                 final reps =
                                     int.tryParse(_repsController.text) ?? 0;
-                                final weight =
+                                var weight =
                                     double.tryParse(_weightController.text) ??
                                         0.0;
-                                final restTime =
+
+                                // Convert weight if needed
+                                if (!isWeightInKg) {
+                                  weight =
+                                      weight * 0.453592; // Convert lbs to kg
+                                }
+
+                                var restTime =
                                     int.tryParse(_restTimeController.text);
+                                // Convert rest time if needed
+                                if (restTime != null && isDurationInMinutes) {
+                                  restTime = restTime *
+                                      60; // Convert minutes to seconds
+                                }
 
                                 if (reps > 0 && weight > 0) {
                                   context
@@ -379,32 +472,28 @@ class _SetsScreenState extends State<SetsScreen> {
         ),
       ),
       body: BlocConsumer<WorkoutsCubit, WorkoutsState>(
+        listenWhen: (previous, current) =>
+            (current.status == WorkoutsStatus.addingSet &&
+                previous.status != WorkoutsStatus.addingSet) ||
+            (current.status == WorkoutsStatus.deletingSet &&
+                previous.status != WorkoutsStatus.deletingSet) ||
+            (current.status == WorkoutsStatus.error &&
+                (previous.status == WorkoutsStatus.addingSet ||
+                    previous.status == WorkoutsStatus.deletingSet)),
+        buildWhen: (previous, current) =>
+            current.status == WorkoutsStatus.success ||
+            current.status == WorkoutsStatus.addingSet ||
+            current.status == WorkoutsStatus.deletingSet,
         listener: (context, state) {
           if (state.status == WorkoutsStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text(state.errorMessage ?? 'An error occurred')),
-            );
+            CustomSnackbar.show(
+                context, state.errorMessage ?? 'An error occurred',
+                isError: true);
           }
         },
         builder: (context, state) {
           if (state.status == WorkoutsStatus.loading && state.sets.isEmpty) {
             return const LoadingIndicator();
-          }
-
-          if (state.status == WorkoutsStatus.error && state.sets.isEmpty) {
-            return ErrorMessage(
-              message: state.errorMessage ?? 'Failed to load sets',
-              onRetry: () {
-                if (state.currentWorkout != null &&
-                    state.currentExercise != null) {
-                  context.read<WorkoutsCubit>().loadSetsForExercise(
-                        state.currentWorkout!.id,
-                        state.currentExercise!.id,
-                      );
-                }
-              },
-            );
           }
 
           if (state.sets.isEmpty) {

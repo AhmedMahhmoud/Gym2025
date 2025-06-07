@@ -155,7 +155,6 @@ class StaticWorkoutsData {
       id: newId,
       workoutId: workoutId,
       exerciseId: exerciseId,
-      reps: reps,
       duration: duration,
       weight: weight,
       restTime: restTime,

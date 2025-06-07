@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:gym/core/constants/constants.dart';
@@ -43,6 +45,7 @@ class DioService {
         onRequest: (options, handler) async {
           final token = await _tokenManager.getToken();
           if (token != null) {
+            log(token);
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);

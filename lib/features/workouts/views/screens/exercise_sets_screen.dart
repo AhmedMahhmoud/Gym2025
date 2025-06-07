@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym/Shared/ui/custom_snackbar.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
 import 'package:gym/features/workouts/cubits/workouts_state.dart';
@@ -80,31 +81,14 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
       body: BlocConsumer<WorkoutsCubit, WorkoutsState>(
         listener: (context, state) {
           if (state.status == WorkoutsStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage ?? 'An error occurred'),
-              ),
-            );
+            CustomSnackbar.show(
+                context, state.errorMessage ?? 'An error occurred',
+                isError: true);
           }
         },
         builder: (context, state) {
           if (state.status == WorkoutsStatus.loading && state.sets.isEmpty) {
             return const LoadingIndicator();
-          }
-
-          if (state.status == WorkoutsStatus.error && state.sets.isEmpty) {
-            return ErrorMessage(
-              message: state.errorMessage ?? 'Failed to load sets',
-              onRetry: () {
-                if (state.currentWorkout != null &&
-                    state.currentExercise != null) {
-                  _workoutsCubit.loadSetsForExercise(
-                    state.currentWorkout!.id,
-                    state.currentExercise!.id,
-                  );
-                }
-              },
-            );
           }
 
           if (state.sets.isEmpty) {

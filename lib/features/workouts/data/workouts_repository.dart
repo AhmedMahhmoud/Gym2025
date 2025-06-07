@@ -7,6 +7,7 @@ import 'package:gym/features/workouts/data/models/set_model.dart';
 import 'package:gym/features/workouts/data/static_data_provider.dart';
 import 'package:gym/features/exercises/data/models/exercises.dart';
 import 'package:gym/features/workouts/data/models/workout_model.dart';
+import 'package:dio/dio.dart';
 
 class WorkoutsRepository {
   final DioService _dioService;
@@ -99,32 +100,25 @@ class WorkoutsRepository {
 
   // Add set to exercise
   Future<Either<Failure, List<SetModel>>> addSetToExercise(
-    String workoutId,
-    String exerciseId,
+    String workoutExerciseId,
     Map<String, dynamic> setData,
   ) async {
     try {
-      // Create a new set with a unique ID
-      final newSet = SetModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        workoutId: workoutId,
-        exerciseId: exerciseId,
-        weight: setData['weight'] as double,
-        reps: setData['reps'] as int?,
-        duration: setData['duration'] as int?,
-        restTime: setData['restTime'] as int?,
+      final response = await _dioService.post(
+        '/api/Workouts/exercise/$workoutExerciseId/sets',
+        data: {
+          'weight': setData['weight'],
+          'repetitions': setData['repetitions'],
+          'duration': setData['duration'],
+        },
       );
 
-      // Get existing sets and add the new one
-      final existingSets =
-          StaticWorkoutsData.getSetsForExercise(workoutId, exerciseId);
-      final updatedSets = [...existingSets, newSet];
-
-      // Update the static data
-      StaticWorkoutsData.updateSetsForExercise(
-          workoutId, exerciseId, updatedSets);
-
-      return Right(updatedSets);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Parse the single set response
+        final set = SetModel.fromJson(response.data);
+        return Right([set]); // Return as a list with single item
+      }
+      return Left(BadRequestFailure(message: 'Failed to add set'));
     } catch (e) {
       return Left(BadRequestFailure(message: e.toString()));
     }
@@ -205,29 +199,6 @@ class WorkoutsRepository {
       final workout = WorkoutModel.fromJson(response.data);
       return Right(
           workout.workoutExercises.map((we) => we.exercise.toJson()).toList());
-    } catch (e) {
-      return Left(ErrorHandler.handle(e));
-    }
-  }
-
-  // Get sets for an exercise
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSetsForExercise(
-      String workoutId, String exerciseId) async {
-    if (useStaticData) {
-      try {
-        final sets =
-            StaticWorkoutsData.getSetsForExercise(workoutId, exerciseId);
-        return Right(sets.map((s) => s.toJson()).toList());
-      } catch (e) {
-        return Left(BadRequestFailure(message: 'Failed to get sets: $e'));
-      }
-    }
-
-    try {
-      final response = await _dioService
-          .get('/workouts/$workoutId/exercises/$exerciseId/sets');
-      return Right(
-          List<Map<String, dynamic>>.from(response.data['data'] ?? []));
     } catch (e) {
       return Left(ErrorHandler.handle(e));
     }
@@ -316,18 +287,26 @@ class WorkoutsRepository {
   }
 
   // Add multiple exercises to workout
-  Future<Either<Failure, void>> addExercisesToWorkout(
+  Future<Either<Failure, List<WorkoutExercise>>> addExercisesToWorkout(
     String workoutId,
     List<String> exerciseIds,
   ) async {
+    final response = await _dioService.post(
+      '/api/Workouts/$workoutId/exercises',
+      data: {'ExerciseId': exerciseIds, 'CustomExerciseId': []},
+    );
+    return Right(WorkoutExercise.parseWorkoutExercises(response.data,
+        workoutID: workoutId));
+  }
+
+  Future<Either<Failure, WorkoutModel>> getWorkout(String workoutId) async {
     try {
-      await _dioService.post(
-        '/api/Workouts/$workoutId/exercises',
-        data: {'exerciseId': exerciseIds, 'customExerciseId': []},
-      );
-      return const Right(null);
+      final response = await _dioService.get('/workouts/$workoutId');
+      return Right(WorkoutModel.fromJson(response.data));
+    } on DioException catch (e) {
+      return Left(ServerFailure(message: e.message ?? 'Failed to get workout'));
     } catch (e) {
-      return Left(ErrorHandler.handle(e));
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 }
