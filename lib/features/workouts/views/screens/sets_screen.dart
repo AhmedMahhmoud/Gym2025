@@ -272,7 +272,7 @@ class _SetsScreenState extends State<SetsScreen> {
   }
 
   void _showEditSetDialog(SetModel set) {
-    _repsController.text = set.reps?.toString() ?? '';
+    _repsController.text = set.repetitions?.toString() ?? '';
     _weightController.text = set.weight.toString();
     _restTimeController.text = set.restTime?.toString() ?? '';
 
@@ -435,9 +435,9 @@ class _SetsScreenState extends State<SetsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: Text(
+        content: const Text(
           'Are you sure you want to delete this set?',
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(

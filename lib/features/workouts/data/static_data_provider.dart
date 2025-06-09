@@ -142,24 +142,6 @@ class StaticWorkoutsData {
   // Helper method to create a new workout
 
   // Helper method to create a new set
-  static SetModel createSet({
-    required String workoutId,
-    required String exerciseId,
-    int? reps,
-    int? duration,
-    required double weight,
-    int? restTime,
-  }) {
-    final newId = 'set${DateTime.now().millisecondsSinceEpoch}';
-    return SetModel(
-      id: newId,
-      workoutId: workoutId,
-      exerciseId: exerciseId,
-      duration: duration,
-      weight: weight,
-      restTime: restTime,
-    );
-  }
 
   static void updateSetsForExercise(
       String workoutId, String exerciseId, List<SetModel> sets) {

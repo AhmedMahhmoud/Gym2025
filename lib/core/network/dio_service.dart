@@ -144,6 +144,26 @@ class DioService {
     }
   }
 
+  Future<Response> put(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      return await _dio.put(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<Response> multipart(
     String path, {
     required FormData formData,

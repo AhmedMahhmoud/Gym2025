@@ -5,6 +5,7 @@ import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
 import 'package:gym/features/workouts/cubits/workouts_state.dart';
 import 'package:gym/features/workouts/data/models/set_model.dart';
+import 'package:gym/features/workouts/data/units_service.dart';
 import 'package:gym/features/workouts/views/widgets/error_message.dart';
 import 'package:gym/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:gym/features/workouts/views/widgets/set_card.dart';
@@ -23,6 +24,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
   final _weightController = TextEditingController();
   final _restTimeController = TextEditingController();
   final _durationController = TextEditingController();
+  final _noteController = TextEditingController(); // Add this line
 
   late final WorkoutsCubit _workoutsCubit;
 
@@ -38,6 +40,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
     _weightController.dispose();
     _restTimeController.dispose();
     _durationController.dispose();
+    _noteController.dispose(); // Add this line
     super.dispose();
   }
 
@@ -50,18 +53,27 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
           required int? reps,
           required int? duration,
           int? restTime,
+          String? note,
+          String? timeUnitId,
+          String? weightUnitId,
         }) {
           if (reps != null) {
             _workoutsCubit.addSetToExercise(
               reps: reps,
               weight: weight,
               restTime: restTime,
+              note: note,
+              timeUnitId: timeUnitId,
+              weightUnitId: weightUnitId,
             );
           } else if (duration != null) {
             _workoutsCubit.addDurationSetToExercise(
               duration: duration,
               weight: weight,
               restTime: restTime,
+              note: note,
+              timeUnitId: timeUnitId,
+              weightUnitId: weightUnitId,
             );
           }
         },
@@ -150,9 +162,19 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
   }
 
   void _showEditSetDialog(SetModel set, WorkoutsCubit cubit) {
-    _repsController.text = set.reps?.toString() ?? '';
+    _repsController.text = set.repetitions?.toString() ?? '';
     _weightController.text = set.weight.toString();
     _restTimeController.text = set.restTime?.toString() ?? '';
+    _noteController.text = set.note ?? '';
+    _durationController.text =
+        set.duration?.toString() ?? ''; // Initialize duration controller
+
+    // Initialize unit selections based on set data
+    bool isWeightInKg = set.weightUnitId == null ||
+        UnitsService().getWeightUnitById(set.weightUnitId!)?.title == 'Kg';
+    bool isDurationInMinutes = set.timeUnitId != null &&
+        UnitsService().getTimeUnitById(set.timeUnitId!)?.title == 'Min';
+    bool isRepsBased = set.repetitions != null;
 
     showGeneralDialog(
       context: context,
@@ -184,10 +206,197 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      // Weight field with unit toggle
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _weightController,
+                              decoration: InputDecoration(
+                                hintText: 'e.g., 60.5',
+                                filled: true,
+                                fillColor: AppColors.background,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(Icons.fitness_center,
+                                    color: Colors.white70),
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ToggleButtons(
+                              isSelected: [isWeightInKg, !isWeightInKg],
+                              onPressed: (index) {
+                                setState(() {
+                                  isWeightInKg = index == 0;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              selectedColor: Colors.white,
+                              fillColor: AppColors.primary,
+                              children: const [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text('kg'),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text('lbs'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Reps field
+                      if (isRepsBased)
+                        TextField(
+                          controller: _repsController,
+                          decoration: InputDecoration(
+                            hintText: 'e.g., 12',
+                            filled: true,
+                            fillColor: AppColors.background,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            prefixIcon:
+                                const Icon(Icons.repeat, color: Colors.white70),
+                          ),
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(color: Colors.white),
+                          autofocus: true,
+                        ),
+                      // Duration field for duration-based sets
+                      if (!isRepsBased)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _durationController,
+                                decoration: InputDecoration(
+                                  hintText: 'e.g., 60',
+                                  filled: true,
+                                  fillColor: AppColors.background,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  prefixIcon: const Icon(Icons.timer_outlined,
+                                      color: Colors.white70),
+                                ),
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.background,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ToggleButtons(
+                                isSelected: [
+                                  isDurationInMinutes,
+                                  !isDurationInMinutes
+                                ],
+                                onPressed: (index) {
+                                  setState(() {
+                                    isDurationInMinutes = index == 0;
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                selectedColor: Colors.white,
+                                fillColor: AppColors.primary,
+                                children: const [
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 12),
+                                    child: Text('min'),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 12),
+                                    child: Text('sec'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 16),
+                      // Rest time field with unit toggle
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _restTimeController,
+                              decoration: InputDecoration(
+                                hintText: 'e.g., 60',
+                                filled: true,
+                                fillColor: AppColors.background,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(Icons.timer,
+                                    color: Colors.white70),
+                              ),
+                              keyboardType: TextInputType.number,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ToggleButtons(
+                              isSelected: [
+                                isDurationInMinutes,
+                                !isDurationInMinutes
+                              ],
+                              onPressed: (index) {
+                                setState(() {
+                                  isDurationInMinutes = index == 0;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              selectedColor: Colors.white,
+                              fillColor: AppColors.primary,
+                              children: const [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text('min'),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text('sec'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Note field
                       TextField(
-                        controller: _repsController,
+                        controller: _noteController,
                         decoration: InputDecoration(
-                          hintText: 'e.g., 12',
+                          hintText: 'Add a note (optional)',
                           filled: true,
                           fillColor: AppColors.background,
                           border: OutlineInputBorder(
@@ -195,46 +404,10 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                             borderSide: BorderSide.none,
                           ),
                           prefixIcon:
-                              const Icon(Icons.repeat, color: Colors.white70),
+                              const Icon(Icons.note, color: Colors.white70),
                         ),
-                        keyboardType: TextInputType.number,
                         style: const TextStyle(color: Colors.white),
-                        autofocus: true,
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _weightController,
-                        decoration: InputDecoration(
-                          hintText: 'e.g., 60.5',
-                          filled: true,
-                          fillColor: AppColors.background,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(Icons.fitness_center,
-                              color: Colors.white70),
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _restTimeController,
-                        decoration: InputDecoration(
-                          hintText: 'e.g., 60',
-                          filled: true,
-                          fillColor: AppColors.background,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          prefixIcon:
-                              const Icon(Icons.timer, color: Colors.white70),
-                        ),
-                        keyboardType: TextInputType.number,
-                        style: const TextStyle(color: Colors.white),
+                        maxLines: 2,
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -250,23 +423,55 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                           const SizedBox(width: 16),
                           ElevatedButton(
                             onPressed: () {
-                              if (_repsController.text.isNotEmpty &&
-                                  _weightController.text.isNotEmpty) {
-                                final reps =
-                                    int.tryParse(_repsController.text) ?? 0;
+                              if (_weightController.text.isNotEmpty) {
+                                final reps = isRepsBased
+                                    ? int.tryParse(_repsController.text) ?? 0
+                                    : null;
                                 final weight =
                                     double.tryParse(_weightController.text) ??
                                         0.0;
                                 final restTime =
                                     int.tryParse(_restTimeController.text);
 
-                                if (reps > 0 && weight > 0) {
+                                // Parse duration for duration-based sets
+                                final duration = !isRepsBased
+                                    ? int.tryParse(_durationController.text) ??
+                                        0
+                                    : null;
+
+                                // Get unit IDs based on selection without conversion
+                                final weightUnitId = isWeightInKg
+                                    ? UnitsService().getDefaultWeightUnit()?.id
+                                    : UnitsService()
+                                        .weightUnits
+                                        .where((unit) => unit.title == 'Lbs')
+                                        .firstOrNull
+                                        ?.id;
+
+                                final timeUnitId = isDurationInMinutes
+                                    ? UnitsService()
+                                        .timeUnits
+                                        .where((unit) => unit.title == 'Min')
+                                        .firstOrNull
+                                        ?.id
+                                    : UnitsService().getDefaultTimeUnit()?.id;
+
+                                final note = _noteController.text.trim();
+
+                                if ((isRepsBased && reps != null && reps > 0) ||
+                                    (!isRepsBased &&
+                                        duration != null &&
+                                        duration > 0)) {
                                   cubit.editSet(
                                     setId: set.id,
                                     reps: reps,
                                     weight: weight,
-                                    duration: null,
+                                    duration:
+                                        duration, // Pass the duration value
                                     restTime: restTime,
+                                    note: note.isNotEmpty ? note : null,
+                                    timeUnitId: timeUnitId,
+                                    weightUnitId: weightUnitId,
                                   );
                                   Navigator.pop(context);
                                 }

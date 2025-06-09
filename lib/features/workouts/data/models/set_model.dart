@@ -1,43 +1,74 @@
-class SetModel {
+abstract class IWorkoutSet {
+  String get id;
+  double get weight;
+  int? get repetitions;
+  int? get duration;
+  int? get restTime;
+  String get workoutExerciseId;
+  String? get note;
+  String? get timeUnitId;
+  String? get weightUnitId;
+  Map<String, dynamic> toJson();
+}
+
+class SetModel implements IWorkoutSet {
+  @override
   final String id;
-  final String workoutId;
-  final String exerciseId;
+  @override
   final double weight;
-  final int? reps;
+  @override
+  final int? repetitions;
+  @override
   final int? duration;
+  @override
   final int? restTime;
+  @override
+  final String workoutExerciseId;
+  @override
+  final String? note;
+  @override
+  final String? timeUnitId;
+  @override
+  final String? weightUnitId;
 
   SetModel({
     required this.id,
-    required this.workoutId,
-    required this.exerciseId,
     required this.weight,
-    this.reps,
+    this.repetitions,
     this.duration,
     this.restTime,
+    required this.workoutExerciseId,
+    this.note,
+    this.timeUnitId,
+    this.weightUnitId,
   });
 
   factory SetModel.fromJson(Map<String, dynamic> json) {
     return SetModel(
-      id: json['id'],
-      workoutId: json['workoutId'] ?? '',
-      exerciseId: json['exerciseId'] ?? '',
+      id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       weight: json['weight'].toDouble(),
-      reps: json['repetitions'],
+      repetitions: json['repetitions'],
       duration: json['duration'],
       restTime: json['restTime'],
+      workoutExerciseId: json['workoutExerciseId'] ?? '',
+      note: json['note'],
+      timeUnitId: json['timeUnitId'],
+      weightUnitId: json['weightUnitId'],
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'workoutId': workoutId,
-      'exerciseId': exerciseId,
       'weight': weight,
-      'repetitions': reps,
+      'repetitions': repetitions,
       'duration': duration,
       'restTime': restTime,
+      'workoutExerciseId': workoutExerciseId,
+      if (note != null) 'note': note,
+      if (timeUnitId != null) 'timeUnitId': timeUnitId,
+      if (weightUnitId != null) 'weightUnitId': weightUnitId,
     };
   }
 }

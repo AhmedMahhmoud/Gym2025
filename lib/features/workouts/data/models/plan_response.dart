@@ -5,7 +5,7 @@ class PlanResponse {
   final String userId;
   final String title;
   final String? notes;
-  final List<dynamic> workouts;
+  final List<WorkoutModel> workouts;
 
   PlanResponse({
     required this.id,
@@ -15,13 +15,32 @@ class PlanResponse {
     required this.workouts,
   });
 
+  PlanResponse copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? notes,
+    List<WorkoutModel>? workouts,
+  }) {
+    return PlanResponse(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      notes: notes ?? this.notes,
+      workouts: workouts ?? this.workouts,
+    );
+  }
+
   factory PlanResponse.fromJson(Map<String, dynamic> json) {
     return PlanResponse(
       id: json['id'],
       userId: json['userId'],
       title: json['title'],
       notes: json['notes'],
-      workouts: json['workouts'] ?? [],
+      workouts: (json['workouts'] as List<dynamic>?)
+              ?.map((e) => WorkoutModel.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 
@@ -31,7 +50,7 @@ class PlanResponse {
       'userId': userId,
       'title': title,
       'notes': notes,
-      'workouts': workouts,
+      'workouts': workouts.map((e) => e.toJson()).toList(),
     };
   }
 

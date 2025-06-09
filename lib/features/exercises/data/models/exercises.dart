@@ -1,12 +1,16 @@
 class Exercise {
-  factory Exercise.fromJson(Map<String, dynamic> json) => Exercise(
+  factory Exercise.fromJson(Map<String, dynamic> json,
+          {String? workoutExerciseID}) =>
+      Exercise(
         id: json['id'] ?? '',
+        workoutExerciseID: workoutExerciseID,
         name: json['title'] ?? json['name'] ?? '',
         description: json['description'] ?? '',
         videoUrl: json['videoUrl'] ?? '',
         primaryMuscle: json['primaryMuscle'] ?? json['muscleGroup'] ?? '',
         category: json['category'] ?? '',
-        weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
+        weight:
+            json['weight'] != null ? (json['weight'] as num).toDouble() : null,
         repetitions: json['repetitions'] as int?,
         imageUrl: json['imageUrl'] ?? '',
         workoutId: json['workoutId'] ?? '',
@@ -35,27 +39,28 @@ class Exercise {
       description: 'Loading...',
       videoUrl: '', // Avoid loading actual images
       primaryMuscle: '',
-      category: '', 
+      category: '',
       id: '',
     );
   }
 
-  Exercise({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.videoUrl,
-    required this.primaryMuscle,
-    required this.category,
-    this.weight,
-    this.repetitions,
-    this.imageUrl,
-    this.workoutId = '',
-  });
+  Exercise(
+      {required this.id,
+      required this.name,
+      required this.description,
+      required this.videoUrl,
+      required this.primaryMuscle,
+      required this.category,
+      this.weight,
+      this.repetitions,
+      this.imageUrl,
+      this.workoutId = '',
+      this.workoutExerciseID});
 
   final String id;
   final String name;
   final String description;
+  final String? workoutExerciseID;
   final String videoUrl;
   final String primaryMuscle;
   final String category;

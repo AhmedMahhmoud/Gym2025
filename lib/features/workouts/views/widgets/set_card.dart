@@ -72,25 +72,31 @@ class SetCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          set.reps != null
-                              ? '${set.reps} reps'
-                              : set.duration != null
-                                  ? '${set.duration} sec'
-                                  : 'Set',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
+                        Builder(
+                          builder: (context) {
+                            bool isSec = set.timeUnitId ==
+                                "841dce21-5995-4078-801c-59cfc1b070b9";
+                            return Text(
+                              set.repetitions != null
+                                  ? '${set.repetitions} reps'
+                                  : set.duration != null
+                                      ? '${set.duration} ${isSec == true ? 'sec' : 'Min'}'
+                                      : 'Set',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(width: 8),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${set.weight} kg',
+                      '${set.weight} ${set.weightUnitId == "d82a14a4-6e4f-4987-8284-93eb3be1102b" ? "KG" : "Lbl"}',
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.white70,
@@ -113,6 +119,32 @@ class SetCard extends StatelessWidget {
                               fontSize: 14,
                               color: Colors.white54,
                               fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    // Add note display
+                    if (set.note != null && set.note!.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.note_outlined,
+                            size: 16,
+                            color: Colors.white54,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Note: ${set.note}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white54,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
                             ),
                           ),
                         ],

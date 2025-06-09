@@ -31,7 +31,7 @@ class WorkoutsState extends Equatable {
   final List<PlanResponse> plans;
   final List<WorkoutModel> workouts;
   final List<Exercise> exercises;
-  final List<Exercise> selectedExercises;
+  final List<Exercise?> selectedExercises;
   final List<SetModel> sets;
   final PlanResponse? currentPlan;
   final WorkoutModel? currentWorkout;
@@ -58,7 +58,7 @@ class WorkoutsState extends Equatable {
     List<PlanResponse>? plans,
     List<WorkoutModel>? workouts,
     List<Exercise>? exercises,
-    List<Exercise>? selectedExercises,
+    List<Exercise?>? selectedExercises,
     List<SetModel>? sets,
     PlanResponse? currentPlan,
     WorkoutModel? currentWorkout,

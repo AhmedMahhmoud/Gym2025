@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/Shared/ui/custom_snackbar.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/core/widgets/dialogs/input_dialog_container.dart';
+import 'package:gym/features/workouts/data/units_service.dart';
 
 class AddSetDialog extends StatefulWidget {
   final Function({
@@ -9,6 +11,9 @@ class AddSetDialog extends StatefulWidget {
     required int? reps,
     required int? duration,
     int? restTime,
+    String? note,
+    String? timeUnitId,
+    String? weightUnitId,
   }) onAdd;
 
   const AddSetDialog({
@@ -25,9 +30,13 @@ class _AddSetDialogState extends State<AddSetDialog> {
   final _weightController = TextEditingController();
   final _restTimeController = TextEditingController();
   final _durationController = TextEditingController();
+  final _noteController = TextEditingController();
   bool _isRepsBased = true;
   bool _isWeightInKg = true;
   bool _isDurationInMinutes = true;
+
+  // Units service
+  final _unitsService = UnitsService();
 
   @override
   void dispose() {
@@ -35,6 +44,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
     _weightController.dispose();
     _restTimeController.dispose();
     _durationController.dispose();
+    _noteController.dispose();
     super.dispose();
   }
 
@@ -43,6 +53,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
     final reps = int.tryParse(_repsController.text);
     final duration = int.tryParse(_durationController.text);
     final restTime = int.tryParse(_restTimeController.text);
+    final note = _noteController.text.trim();
 
     if (weight == null || weight <= 0) {
       CustomSnackbar.show(context, 'Please enter a valid weight',
@@ -50,17 +61,21 @@ class _AddSetDialogState extends State<AddSetDialog> {
       return;
     }
 
-    // Convert weight if needed
-    var finalWeight = weight;
-    if (!_isWeightInKg) {
-      finalWeight = weight * 0.453592; // Convert lbs to kg
-    }
+    // 5. Finally, let's update the `AddSetDialog` to not convert units
+    // Get unit IDs based on selection without conversion
+    final weightUnitId = _isWeightInKg
+        ? _unitsService.getDefaultWeightUnit()?.id
+        : _unitsService.weightUnits
+            .where((unit) => unit.title == 'Lbs')
+            .firstOrNull
+            ?.id;
 
-    // Convert rest time if needed
-    var finalRestTime = restTime;
-    if (finalRestTime != null && _isDurationInMinutes) {
-      finalRestTime = finalRestTime * 60; // Convert minutes to seconds
-    }
+    final timeUnitId = _isDurationInMinutes
+        ? _unitsService.timeUnits
+            .where((unit) => unit.title == 'Min')
+            .firstOrNull
+            ?.id
+        : _unitsService.getDefaultTimeUnit()?.id;
 
     if (_isRepsBased) {
       if (reps == null || reps <= 0) {
@@ -69,10 +84,13 @@ class _AddSetDialogState extends State<AddSetDialog> {
         return;
       }
       widget.onAdd(
-        weight: finalWeight,
+        weight: weight, // Use weight as is without conversion
         reps: reps,
         duration: null,
-        restTime: finalRestTime,
+        restTime: restTime, // Use restTime as is without conversion
+        note: note.isNotEmpty ? note : null,
+        timeUnitId: timeUnitId,
+        weightUnitId: weightUnitId,
       );
     } else {
       if (duration == null || duration <= 0) {
@@ -80,16 +98,14 @@ class _AddSetDialogState extends State<AddSetDialog> {
             isError: true);
         return;
       }
-      // Convert duration if needed
-      var finalDuration = duration;
-      if (_isDurationInMinutes) {
-        finalDuration = duration * 60; // Convert minutes to seconds
-      }
       widget.onAdd(
-        weight: finalWeight,
+        weight: weight, // Use weight as is without conversion
         reps: null,
-        duration: finalDuration,
-        restTime: finalRestTime,
+        duration: duration, // Use duration as is without conversion
+        restTime: restTime, // Use restTime as is without conversion
+        note: note.isNotEmpty ? note : null,
+        timeUnitId: timeUnitId,
+        weightUnitId: weightUnitId,
       );
     }
 
@@ -152,13 +168,13 @@ class _AddSetDialogState extends State<AddSetDialog> {
                     controller: _weightController,
                     keyboardType: TextInputType.number,
                     style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Weight',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: const OutlineInputBorder(
+                      labelStyle: TextStyle(color: Colors.white70),
+                      enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white30),
                       ),
-                      focusedBorder: const OutlineInputBorder(
+                      focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white),
                       ),
                     ),
@@ -220,13 +236,13 @@ class _AddSetDialogState extends State<AddSetDialog> {
                       controller: _durationController,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Duration',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        enabledBorder: const OutlineInputBorder(
+                        labelStyle: TextStyle(color: Colors.white70),
+                        enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white30),
                         ),
-                        focusedBorder: const OutlineInputBorder(
+                        focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                         ),
                       ),
@@ -270,13 +286,13 @@ class _AddSetDialogState extends State<AddSetDialog> {
                     controller: _restTimeController,
                     keyboardType: TextInputType.number,
                     style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Rest Time',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: const OutlineInputBorder(
+                      labelStyle: TextStyle(color: Colors.white70),
+                      enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white30),
                       ),
-                      focusedBorder: const OutlineInputBorder(
+                      focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white),
                       ),
                     ),
@@ -311,6 +327,24 @@ class _AddSetDialogState extends State<AddSetDialog> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            // Note field
+            TextField(
+              controller: _noteController,
+              keyboardType: TextInputType.text,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Note (optional)',
+                labelStyle: TextStyle(color: Colors.white70),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white30),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
+              maxLines: 2,
             ),
             const SizedBox(height: 24),
             Row(

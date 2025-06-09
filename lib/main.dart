@@ -14,8 +14,14 @@ import 'package:gym/features/onboarding/screens/onboarding_screen.dart';
 import 'package:gym/shared/widgets/main_scaffold.dart';
 import 'core/theme/app_theme.dart';
 import 'package:gym/routes/app_routes.dart';
+import 'package:gym/features/workouts/data/units_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize units service
+  await UnitsService().initialize();
+
   runApp(const MyApp());
 }
 

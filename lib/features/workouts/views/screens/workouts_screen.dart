@@ -20,6 +20,7 @@ class WorkoutsScreen extends StatefulWidget {
 
 class _WorkoutsScreenState extends State<WorkoutsScreen> {
   final _titleController = TextEditingController();
+  final _notesController = TextEditingController(); // Add notes controller
   bool _isAddingWorkout = false;
   final Map<String, bool> _isDeleting = {};
   late WorkoutsCubit _workoutsCubit;
@@ -29,13 +30,14 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
     super.initState();
     _workoutsCubit = context.read<WorkoutsCubit>();
     if (_workoutsCubit.state.workouts.isEmpty) {
-      _workoutsCubit.loadWorkouts();
+      // _workoutsCubit.loadWorkouts();
     }
   }
 
   @override
   void dispose() {
     _titleController.dispose();
+    _notesController.dispose(); // Dispose notes controller
     super.dispose();
   }
 
@@ -58,8 +60,16 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         _isAddingWorkout = true;
       });
 
-      _workoutsCubit.createWorkout(_titleController.text).then((newWorkout) {
+      _workoutsCubit
+          .createWorkout(
+        _titleController.text,
+        notes: _notesController.text.isNotEmpty
+            ? _notesController.text
+            : null, // Pass notes
+      )
+          .then((newWorkout) {
         _titleController.clear();
+        _notesController.clear(); // Clear notes
         setState(() {
           _isAddingWorkout = false;
         });
@@ -181,10 +191,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
               (current.status == WorkoutsStatus.error &&
                   (previous.status == WorkoutsStatus.creatingWorkout ||
                       previous.status == WorkoutsStatus.deletingWorkout)),
-          buildWhen: (previous, current) =>
-              current.status == WorkoutsStatus.success ||
-              current.status == WorkoutsStatus.creatingWorkout ||
-              current.status == WorkoutsStatus.deletingWorkout,
           listener: (context, state) {
             if (state.status == WorkoutsStatus.error) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -196,10 +202,25 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
             }
           },
           builder: (context, state) {
-            if (state.status == WorkoutsStatus.loading &&
-                state.workouts.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(),
+            if (state.status == WorkoutsStatus.loading ||
+                state.status == WorkoutsStatus.loadingWorkouts) {
+              return SizedBox(
+                height: MediaQuery.sizeOf(context).height / 1.5,
+                child: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Loading workouts ...',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
 
@@ -215,7 +236,8 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => _workoutsCubit.loadWorkouts(),
+                      onPressed: () => _workoutsCubit.loadWorkoutsForPlan(
+                          _workoutsCubit.state.currentPlan!.id),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -263,77 +285,130 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                 FocusScope.of(context).unfocus(),
                             autofocus: true,
                           ),
-                          const SizedBox(height: 20),
-                          if (state.status == WorkoutsStatus.loading)
-                            Container(
-                              width: double.infinity,
-                              height: 4,
-                              margin: const EdgeInsets.only(bottom: 20),
-                              child: const LinearProgressIndicator(
-                                backgroundColor: AppColors.primary,
+                          const SizedBox(height: 16),
+                          // Add notes field
+                          TextField(
+                            controller: _notesController,
+                            decoration: InputDecoration(
+                              labelText: 'Notes (Optional)',
+                              floatingLabelStyle: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                                color: Colors.white,
                               ),
-                            )
-                          else
-                            ElasticIn(
-                              duration: const Duration(milliseconds: 800),
-                              child: ElevatedButton(
-                                onPressed: _createWorkout,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 40,
-                                    vertical: 15,
-                                  ),
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ).copyWith(
-                                  backgroundColor: MaterialStateProperty.all(
-                                    Colors.transparent,
-                                  ),
-                                  overlayColor: MaterialStateProperty.all(
-                                    Colors.white.withOpacity(0.1),
-                                  ),
-                                ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Theme.of(context).primaryColor,
-                                        Theme.of(context)
-                                            .primaryColor
-                                            .withOpacity(0.7),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(30),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Theme.of(context)
-                                            .primaryColor
-                                            .withOpacity(0.5),
-                                        blurRadius: 10,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 30,
-                                    vertical: 15,
-                                  ),
-                                  child: const Text(
-                                    'Create Workout',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
+                              hintText: 'e.g., Focus on chest and triceps',
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.1),
+                              labelStyle: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                              hintStyle: const TextStyle(color: Colors.white38),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 15,
                               ),
                             ),
+                            style: const TextStyle(color: Colors.white),
+                            onTapOutside: (event) =>
+                                FocusScope.of(context).unfocus(),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              // Add cancel button
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isAddingWorkout = false;
+                                    _titleController.clear();
+                                    _notesController.clear();
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white70,
+                                ),
+                                child: const Text('Cancel'),
+                              ),
+                              const SizedBox(width: 16),
+                              if (state.status == WorkoutsStatus.loading)
+                                Container(
+                                  width: double.infinity,
+                                  height: 4,
+                                  margin: const EdgeInsets.only(bottom: 20),
+                                  child: const LinearProgressIndicator(
+                                    backgroundColor: AppColors.primary,
+                                  ),
+                                )
+                              else
+                                ElasticIn(
+                                  duration: const Duration(milliseconds: 800),
+                                  child: ElevatedButton(
+                                    onPressed: _createWorkout,
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 40,
+                                        vertical: 15,
+                                      ),
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ).copyWith(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                        Colors.transparent,
+                                      ),
+                                      overlayColor: MaterialStateProperty.all(
+                                        Colors.white.withOpacity(0.1),
+                                      ),
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Theme.of(context).primaryColor,
+                                            Theme.of(context)
+                                                .primaryColor
+                                                .withOpacity(0.7),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(30),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Theme.of(context)
+                                                .primaryColor
+                                                .withOpacity(0.5),
+                                            blurRadius: 10,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                        vertical: 15,
+                                      ),
+                                      child: const Text(
+                                        'Create Workout',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -455,7 +530,11 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           },
         ),
       ),
-      floatingActionButton: _workoutsCubit.state.workouts.isNotEmpty
+      floatingActionButton: context
+              .watch<WorkoutsCubit>()
+              .state
+              .workouts
+              .isNotEmpty
           ? Padding(
               padding: const EdgeInsets.only(bottom: 100),
               child: FloatingActionButton(

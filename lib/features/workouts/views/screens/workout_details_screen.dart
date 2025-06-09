@@ -14,6 +14,7 @@ import 'package:gym/features/workouts/views/widgets/animated_widgets.dart';
 import 'package:gym/features/workouts/views/widgets/error_message.dart';
 import 'package:gym/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:gym/features/exercises/data/models/exercises.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class WorkoutDetailsScreen extends StatefulWidget {
   const WorkoutDetailsScreen({Key? key}) : super(key: key);
@@ -30,6 +31,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
   void initState() {
     super.initState();
     _workoutsCubit = context.read<WorkoutsCubit>();
+    _workoutsCubit.loadExercisesForWorkout();
   }
 
   void _navigateToExerciseSets(Exercise exercise) {
@@ -114,10 +116,13 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
     });
 
     // Remove the exercise from the list
+    _workoutsCubit.deleteWorkoutExercise(exercise.workoutExerciseID!);
     final updatedExercises =
         List<Exercise>.from(_workoutsCubit.state.selectedExercises)
           ..removeWhere((e) => e.id == exercise.id);
-
+    _workoutsCubit.state.currentWorkout?.workoutExercises.removeWhere(
+      (element) => element.customExerciseId == exercise.id,
+    );
     // Update the state
     _workoutsCubit.updateExercisesOrder(updatedExercises);
 
@@ -163,8 +168,6 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                 'WorkoutDetailsScreen - Current workout: ${state.currentWorkout?.title}');
             print(
                 'WorkoutDetailsScreen - Selected exercises count: ${state.selectedExercises.length}');
-            print(
-                'WorkoutDetailsScreen - First exercise: ${state.selectedExercises.isNotEmpty ? state.selectedExercises.first.name : 'No exercises'}');
 
             if (state.status == WorkoutsStatus.loading &&
                 state.selectedExercises.isEmpty) {
@@ -176,8 +179,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
               return ErrorMessage(
                 message: state.errorMessage ?? 'Failed to load exercises',
                 onRetry: () => state.currentWorkout != null
-                    ? _workoutsCubit
-                        .loadExercisesForWorkout(state.currentWorkout!.id)
+                    ? _workoutsCubit.loadExercisesForWorkout()
                     : null,
               );
             }
@@ -212,7 +214,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
               itemCount: state.selectedExercises.length,
               itemBuilder: (context, index) {
                 final exercise = state.selectedExercises[index];
-                final isDeleting = _isDeleting[exercise.id] ?? false;
+                final isDeleting = _isDeleting[exercise?.id] ?? false;
                 return AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   switchOutCurve: Curves.easeOut,
@@ -231,8 +233,10 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                     );
                   },
                   child: isDeleting
-                      ? Container(key: ValueKey('${exercise.id}_deleting'))
-                      : _buildExerciseCard(exercise, index),
+                      ? Container(key: ValueKey('${exercise?.id}_deleting'))
+                      : Skeletonizer(
+                          enabled: state.status == WorkoutsStatus.loading,
+                          child: _buildExerciseCard(exercise!, index)),
                 );
               },
             );
@@ -283,14 +287,12 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
               color: Colors.white,
             ),
           ),
-          subtitle: exercise.primaryMuscle != null
-              ? Text(
-                  exercise.primaryMuscle!,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                  ),
-                )
-              : null,
+          subtitle: Text(
+            exercise.primaryMuscle!,
+            style: const TextStyle(
+              color: Colors.white70,
+            ),
+          ),
           trailing: const Icon(
             Icons.chevron_right,
             color: Colors.white70,
