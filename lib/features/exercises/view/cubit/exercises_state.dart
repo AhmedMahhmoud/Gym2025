@@ -12,65 +12,94 @@ class ExercisesState {
   const ExercisesState({
     this.status = ExerciseStatus.initial,
     this.allExercises = const [],
-    this.errorMessage,
+    this.customExercises = const [],
     this.groupedByMuscle = const {},
     this.groupedByCategory = const {},
-    this.searchQuery = '',
     this.selectedFilterType = FilterType.none,
     this.selectedChip,
+    this.searchQuery = '',
+    this.errorMessage,
   });
+
   final ExerciseStatus status;
   final List<Exercise> allExercises;
-  final String? errorMessage;
+  final List<Exercise> customExercises;
   final Map<String, List<Exercise>> groupedByMuscle;
   final Map<String, List<Exercise>> groupedByCategory;
-  final String searchQuery;
-  final String? selectedChip;
   final FilterType selectedFilterType;
-  ExercisesState copyWith({
-    ExerciseStatus? status,
-    List<Exercise>? allExercises,
-    Map<String, List<Exercise>>? groupedByMuscle,
-    Map<String, List<Exercise>>? groupedByCategory,
-    String? errorMessage,
-    String? searchQuery,
-    FilterType? selectedFilterType,
-    String? selectedChip,
-  }) {
-    return ExercisesState(
-      status: status ?? this.status,
-      allExercises: allExercises ?? this.allExercises,
-      groupedByMuscle: groupedByMuscle ?? this.groupedByMuscle,
-      groupedByCategory: groupedByCategory ?? this.groupedByCategory,
-      errorMessage: errorMessage ?? this.errorMessage,
-      searchQuery: searchQuery ?? this.searchQuery,
-      selectedFilterType: selectedFilterType ?? this.selectedFilterType,
-      selectedChip: selectedChip ?? selectedChip,
-    );
-  }
+  final String? selectedChip;
+  final String searchQuery;
+  final String? errorMessage;
 
   List<Exercise> get filteredExercises {
-    List<Exercise> baseList = allExercises;
+    var exercises = allExercises;
 
-    // Filter by chip and type
-    if (selectedFilterType == FilterType.muscle && selectedChip != null) {
-      baseList = groupedByMuscle[selectedChip!] ?? [];
-    } else if (selectedFilterType == FilterType.category &&
-        selectedChip != null) {
-      baseList = groupedByCategory[selectedChip!] ?? [];
-    }
-
-    // Apply search query filter
+    // Apply search filter
     if (searchQuery.isNotEmpty) {
-      baseList = baseList
-          .where((ex) =>
-              ex.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-              ex.primaryMuscle
+      exercises = exercises
+          .where((exercise) =>
+              exercise.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              exercise.description
                   .toLowerCase()
                   .contains(searchQuery.toLowerCase()))
           .toList();
     }
 
-    return baseList;
+    // Apply category/muscle filter
+    if (selectedFilterType != FilterType.none && selectedChip != null) {
+      switch (selectedFilterType) {
+        case FilterType.muscle:
+          exercises = groupedByMuscle[selectedChip] ?? [];
+          break;
+        case FilterType.category:
+          exercises = groupedByCategory[selectedChip] ?? [];
+          break;
+        case FilterType.none:
+          break;
+      }
+    }
+
+    return exercises;
+  }
+
+  List<Exercise> get filteredCustomExercises {
+    var exercises = customExercises;
+
+    // Apply search filter
+    if (searchQuery.isNotEmpty) {
+      exercises = exercises
+          .where((exercise) =>
+              exercise.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              exercise.description
+                  .toLowerCase()
+                  .contains(searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    return exercises;
+  }
+
+  ExercisesState copyWith({
+    ExerciseStatus? status,
+    List<Exercise>? allExercises,
+    List<Exercise>? customExercises,
+    Map<String, List<Exercise>>? groupedByMuscle,
+    Map<String, List<Exercise>>? groupedByCategory,
+    FilterType? selectedFilterType,
+    String? selectedChip,
+    String? searchQuery,
+    String? errorMessage,
+  }) {
+    return ExercisesState(
+      status: status ?? this.status,
+      allExercises: allExercises ?? this.allExercises,
+      customExercises: customExercises ?? this.customExercises,
+      groupedByMuscle: groupedByMuscle ?? this.groupedByMuscle,
+      groupedByCategory: groupedByCategory ?? this.groupedByCategory,
+      selectedFilterType: selectedFilterType ?? this.selectedFilterType,
+      selectedChip: selectedChip ?? this.selectedChip,
+      searchQuery: searchQuery ?? this.searchQuery,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
   }
 }

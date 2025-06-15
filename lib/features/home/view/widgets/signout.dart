@@ -15,6 +15,7 @@ class SignOutBtn extends StatelessWidget {
         //clear the auth token
         final storaage = StorageService();
         await storaage.clearUserData();
+
         Navigator.pushNamedAndRemoveUntil(
           context,
           RouteNames.auth_screen_route,
@@ -26,6 +27,7 @@ class SignOutBtn extends StatelessWidget {
           Text(
             'SignOut',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          
           ),
           const Icon(
             FontAwesomeIcons.rightFromBracket,

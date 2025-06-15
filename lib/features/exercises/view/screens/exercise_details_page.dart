@@ -21,7 +21,8 @@ class ExerciseDetailsPage extends StatelessWidget {
             Stack(
               alignment: Alignment.topLeft,
               children: [
-                YoutubeIframeWidget(videoId: exercise.videoUrl),
+                if (exercise.videoUrl.isNotEmpty)
+                  YoutubeIframeWidget(videoId: exercise.videoUrl),
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: CustomBackBtn(),
@@ -43,7 +44,9 @@ class ExerciseDetailsPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: exercise.category.isEmpty
+                    ? MainAxisAlignment.start
+                    : MainAxisAlignment.spaceAround,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,28 +70,29 @@ class ExerciseDetailsPage extends StatelessWidget {
                           )),
                     ],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Equipment',
-                        style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      Chip(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          label: Text(
-                            exercise.category,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14),
-                          )),
-                    ],
-                  ),
+                  if (exercise.category.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Equipment',
+                          style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Chip(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            label: Text(
+                              exercise.category,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14),
+                            )),
+                      ],
+                    ),
                 ],
               ),
             ),

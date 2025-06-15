@@ -1,21 +1,46 @@
 import 'package:dartz/dartz.dart';
 import 'package:gym/core/error/failures.dart';
-import 'package:gym/core/network/dio_service.dart';
-import 'package:gym/core/network/error_handler.dart';
 import 'package:gym/features/exercises/data/models/exercises.dart';
+import 'package:gym/features/exercises/data/services/exercises_service.dart';
 
 class ExercisesRepository {
-  ExercisesRepository();
-  final DioService _dioService = DioService();
+  ExercisesRepository({required this.exercisesService});
+  final ExercisesService exercisesService;
+
   Future<Either<Failure, List<Exercise>>> fetchExercises() async {
     try {
-      final res = await _dioService.get(
-        '/api/Exercises/GetAllExercises',
-      );
-
-      return Right(Exercise.parseExercises(res.data));
+      final exercises = await exercisesService.fetchExercises();
+      return Right(exercises);
     } catch (e) {
-      return Left(ErrorHandler.handle(e));
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<Exercise>>> fetchCustomExercises() async {
+    try {
+      final exercises = await exercisesService.fetchCustomExercises();
+      return Right(exercises);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, Exercise>> createCustomExercise({
+    required String title,
+    required String description,
+    required String primaryMuscle,
+    String? videoUrl,
+  }) async {
+    try {
+      final exercise = await exercisesService.createCustomExercise(
+        title: title,
+        description: description,
+        primaryMuscle: primaryMuscle,
+        videoUrl: videoUrl,
+      );
+      return Right(exercise);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 }

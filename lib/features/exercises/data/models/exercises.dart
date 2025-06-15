@@ -85,6 +85,7 @@ class Exercise {
     int? repetitions,
     String? imageUrl,
     String? workoutId,
+    String? workoutExerciseID,
   }) {
     return Exercise(
       id: id ?? this.id,
@@ -97,6 +98,7 @@ class Exercise {
       repetitions: repetitions ?? this.repetitions,
       imageUrl: imageUrl ?? this.imageUrl,
       workoutId: workoutId ?? this.workoutId,
+      workoutExerciseID: workoutExerciseID ?? this.workoutExerciseID,
     );
   }
 }

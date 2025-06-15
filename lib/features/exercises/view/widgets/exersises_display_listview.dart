@@ -18,29 +18,26 @@ class ExerciseListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Skeletonizer(
-        enabled: isLoading,
-        child: ListView.separated(
-            physics: const BouncingScrollPhysics(),
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: isLoading ? 6 : exercises.length,
-            itemBuilder: (context, index) {
-              final exercise = isLoading ? Exercise.fake() : exercises[index];
-              final imageUrl = SharedUtils.extractThumbnail(exercise.videoUrl);
+    return Skeletonizer(
+      enabled: isLoading,
+      child: ListView.separated(
+          physics: const BouncingScrollPhysics(),
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: isLoading ? 6 : exercises.length,
+          itemBuilder: (context, index) {
+            final exercise = isLoading ? Exercise.fake() : exercises[index];
+            final imageUrl = SharedUtils.extractThumbnail(exercise.videoUrl);
 
-              return PopAnimatedCard(
-                exercise: exercise,
-                imageUrl: imageUrl,
-                onTap: () {
-                  Navigator.pushNamed(
-                      context, RouteNames.exercise_details_route,
-                      arguments: [exercise, imageUrl]);
-                },
-              );
-            }),
-      ),
+            return PopAnimatedCard(
+              exercise: exercise,
+              imageUrl: imageUrl,
+              onTap: () {
+                Navigator.pushNamed(context, RouteNames.exercise_details_route,
+                    arguments: [exercise, imageUrl]);
+              },
+            );
+          }),
     );
   }
 }

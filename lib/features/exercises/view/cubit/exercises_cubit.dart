@@ -52,6 +52,78 @@ class ExercisesCubit extends Cubit<ExercisesState> {
     }
   }
 
+  Future<void> loadCustomExercises() async {
+    emit(state.copyWith(status: ExerciseStatus.loading));
+    try {
+      final data = await exerciseRepository.fetchCustomExercises();
+      data.fold(
+        (failure) {
+          emit(
+            state.copyWith(
+                status: ExerciseStatus.error, errorMessage: failure.message),
+          );
+        },
+        (customExercises) {
+          emit(
+            state.copyWith(
+              status: ExerciseStatus.success,
+              customExercises: customExercises,
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(
+          status: ExerciseStatus.error, errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> createCustomExercise({
+    required String title,
+    required String description,
+    required String primaryMuscle,
+    String? videoUrl,
+  }) async {
+    emit(state.copyWith(status: ExerciseStatus.loading));
+    try {
+      final result = await exerciseRepository.createCustomExercise(
+        title: title,
+        description: description,
+        primaryMuscle: primaryMuscle,
+        videoUrl: videoUrl,
+      );
+
+      result.fold(
+        (failure) {
+          emit(
+            state.copyWith(
+              status: ExerciseStatus.error,
+              errorMessage: failure.message,
+            ),
+          );
+        },
+        (exercise) {
+          // Add the new exercise to custom exercises list
+          final updatedCustomExercises = [...state.customExercises, exercise];
+
+          emit(
+            state.copyWith(
+              status: ExerciseStatus.success,
+              customExercises: updatedCustomExercises,
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: ExerciseStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
   void setFilter({
     required FilterType type,
     required String chipValue,

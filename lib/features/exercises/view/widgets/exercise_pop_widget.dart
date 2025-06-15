@@ -70,24 +70,37 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                 ),
               ),
               alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                widget.exercise.name,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 18,
-                      color: Colors.black,
-                      offset: Offset(1, 1),
-                    )
-                  ],
+            ),
+            Positioned(
+              bottom: 0,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Text(
+                    widget.exercise.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 18,
+                          color: Colors.black,
+                          offset: Offset(1, 1),
+                        )
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),

@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/core/network/connectivity.dart';
+import 'package:gym/core/network/dio_service.dart';
 import 'package:gym/core/services/storage_service.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/features/auth/view/screens/auth_screen.dart';
 import 'package:gym/features/exercises/data/repo/exercises_repo.dart';
+import 'package:gym/features/exercises/data/services/exercises_service.dart';
 import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:gym/features/home/view/screens/home.dart';
 import 'package:gym/features/onboarding/screens/onboarding_screen.dart';
@@ -73,7 +75,9 @@ class _MyAppState extends State<MyApp> {
           children: [
             BlocProvider(
               create: (context) => ExercisesCubit(
-                exerciseRepository: ExercisesRepository(),
+                exerciseRepository: ExercisesRepository(
+                    exercisesService:
+                        ExercisesService(dioService: DioService())),
               )..loadExercises(),
               child: MaterialApp(
                 theme: AppTheme.darkTheme,

@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:gym/Shared/ui/custom_snackbar.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/features/exercises/data/repo/exercises_repo.dart';
 import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
@@ -156,11 +157,8 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
         child: BlocConsumer<WorkoutsCubit, WorkoutsState>(
           listener: (context, state) {
             if (state.status == WorkoutsStatus.error) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage ?? 'An error occurred'),
-                ),
-              );
+              CustomSnackbar.show(context, state.errorMessage ?? '',
+                  isError: true);
             }
           },
           builder: (context, state) {
@@ -211,7 +209,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
 
             return ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: state.selectedExercises.length,
+              itemCount: state.selectedExercises.where((e) => e != null).length,
               itemBuilder: (context, index) {
                 final exercise = state.selectedExercises[index];
                 final isDeleting = _isDeleting[exercise?.id] ?? false;

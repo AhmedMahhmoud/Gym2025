@@ -63,7 +63,7 @@ class WorkoutModel {
 }
 
 class WorkoutExercise {
-  final String id;
+  String id;
   final String workoutId;
   final String? exerciseId;
   final Exercise? exercise;
@@ -100,25 +100,32 @@ class WorkoutExercise {
     );
   }
   factory WorkoutExercise.fromAddingWorkoutExercise(Map<String, dynamic> json) {
-    return WorkoutExercise(
-      id: json['id'],
-      workoutId: json['workoutId'] ?? '',
-      exerciseId: json['exerciseId'] ?? '',
-      exercise: Exercise(
-        id: json['exerciseId'] ?? '',
-        name: json['exerciseTitle'] ?? '',
-        workoutExerciseID: json['id'],
-        description: '',
-        videoUrl: '',
-        primaryMuscle: '',
-        category: '',
-      ),
-      customExerciseId: json['customExerciseId'].toString() ?? '',
-      customExercise: json['customExercise'] != null
-          ? Exercise.fromJson(json['customExercise'])
-          : null,
-      sets: [],
-    );
+    // Check if this is a custom exercise
+    if (json['customExerciseId'] != null && json['customExercise'] != null) {
+      return WorkoutExercise(
+        id: json['id'],
+        workoutId: json['workoutId'] ?? '',
+        exerciseId: null,
+        exercise: null,
+        customExerciseId: json['customExerciseId'].toString(),
+        customExercise: Exercise.fromJson(json['customExercise'],
+            workoutExerciseID: json['id']),
+        sets: [],
+      );
+    } else {
+      // Regular exercise
+      return WorkoutExercise(
+        id: json['id'],
+        workoutId: json['workoutId'] ?? '',
+        exerciseId: json['exerciseId'] ?? '',
+        exercise: json['exercise'] != null
+            ? Exercise.fromJson(json['exercise'], workoutExerciseID: json['id'])
+            : null,
+        customExerciseId: null,
+        customExercise: null,
+        sets: [],
+      );
+    }
   }
   Map<String, dynamic> toJson() {
     return {

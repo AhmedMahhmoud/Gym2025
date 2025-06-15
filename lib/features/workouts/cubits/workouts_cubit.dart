@@ -163,6 +163,46 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     // }
   }
 
+  // Helper function to unify exercise data
+  Exercise _unifyExerciseData(WorkoutExercise workoutExercise) {
+    if (workoutExercise.exerciseId != null &&
+        workoutExercise.exercise != null) {
+      // Regular exercise
+      return Exercise(
+        id: workoutExercise.exercise!.id,
+        workoutExerciseID: workoutExercise.id,
+        name: workoutExercise.exercise!.name,
+        description: workoutExercise.exercise!.description,
+        videoUrl: workoutExercise.exercise!.videoUrl,
+        primaryMuscle: workoutExercise.exercise!.primaryMuscle,
+        category: workoutExercise.exercise!.category,
+      );
+    } else if (workoutExercise.customExerciseId != null &&
+        workoutExercise.customExercise != null) {
+      // Custom exercise
+      return Exercise(
+        id: workoutExercise.customExercise!.id,
+        workoutExerciseID: workoutExercise.id,
+        name: workoutExercise.customExercise!.name,
+        description: workoutExercise.customExercise!.description,
+        videoUrl: workoutExercise.customExercise!.videoUrl,
+        primaryMuscle: workoutExercise.customExercise!.primaryMuscle,
+        category: 'Custom', // Custom exercises don't have a category
+      );
+    } else {
+      // Fallback case
+      return Exercise(
+        id: workoutExercise.id,
+        workoutExerciseID: workoutExercise.id,
+        name: 'Unknown Exercise',
+        description: '',
+        videoUrl: '',
+        primaryMuscle: '',
+        category: '',
+      );
+    }
+  }
+
   // Load workouts for a plan
   Future<void> loadWorkoutsForPlan(String planId) async {
     emit(state.copyWith(
@@ -178,10 +218,38 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         ));
       },
       (workoutsData) {
-        final workouts = workoutsData;
+        // Process each workout to unify exercise data
+        final processedWorkouts = workoutsData.map((workout) {
+          final processedExercises = workout.workoutExercises.map((we) {
+            // Create unified exercise
+            final unifiedExercise = _unifyExerciseData(we);
+
+            // Create new WorkoutExercise with unified exercise
+            return WorkoutExercise(
+              id: we.id,
+              workoutId: we.workoutId,
+              exerciseId: we.exerciseId,
+              exercise: unifiedExercise,
+              customExerciseId: we.customExerciseId,
+              customExercise: we.customExercise,
+              sets: we.sets,
+            );
+          }).toList();
+
+          // Return updated workout with processed exercises
+          return WorkoutModel(
+            id: workout.id,
+            planId: workout.planId,
+            userId: workout.userId,
+            title: workout.title,
+            date: workout.date,
+            workoutExercises: processedExercises,
+          );
+        }).toList();
+
         emit(state.copyWith(
           status: WorkoutsStatus.success,
-          workouts: workouts,
+          workouts: processedWorkouts,
         ));
       },
     );
@@ -238,16 +306,34 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     print('Setting current workout: ${latestWorkout.title}');
     print('Workout exercises count: ${latestWorkout.workoutExercises.length}');
 
-    // Extract exercises from workoutExercises
-    final exercises =
-        latestWorkout.workoutExercises.map((we) => we.exercise).toList();
+    // Extract exercises from workoutExercises and ensure no duplicates
+    final exercises = latestWorkout.workoutExercises
+        .map((we) {
+          if (we.exercise != null) {
+            return we.exercise;
+          } else if (we.customExercise != null) {
+            return we.customExercise;
+          }
+          return null;
+        })
+        .where((e) => e != null)
+        .toList();
 
-    print('Extracted exercises count: ${exercises.length}');
+    // Remove any duplicates based on exercise ID
+    final uniqueExercises =
+        exercises.fold<List<Exercise>>([], (list, exercise) {
+      if (!list.any((e) => e.id == exercise!.id)) {
+        list.add(exercise!);
+      }
+      return list;
+    });
+
+    print('Extracted exercises count: ${uniqueExercises.length}');
 
     emit(state.copyWith(
       currentWorkout: latestWorkout,
       clearCurrentExercise: true,
-      selectedExercises: exercises,
+      selectedExercises: uniqueExercises,
     ));
   }
 
@@ -311,7 +397,11 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       (we) => we.exercise?.id == exercise.id,
       orElse: () => throw Exception('WorkoutExercise not found'),
     );
-
+    if (exercise.category == "" &&
+        workoutExercise.id.startsWith('temp')) // custom
+    {
+      workoutExercise.id = exercise.workoutExerciseID!;
+    }
     // Get sets from the workout exercise
     final sets = workoutExercise.sets
         .map((set) => SetModel.fromJson(set.toJson()))
@@ -380,7 +470,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           exercise: state.currentWorkoutExercise!.exercise,
           customExerciseId: state.currentWorkoutExercise!.customExerciseId,
           customExercise: state.currentWorkoutExercise!.customExercise,
-          sets: newSets,
+          sets: updatedSets,
         );
 
         // Update the workout with the updated exercise
@@ -409,12 +499,23 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           return w;
         }).toList();
 
+        // Update the selected exercises to ensure they have the latest workout exercise ID
+        final updatedSelectedExercises = state.selectedExercises.map((e) {
+          if (e?.id ==
+              (updatedWorkoutExercise.exercise?.id ??
+                  updatedWorkoutExercise.customExercise?.id)) {
+            return e?.copyWith(workoutExerciseID: updatedWorkoutExercise.id);
+          }
+          return e;
+        }).toList();
+
         emit(state.copyWith(
           status: WorkoutsStatus.success,
           sets: updatedSets,
           currentWorkoutExercise: updatedWorkoutExercise,
           currentWorkout: updatedWorkout,
           workouts: updatedWorkouts,
+          selectedExercises: updatedSelectedExercises,
         ));
       },
     );
@@ -719,7 +820,10 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   }
 
   // Add multiple exercises to workout
-  Future<void> addExercisesToWorkout(List<String> exerciseIds) async {
+  Future<void> addExercisesToWorkout(
+    List<String> exerciseIds, {
+    List<String>? customExerciseIds,
+  }) async {
     if (state.currentWorkout == null) {
       emit(state.copyWith(
         status: WorkoutsStatus.error,
@@ -733,6 +837,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     final result = await _repository.addExercisesToWorkout(
       state.currentWorkout!.id,
       exerciseIds,
+      customExerciseIds: customExerciseIds ?? [],
     );
 
     result.fold(
@@ -744,25 +849,28 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       },
       (updatedWorkoutExercises) {
         // Convert workout exercises to Exercise models
-        final newExercises = updatedWorkoutExercises.map((we) {
-          // If we have the exercise object, use it
-          if (we.exercise != null) {
-            return we.exercise!;
-          }
-          // Otherwise create a basic exercise from the available data
-          return Exercise(
-            id: we.exerciseId ?? '',
-            workoutExerciseID: we.id,
-            name: we.exercise?.name ?? '',
-            description: we.exercise?.description ?? '',
-            videoUrl: we.exercise?.videoUrl ?? '',
-            primaryMuscle: we.exercise?.primaryMuscle ?? '',
-            category: we.exercise?.category ?? '',
-          );
-        }).toList();
+        final newExercises = updatedWorkoutExercises
+            .map((we) {
+              // If we have the exercise object, use it
+              if (we.exercise != null) {
+                return we.exercise!;
+              }
+              // If we have a custom exercise, use it
+              if (we.customExercise != null) {
+                return we.customExercise!;
+              }
+              // If neither exists, return null
+              return null;
+            })
+            .where((e) => e != null)
+            .cast<Exercise>()
+            .toList();
 
         // Combine existing exercises with new ones, avoiding duplicates
-        final existingExercises = List<Exercise>.from(state.selectedExercises);
+        final existingExercises = List<Exercise>.from(state.selectedExercises)
+            .where((e) => e != null)
+            .cast<Exercise>()
+            .toList();
         final allExercises = [...existingExercises];
 
         // Add only new exercises that don't already exist
@@ -784,11 +892,35 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
         // Add new workout exercises, replacing any that have the same exerciseId
         for (final newWorkoutExercise in updatedWorkoutExercises) {
-          final existingIndex = allWorkoutExercises.indexWhere(
-              (we) => we.exerciseId == newWorkoutExercise.exerciseId);
+          // Find and replace temporary exercises with real ones
+          final existingIndex = allWorkoutExercises.indexWhere((we) {
+            // Check if this is a temporary exercise that needs to be replaced
+            if (we.id.startsWith('temp_')) {
+              // For regular exercises
+              if (we.exerciseId == newWorkoutExercise.exerciseId) {
+                return true;
+              }
+              // For custom exercises
+              if (we.customExerciseId == newWorkoutExercise.customExerciseId) {
+                return true;
+              }
+            }
+            return false;
+          });
 
           if (existingIndex != -1) {
+            // Replace the temporary workout exercise with the real one
             allWorkoutExercises[existingIndex] = newWorkoutExercise;
+
+            // Update the exercise's workoutExerciseID in the selectedExercises list
+            final exerciseIndex = allExercises.indexWhere((e) =>
+                e.id ==
+                (newWorkoutExercise.exercise?.id ??
+                    newWorkoutExercise.customExercise?.id));
+            if (exerciseIndex != -1) {
+              allExercises[exerciseIndex] = allExercises[exerciseIndex]
+                  .copyWith(workoutExerciseID: newWorkoutExercise.id);
+            }
           } else {
             allWorkoutExercises.add(newWorkoutExercise);
           }
@@ -867,6 +999,41 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       currentWorkout: updatedWorkout,
       workouts: updatedWorkouts,
       selectedExercises: updatedExercises,
+      status: WorkoutsStatus
+          .addingExercise, // Set status to indicate exercise is being added
     ));
+  }
+
+  // Create custom exercise
+  Future<void> createCustomExercise({
+    required String title,
+    required String description,
+    required String primaryMuscle,
+    String? videoUrl,
+  }) async {
+    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+
+    final result = await _repository.createCustomExercise(
+      title: title,
+      description: description,
+      primaryMuscle: primaryMuscle,
+      videoUrl: videoUrl,
+    );
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to create custom exercise: ${failure.message}',
+        ));
+      },
+      (exercise) {
+        // Add the custom exercise to the workout
+        addExerciseToWorkoutLocally(exercise);
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+        ));
+      },
+    );
   }
 }

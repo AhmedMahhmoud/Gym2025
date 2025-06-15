@@ -16,6 +16,7 @@ class SetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isSec = set.timeUnitId == "841dce21-5995-4078-801c-59cfc1b070b9";
     return GestureDetector(
       onTap: () => _showOptions(context),
       child: AnimatedContainer(
@@ -74,8 +75,6 @@ class SetCard extends StatelessWidget {
                       children: [
                         Builder(
                           builder: (context) {
-                            bool isSec = set.timeUnitId ==
-                                "841dce21-5995-4078-801c-59cfc1b070b9";
                             return Text(
                               set.repetitions != null
                                   ? '${set.repetitions} reps'
@@ -114,7 +113,7 @@ class SetCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Rest: ${set.restTime} sec',
+                            'Rest: ${set.restTime}  ${isSec == true ? 'sec' : 'Min'}',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.white54,

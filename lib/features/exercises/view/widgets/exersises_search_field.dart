@@ -10,76 +10,31 @@ class ExerciseSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ExercisesCubit>();
-
-    return Row(
-      children: [
-        Expanded(
-          child: TextField(
-            onTapOutside: (event) => FocusScope.of(context).unfocus(),
-            onChanged: cubit.setSearchQuery,
-            decoration: InputDecoration(
-              hintText: 'Search for an exercise',
-              filled: true,
-              fillColor: AppColors.surface,
-              prefixIcon: const Icon(Icons.search, color: Colors.white54),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              hintStyle: const TextStyle(color: Colors.white54),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(13),
-                borderSide: BorderSide.none,
-              ),
+    return BlocBuilder<ExercisesCubit, ExercisesState>(
+      builder: (context, state) {
+        return TextField(
+          onChanged: (value) {
+            context.read<ExercisesCubit>().setSearchQuery(value);
+          },
+          decoration: InputDecoration(
+            hintText: 'Search exercises...',
+            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+            filled: true,
+            fillColor: AppColors.background,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.grey),
             ),
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-        const SizedBox(width: 12),
-        InkWell(
-          onTap: () => showAnimatedFilterBottomSheet(context),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.grey),
             ),
-            child: const Icon(Icons.filter_list, color: Colors.white),
-          ),
-        )
-      ],
-    );
-  }
-
-  Future<void> showAnimatedFilterBottomSheet(BuildContext context) {
-    final cubit = context.read<ExercisesCubit>();
-
-    return showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: "Filter",
-      barrierColor: Colors.black.withOpacity(0.5),
-      transitionDuration: const Duration(milliseconds: 600),
-      pageBuilder: (context, anim1, anim2) {
-        return Align(
-          alignment: Alignment.bottomCenter,
-          child: Material(
-            color: Colors.transparent,
-            child: BlocProvider.value(
-              value: cubit,
-              child: const ExerciseFilterBottomSheet(),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary),
             ),
-          ),
-        );
-      },
-      transitionBuilder: (context, anim1, anim2, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 1),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOut)),
-          child: FadeTransition(
-            opacity: anim1,
-            child: child,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         );
       },

@@ -285,12 +285,16 @@ class WorkoutsRepository {
   // Add multiple exercises to workout
   Future<Either<Failure, List<WorkoutExercise>>> addExercisesToWorkout(
     String workoutId,
-    List<String> exerciseIds,
-  ) async {
+    List<String> exerciseIds, {
+    List<String> customExerciseIds = const [],
+  }) async {
     try {
       final response = await _dioService.post(
         '/api/Workouts/$workoutId/exercises',
-        data: {'ExerciseId': exerciseIds, 'CustomExerciseId': []},
+        data: {
+          'ExerciseId': exerciseIds,
+          'CustomExerciseId': customExerciseIds,
+        },
       );
 
       final List<dynamic> exercisesData = response.data;
@@ -311,6 +315,30 @@ class WorkoutsRepository {
       return Left(ServerFailure(message: e.message ?? 'Failed to get workout'));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  // Create custom exercise
+  Future<Either<Failure, Exercise>> createCustomExercise({
+    required String title,
+    required String description,
+    required String primaryMuscle,
+    String? videoUrl,
+  }) async {
+    try {
+      final response = await _dioService.post(
+        '/api/customExercises',
+        data: {
+          'title': title,
+          'description': description,
+          'primaryMuscle': primaryMuscle,
+          if (videoUrl != null && videoUrl.isNotEmpty) 'videoUrl': videoUrl,
+        },
+      );
+
+      return Right(Exercise.fromJson(response.data));
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
     }
   }
 }

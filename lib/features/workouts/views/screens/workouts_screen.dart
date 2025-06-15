@@ -77,12 +77,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         setState(() {
           _isAddingWorkout = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create workout: $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
       });
     }
   }
