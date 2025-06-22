@@ -7,6 +7,7 @@ class WorkoutModel {
   final String userId;
   final String title;
   final DateTime date;
+  final String? notes;
   final List<WorkoutExercise> workoutExercises;
 
   WorkoutModel({
@@ -15,6 +16,7 @@ class WorkoutModel {
     required this.userId,
     required this.title,
     required this.date,
+    this.notes,
     this.workoutExercises = const [],
   });
 
@@ -23,6 +25,7 @@ class WorkoutModel {
     String? planId,
     String? userId,
     String? title,
+    String? notes,
     DateTime? date,
     List<WorkoutExercise>? workoutExercises,
   }) {
@@ -31,6 +34,7 @@ class WorkoutModel {
       planId: planId ?? this.planId,
       userId: userId ?? this.userId,
       title: title ?? this.title,
+      notes: notes ?? this.notes,
       date: date ?? this.date,
       workoutExercises: workoutExercises ?? this.workoutExercises,
     );
@@ -42,6 +46,7 @@ class WorkoutModel {
       planId: json['planId'],
       userId: json['userId'],
       title: json['title'],
+      notes: json['notes'],
       date: DateTime.parse(json['date']),
       workoutExercises: (json['workoutExercises'] as List<dynamic>?)
               ?.map((e) => WorkoutExercise.fromJson(e))
@@ -57,6 +62,7 @@ class WorkoutModel {
       'userId': userId,
       'title': title,
       'date': date.toIso8601String(),
+      'notes': notes,
       'workoutExercises': workoutExercises.map((e) => e.toJson()).toList(),
     };
   }

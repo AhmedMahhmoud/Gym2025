@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym/features/home/view/screens/home.dart';
+import 'package:gym/features/profile/cubit/profile_cubit.dart';
+import 'package:gym/features/profile/view/screens/profile_screen.dart';
 import 'package:gym/features/workouts/workouts.dart';
 import 'package:gym/shared/widgets/floating_bottom_nav_bar.dart';
 
@@ -54,9 +57,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       case 1:
         return const WorkoutsFeature();
       case 2:
-        return const Scaffold(
-          body: Center(child: Text('Profile Screen')),
-        );
+        return const ProfileScreen();
       default:
         return const SizedBox.shrink();
     }

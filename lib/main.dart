@@ -13,6 +13,7 @@ import 'package:gym/features/exercises/data/services/exercises_service.dart';
 import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:gym/features/home/view/screens/home.dart';
 import 'package:gym/features/onboarding/screens/onboarding_screen.dart';
+import 'package:gym/features/profile/cubit/profile_cubit.dart';
 import 'package:gym/shared/widgets/main_scaffold.dart';
 import 'core/theme/app_theme.dart';
 import 'package:gym/routes/app_routes.dart';
@@ -73,12 +74,19 @@ class _MyAppState extends State<MyApp> {
         return Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            BlocProvider(
-              create: (context) => ExercisesCubit(
-                exerciseRepository: ExercisesRepository(
-                    exercisesService:
-                        ExercisesService(dioService: DioService())),
-              )..loadExercises(),
+            MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (context) => ProfileCubit(),
+                ),
+                BlocProvider(
+                  create: (context) => ExercisesCubit(
+                    exerciseRepository: ExercisesRepository(
+                        exercisesService:
+                            ExercisesService(dioService: DioService())),
+                  )..loadExercises(),
+                )
+              ],
               child: MaterialApp(
                 theme: AppTheme.darkTheme,
                 debugShowCheckedModeBanner: false,

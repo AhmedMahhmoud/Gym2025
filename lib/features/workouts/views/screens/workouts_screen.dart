@@ -1,8 +1,10 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/Shared/ui/custom_elevated_button.dart';
 import 'package:gym/core/theme/app_colors.dart';
+import 'package:gym/core/theme/app_theme.dart';
 import 'package:gym/features/exercises/view/screens/exercises_display_page.dart';
 import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
 import 'package:gym/features/workouts/cubits/workouts_state.dart';
@@ -79,6 +81,114 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         });
       });
     }
+  }
+
+  void _showEditWorkoutDialog(WorkoutModel workout) {
+    final titleController = TextEditingController(text: workout.title);
+    final notesController = TextEditingController(text: workout.notes);
+
+    showDialog(
+      context: context,
+      builder: (context) => FadeInWidget(
+        duration: const Duration(milliseconds: 300),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2A2A2A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: const Text(
+            'Edit Workout',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: notesController,
+                decoration: InputDecoration(
+                  hintText: 'Notes (Optional)',
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                _updateWorkout(
+                  workout.id,
+                  titleController.text,
+                  notesController.text,
+                );
+                Navigator.pop(context);
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary,
+                      AppColors.primary.withOpacity(0.7),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  'Update',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _updateWorkout(String workoutId, String title, String notes) {
+    _workoutsCubit.updateWorkout(
+      workoutId,
+      title: title,
+      notes: notes,
+    );
   }
 
   void _showDeleteConfirmationDialog(WorkoutModel workout) {
@@ -200,18 +310,25 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 state.status == WorkoutsStatus.loadingWorkouts) {
               return SizedBox(
                 height: MediaQuery.sizeOf(context).height / 1.5,
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(
+                      const CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Loading workouts ...',
-                        style: TextStyle(color: Colors.white70),
-                      ),
+                      const SizedBox(height: 16),
+                      if (state.status == WorkoutsStatus.loading ||
+                          state.status == WorkoutsStatus.loadingWorkouts)
+                        const Text(
+                          'Loading workouts ...',
+                          style: TextStyle(color: Colors.white70),
+                        )
+                      else
+                        const Text(
+                          'Loading workouts ...',
+                          style: TextStyle(color: Colors.white70),
+                        ),
                     ],
                   ),
                 ),
@@ -241,6 +358,11 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
 
             return Column(
               children: [
+                if (state.status == WorkoutsStatus.updatingWorkout)
+                  const LinearProgressIndicator(
+                    backgroundColor: AppColors.primary,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
                 if (_isAddingWorkout)
                   FadeIn(
                     duration: const Duration(milliseconds: 500),
@@ -602,14 +724,83 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
               color: Colors.white,
             ),
           ),
-          trailing: const Icon(
-            Icons.chevron_right,
-            color: Colors.white70,
+          subtitle: workout.notes != null && workout.notes!.isNotEmpty
+              ? Text(
+                  workout.notes!,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
+              : null,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(FontAwesomeIcons.squarePen,
+                    color: Colors.white70),
+                onPressed: () => _showEditWorkoutDialog(workout),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.white70,
+              ),
+            ],
           ),
           onTap: () => _navigateToExercises(workout),
           onLongPress: () => _showDeleteConfirmationDialog(workout),
         ),
       ),
+    );
+  }
+}
+
+class FadeInWidget extends StatefulWidget {
+  final Widget child;
+  final Duration duration;
+
+  const FadeInWidget({
+    Key? key,
+    required this.child,
+    this.duration = const Duration(milliseconds: 500),
+  }) : super(key: key);
+
+  @override
+  _FadeInWidgetState createState() => _FadeInWidgetState();
+}
+
+class _FadeInWidgetState extends State<FadeInWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+    );
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: widget.child,
     );
   }
 }

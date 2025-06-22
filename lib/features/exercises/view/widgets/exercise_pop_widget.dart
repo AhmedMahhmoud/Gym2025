@@ -74,14 +74,17 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
             Positioned(
               bottom: 0,
               child: Container(
-                width: MediaQuery.of(context).size.width,
+                width: MediaQuery.of(context).size.width - 48,
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20))),
                 alignment: Alignment.bottomLeft,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 10),
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                  ),
                   child: Text(
                     widget.exercise.name,
                     textAlign: TextAlign.center,

@@ -23,6 +23,7 @@ enum WorkoutsStatus {
   deletingWorkout,
   deletingExercise,
   deletingSet,
+  updatingWorkout,
 }
 
 class WorkoutsState extends Equatable {

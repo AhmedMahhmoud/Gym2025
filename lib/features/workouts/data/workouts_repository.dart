@@ -341,4 +341,23 @@ class WorkoutsRepository {
       return Left(ErrorHandler.handle(e));
     }
   }
+
+  Future<Either<Failure, String>> updateWorkout(
+    String workoutId, {
+    String? title,
+    String? notes,
+  }) async {
+    try {
+      final response = await _dioService.put(
+        '/api/Workouts/UpdateWorkoutInfo/$workoutId',
+        data: {
+          if (title != null) 'title': title,
+          if (notes != null) 'notes': notes,
+        },
+      );
+      return Right(response.data['message']);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
 }
