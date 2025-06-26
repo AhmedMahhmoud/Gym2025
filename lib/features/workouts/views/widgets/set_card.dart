@@ -94,14 +94,15 @@ class SetCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      '${set.weight} ${set.weightUnitId == "d82a14a4-6e4f-4987-8284-93eb3be1102b" ? "KG" : "Lbl"}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w500,
+                    if (set.weight != null)
+                      Text(
+                        '${set.weight} ${set.weightUnitId == "d82a14a4-6e4f-4987-8284-93eb3be1102b" ? "KG" : "Lbl"}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
                     if (set.restTime != null) ...[
                       const SizedBox(height: 6),
                       Row(

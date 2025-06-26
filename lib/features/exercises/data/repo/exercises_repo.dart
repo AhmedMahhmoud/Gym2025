@@ -43,4 +43,13 @@ class ExercisesRepository {
       return Left(ServerFailure(message: e.toString()));
     }
   }
+
+  Future<Either<Failure, void>> deleteCustomExercise(String exerciseId) async {
+    try {
+      await exercisesService.deleteCustomExercise(exerciseId);
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
 }

@@ -98,11 +98,13 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                     ExerciseListView(
                       exercises: state.filteredExercises,
                       isLoading: state.status == ExerciseStatus.loading,
+                      isCustomTab: false,
                     ),
                     // Custom Exercises Tab
                     ExerciseListView(
                       exercises: state.filteredCustomExercises,
                       isLoading: state.status == ExerciseStatus.loading,
+                      isCustomTab: true,
                     ),
                   ],
                 ),

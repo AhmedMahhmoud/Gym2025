@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/core/theme/app_theme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:gym/features/profile/cubit/profile_cubit.dart';
 import 'package:gym/features/profile/cubit/profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shimmer/shimmer.dart';
 import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,10 +19,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final _nameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  bool _isEditing = false;
 
   @override
-
   void initState() {
     super.initState();
     _nameController.text = context.read<ProfileCubit>().state.displayName;
@@ -43,7 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       if (image != null) {
-        context.read<ProfileCubit>().updateProfileImage(image.path);
+        await context.read<ProfileCubit>().updateProfileImage(image.path);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -83,17 +82,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildImageSourceButton(
                     icon: FontAwesomeIcons.camera,
                     label: 'Camera',
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      _pickImage(ImageSource.camera);
+                      await _pickImage(ImageSource.camera);
                     },
                   ),
                   _buildImageSourceButton(
                     icon: FontAwesomeIcons.images,
                     label: 'Gallery',
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      _pickImage(ImageSource.gallery);
+                      await _pickImage(ImageSource.gallery);
                     },
                   ),
                 ],
@@ -116,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildImageSourceButton({
     required IconData icon,
     required String label,
-    required VoidCallback onTap,
+    required Future<void> Function() onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -246,6 +245,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   backgroundColor: Colors.red,
                 ),
               );
+            } else if (state.status == ProfileStatus.success &&
+                state.profileImage != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Profile picture updated successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
             }
           },
           builder: (context, state) {
@@ -304,7 +311,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 const SizedBox(height: 40),
                                 // Profile Picture
                                 GestureDetector(
-                                  onTap: _showImagePickerDialog,
+                                  onTap: state.status == ProfileStatus.uploading
+                                      ? null
+                                      : _showImagePickerDialog,
                                   child: Stack(
                                     children: [
                                       Container(
@@ -326,81 +335,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ],
                                         ),
                                         child: ClipOval(
-                                          child: state.profileImage != null
-                                              ? Image.file(
-                                                  File(state.profileImage!),
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error,
-                                                      stackTrace) {
-                                                    return Container(
-                                                      decoration: BoxDecoration(
-                                                        gradient:
-                                                            LinearGradient(
-                                                          begin:
-                                                              Alignment.topLeft,
-                                                          end: Alignment
-                                                              .bottomRight,
-                                                          colors: [
-                                                            Colors.white
-                                                                .withOpacity(
-                                                                    0.2),
-                                                            Colors.white
-                                                                .withOpacity(
-                                                                    0.1),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      child: const Icon(
-                                                        FontAwesomeIcons.user,
-                                                        size: 50,
-                                                        color: Colors.white,
-                                                      ),
-                                                    );
-                                                  },
-                                                )
-                                              : Container(
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      begin: Alignment.topLeft,
-                                                      end:
-                                                          Alignment.bottomRight,
-                                                      colors: [
-                                                        Colors.white
-                                                            .withOpacity(0.2),
-                                                        Colors.white
-                                                            .withOpacity(0.1),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  child: const Icon(
-                                                    FontAwesomeIcons.user,
-                                                    size: 50,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
+                                          child: state.status ==
+                                                  ProfileStatus.uploading
+                                              ? _buildShimmerEffect()
+                                              : _buildProfileImage(state),
                                         ),
                                       ),
                                       // Camera icon overlay
-                                      Positioned(
-                                        bottom: 0,
-                                        right: 0,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primary,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
+                                      if (state.status !=
+                                          ProfileStatus.uploading)
+                                        Positioned(
+                                          bottom: 0,
+                                          right: 0,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Colors.white,
+                                                width: 2,
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              FontAwesomeIcons.camera,
                                               color: Colors.white,
-                                              width: 2,
+                                              size: 16,
                                             ),
                                           ),
-                                          child: const Icon(
-                                            FontAwesomeIcons.camera,
-                                            color: Colors.white,
-                                            size: 16,
+                                        ),
+                                      // Loading indicator overlay
+                                      if (state.status ==
+                                          ProfileStatus.uploading)
+                                        Positioned.fill(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color:
+                                                  Colors.black.withOpacity(0.3),
+                                            ),
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(Colors.white),
+                                                strokeWidth: 3,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -520,6 +503,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ],
                                 ),
                               ),
+                              if (state.email != null) ...[
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.1),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        FontAwesomeIcons.envelope,
+                                        color: Colors.white70,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Email',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              state.email!,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -594,6 +624,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerEffect() {
+    return Shimmer.fromColors(
+      baseColor: Colors.white.withOpacity(0.3),
+      highlightColor: Colors.white.withOpacity(0.5),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withOpacity(0.4),
+              Colors.white.withOpacity(0.2),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileImage(ProfileState state) {
+    // Show local file image immediately after upload
+    if (state.profileImage != null) {
+      return Image.file(
+        File(state.profileImage!),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildNetworkOrDefaultImage(state);
+        },
+      );
+    }
+
+    return _buildNetworkOrDefaultImage(state);
+  }
+
+  Widget _buildNetworkOrDefaultImage(ProfileState state) {
+    // Show network image from JWT token
+    if (state.profileImageUrl != null && state.profileImageUrl!.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: state.profileImageUrl!,
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => _buildShimmerEffect(),
+        errorWidget: (context, url, error) => _buildDefaultAvatar(),
+      );
+    }
+
+    return _buildDefaultAvatar();
+  }
+
+  Widget _buildDefaultAvatar() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.2),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: const Icon(
+        FontAwesomeIcons.user,
+        size: 50,
+        color: Colors.white,
       ),
     );
   }

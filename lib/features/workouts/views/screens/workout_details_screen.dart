@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/Shared/ui/custom_snackbar.dart';
 import 'package:gym/core/theme/app_colors.dart';
+import 'package:gym/core/utils/shared_utils.dart';
 import 'package:gym/features/exercises/data/repo/exercises_repo.dart';
 import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
@@ -15,6 +16,7 @@ import 'package:gym/features/workouts/views/widgets/animated_widgets.dart';
 import 'package:gym/features/workouts/views/widgets/error_message.dart';
 import 'package:gym/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:gym/features/exercises/data/models/exercises.dart';
+import 'package:gym/routes/route_names.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class WorkoutDetailsScreen extends StatefulWidget {
@@ -291,9 +293,30 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
               color: Colors.white70,
             ),
           ),
-          trailing: const Icon(
-            Icons.chevron_right,
-            color: Colors.white70,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(
+                  FontAwesomeIcons.circleInfo,
+                  color: Colors.white70,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    RouteNames.exercise_details_route,
+                    arguments: [
+                      exercise,
+                      SharedUtils.extractThumbnail(exercise.videoUrl)
+                    ],
+                  );
+                },
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.white70,
+              ),
+            ],
           ),
           onTap: () => _navigateToExerciseSets(exercise),
           onLongPress: () => _showDeleteConfirmationDialog(exercise),

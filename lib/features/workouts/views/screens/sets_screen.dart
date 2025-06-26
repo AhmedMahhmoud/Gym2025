@@ -213,16 +213,24 @@ class _SetsScreenState extends State<SetsScreen> {
                           const SizedBox(width: 16),
                           ElevatedButton(
                             onPressed: () {
-                              if (_repsController.text.isNotEmpty &&
-                                  _weightController.text.isNotEmpty) {
+                              if (_repsController.text.isNotEmpty) {
                                 final reps =
                                     int.tryParse(_repsController.text) ?? 0;
-                                var weight =
-                                    double.tryParse(_weightController.text) ??
-                                        0.0;
+                                double? weight = _weightController.text
+                                        .trim()
+                                        .isEmpty
+                                    ? null
+                                    : double.tryParse(_weightController.text);
 
-                                // Convert weight if needed
-                                if (!isWeightInKg) {
+                                // Only validate weight if provided
+                                if (_weightController.text.trim().isNotEmpty &&
+                                    (weight == null || weight <= 0)) {
+                                  // Show error for invalid weight
+                                  return;
+                                }
+
+                                // Convert weight if needed and if it exists
+                                if (weight != null && !isWeightInKg) {
                                   weight =
                                       weight * 0.453592; // Convert lbs to kg
                                 }
@@ -235,7 +243,7 @@ class _SetsScreenState extends State<SetsScreen> {
                                       60; // Convert minutes to seconds
                                 }
 
-                                if (reps > 0 && weight > 0) {
+                                if (reps > 0) {
                                   context
                                       .read<WorkoutsCubit>()
                                       .addSetToExercise(
@@ -273,7 +281,7 @@ class _SetsScreenState extends State<SetsScreen> {
 
   void _showEditSetDialog(SetModel set) {
     _repsController.text = set.repetitions?.toString() ?? '';
-    _weightController.text = set.weight.toString();
+    _weightController.text = set.weight?.toString() ?? '';
     _restTimeController.text = set.restTime?.toString() ?? '';
 
     showGeneralDialog(
@@ -374,17 +382,25 @@ class _SetsScreenState extends State<SetsScreen> {
                           const SizedBox(width: 16),
                           ElevatedButton(
                             onPressed: () {
-                              if (_repsController.text.isNotEmpty &&
-                                  _weightController.text.isNotEmpty) {
+                              if (_repsController.text.isNotEmpty) {
                                 final reps =
                                     int.tryParse(_repsController.text) ?? 0;
-                                final weight =
-                                    double.tryParse(_weightController.text) ??
-                                        0.0;
+                                final weight = _weightController.text
+                                        .trim()
+                                        .isEmpty
+                                    ? null
+                                    : double.tryParse(_weightController.text);
                                 final restTime =
                                     int.tryParse(_restTimeController.text);
 
-                                if (reps > 0 && weight > 0) {
+                                // Only validate weight if provided
+                                if (_weightController.text.trim().isNotEmpty &&
+                                    (weight == null || weight <= 0)) {
+                                  // Show error for invalid weight
+                                  return;
+                                }
+
+                                if (reps > 0) {
                                   context.read<WorkoutsCubit>().editSet(
                                         setId: set.id,
                                         reps: reps,

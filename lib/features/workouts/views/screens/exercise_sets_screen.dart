@@ -49,7 +49,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
       context: context,
       builder: (context) => AddSetDialog(
         onAdd: ({
-          required double weight,
+          double? weight,
           required int? reps,
           required int? duration,
           int? restTime,
@@ -163,7 +163,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
 
   void _showEditSetDialog(SetModel set, WorkoutsCubit cubit) {
     _repsController.text = set.repetitions?.toString() ?? '';
-    _weightController.text = set.weight.toString();
+    _weightController.text = set.weight?.toString() ?? '';
     _restTimeController.text = set.restTime?.toString() ?? '';
     _noteController.text = set.note ?? '';
     _durationController.text =
@@ -423,58 +423,66 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                           const SizedBox(width: 16),
                           ElevatedButton(
                             onPressed: () {
-                              if (_weightController.text.isNotEmpty) {
-                                final reps = isRepsBased
-                                    ? int.tryParse(_repsController.text) ?? 0
-                                    : null;
-                                final weight =
-                                    double.tryParse(_weightController.text) ??
-                                        0.0;
-                                final restTime =
-                                    int.tryParse(_restTimeController.text);
+                              final reps = isRepsBased
+                                  ? int.tryParse(_repsController.text) ?? 0
+                                  : null;
+                              final weight =
+                                  _weightController.text.trim().isEmpty
+                                      ? null
+                                      : double.tryParse(_weightController.text);
+                              final restTime =
+                                  int.tryParse(_restTimeController.text);
 
-                                // Parse duration for duration-based sets
-                                final duration = !isRepsBased
-                                    ? int.tryParse(_durationController.text) ??
-                                        0
-                                    : null;
+                              // Only validate weight if provided
+                              if (_weightController.text.trim().isNotEmpty &&
+                                  (weight == null || weight <= 0)) {
+                                // Could show error snackbar here
+                                return;
+                              }
 
-                                // Get unit IDs based on selection without conversion
-                                final weightUnitId = isWeightInKg
-                                    ? UnitsService().getDefaultWeightUnit()?.id
-                                    : UnitsService()
-                                        .weightUnits
-                                        .where((unit) => unit.title == 'Lbs')
-                                        .firstOrNull
-                                        ?.id;
+                              // Parse duration for duration-based sets
+                              final duration = !isRepsBased
+                                  ? int.tryParse(_durationController.text) ?? 0
+                                  : null;
 
-                                final timeUnitId = isDurationInMinutes
-                                    ? UnitsService()
-                                        .timeUnits
-                                        .where((unit) => unit.title == 'Min')
-                                        .firstOrNull
-                                        ?.id
-                                    : UnitsService().getDefaultTimeUnit()?.id;
+                              // Get unit IDs based on selection without conversion (only if weight exists)
+                              final weightUnitId = weight != null
+                                  ? (isWeightInKg
+                                      ? UnitsService()
+                                          .getDefaultWeightUnit()
+                                          ?.id
+                                      : UnitsService()
+                                          .weightUnits
+                                          .where((unit) => unit.title == 'Lbs')
+                                          .firstOrNull
+                                          ?.id)
+                                  : null;
 
-                                final note = _noteController.text.trim();
+                              final timeUnitId = isDurationInMinutes
+                                  ? UnitsService()
+                                      .timeUnits
+                                      .where((unit) => unit.title == 'Min')
+                                      .firstOrNull
+                                      ?.id
+                                  : UnitsService().getDefaultTimeUnit()?.id;
 
-                                if ((isRepsBased && reps != null && reps > 0) ||
-                                    (!isRepsBased &&
-                                        duration != null &&
-                                        duration > 0)) {
-                                  cubit.editSet(
-                                    setId: set.id,
-                                    reps: reps,
-                                    weight: weight,
-                                    duration:
-                                        duration, // Pass the duration value
-                                    restTime: restTime,
-                                    note: note.isNotEmpty ? note : null,
-                                    timeUnitId: timeUnitId,
-                                    weightUnitId: weightUnitId,
-                                  );
-                                  Navigator.pop(context);
-                                }
+                              final note = _noteController.text.trim();
+
+                              if ((isRepsBased && reps != null && reps > 0) ||
+                                  (!isRepsBased &&
+                                      duration != null &&
+                                      duration > 0)) {
+                                cubit.editSet(
+                                  setId: set.id,
+                                  reps: reps,
+                                  weight: weight,
+                                  duration: duration, // Pass the duration value
+                                  restTime: restTime,
+                                  note: note.isNotEmpty ? note : null,
+                                  timeUnitId: timeUnitId,
+                                  weightUnitId: weightUnitId,
+                                );
+                                Navigator.pop(context);
                               }
                             },
                             style: ElevatedButton.styleFrom(

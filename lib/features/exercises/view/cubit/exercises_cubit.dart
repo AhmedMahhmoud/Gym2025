@@ -124,6 +124,44 @@ class ExercisesCubit extends Cubit<ExercisesState> {
     }
   }
 
+  Future<void> deleteCustomExercise(String exerciseId) async {
+    emit(state.copyWith(status: ExerciseStatus.loading));
+    try {
+      final result = await exerciseRepository.deleteCustomExercise(exerciseId);
+
+      result.fold(
+        (failure) {
+          emit(
+            state.copyWith(
+              status: ExerciseStatus.error,
+              errorMessage: failure.message,
+            ),
+          );
+        },
+        (_) {
+          // Remove the exercise from custom exercises list
+          final updatedCustomExercises = state.customExercises
+              .where((exercise) => exercise.id != exerciseId)
+              .toList();
+
+          emit(
+            state.copyWith(
+              status: ExerciseStatus.success,
+              customExercises: updatedCustomExercises,
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: ExerciseStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
   void setFilter({
     required FilterType type,
     required String chipValue,

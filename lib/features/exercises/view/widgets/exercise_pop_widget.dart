@@ -7,12 +7,18 @@ class PopAnimatedCard extends StatefulWidget {
   final Exercise exercise;
   final String imageUrl;
   final VoidCallback onTap;
+  final bool showDelete;
+  final VoidCallback? onDelete;
+  final bool isDeleteLoading;
 
   const PopAnimatedCard({
     super.key,
     required this.exercise,
     required this.imageUrl,
     required this.onTap,
+    this.showDelete = false,
+    this.onDelete,
+    this.isDeleteLoading = false,
   });
 
   @override
@@ -41,9 +47,11 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
   }
 
   void _handleTap() async {
-    await _controller.forward();
-    await _controller.reverse();
-    widget.onTap();
+    if (!widget.isDeleteLoading) {
+      await _controller.forward();
+      await _controller.reverse();
+      widget.onTap();
+    }
   }
 
   @override
@@ -71,6 +79,32 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
               ),
               alignment: Alignment.center,
             ),
+            // Delete button for custom exercises
+            if (widget.showDelete && widget.onDelete != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: widget.isDeleteLoading ? null : widget.onDelete,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(0.7),
+                      border: Border.all(
+                        color: Colors.red.withOpacity(0.8),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.delete_outline,
+                      color: widget.isDeleteLoading ? Colors.grey : Colors.red,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
             Positioned(
               bottom: 0,
               child: Container(

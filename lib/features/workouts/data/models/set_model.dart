@@ -1,6 +1,6 @@
 abstract class IWorkoutSet {
   String get id;
-  double get weight;
+  double? get weight;
   int? get repetitions;
   int? get duration;
   int? get restTime;
@@ -15,7 +15,7 @@ class SetModel implements IWorkoutSet {
   @override
   final String id;
   @override
-  final double weight;
+  final double? weight;
   @override
   final int? repetitions;
   @override
@@ -33,7 +33,7 @@ class SetModel implements IWorkoutSet {
 
   SetModel({
     required this.id,
-    required this.weight,
+    this.weight,
     this.repetitions,
     this.duration,
     this.restTime,
@@ -46,7 +46,7 @@ class SetModel implements IWorkoutSet {
   factory SetModel.fromJson(Map<String, dynamic> json) {
     return SetModel(
       id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      weight: json['weight'].toDouble(),
+      weight: json['weight']?.toDouble(),
       repetitions: json['repetitions'],
       duration: json['duration'],
       restTime: json['restTime'],
@@ -61,7 +61,7 @@ class SetModel implements IWorkoutSet {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'weight': weight,
+      if (weight != null) 'weight': weight,
       'repetitions': repetitions,
       'duration': duration,
       'restTime': restTime,

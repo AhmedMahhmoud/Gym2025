@@ -7,7 +7,7 @@ import 'package:gym/features/workouts/data/units_service.dart';
 
 class AddSetDialog extends StatefulWidget {
   final Function({
-    required double weight,
+    double? weight,
     required int? reps,
     required int? duration,
     int? restTime,
@@ -49,26 +49,31 @@ class _AddSetDialogState extends State<AddSetDialog> {
   }
 
   void _addSet() {
-    final weight = double.tryParse(_weightController.text);
+    final weight = _weightController.text.trim().isEmpty
+        ? null
+        : double.tryParse(_weightController.text);
     final reps = int.tryParse(_repsController.text);
     final duration = int.tryParse(_durationController.text);
     final restTime = int.tryParse(_restTimeController.text);
     final note = _noteController.text.trim();
 
-    if (weight == null || weight <= 0) {
+    // Only validate weight if it's provided
+    if (_weightController.text.trim().isNotEmpty &&
+        (weight == null || weight <= 0)) {
       CustomSnackbar.show(context, 'Please enter a valid weight',
           isError: true);
       return;
     }
 
-    // 5. Finally, let's update the `AddSetDialog` to not convert units
     // Get unit IDs based on selection without conversion
-    final weightUnitId = _isWeightInKg
-        ? _unitsService.getDefaultWeightUnit()?.id
-        : _unitsService.weightUnits
-            .where((unit) => unit.title == 'Lbs')
-            .firstOrNull
-            ?.id;
+    final weightUnitId = weight != null
+        ? (_isWeightInKg
+            ? _unitsService.getDefaultWeightUnit()?.id
+            : _unitsService.weightUnits
+                .where((unit) => unit.title == 'Lbs')
+                .firstOrNull
+                ?.id)
+        : null;
 
     final timeUnitId = _isDurationInMinutes
         ? _unitsService.timeUnits
@@ -84,10 +89,10 @@ class _AddSetDialogState extends State<AddSetDialog> {
         return;
       }
       widget.onAdd(
-        weight: weight, // Use weight as is without conversion
+        weight: weight,
         reps: reps,
         duration: null,
-        restTime: restTime, // Use restTime as is without conversion
+        restTime: restTime,
         note: note.isNotEmpty ? note : null,
         timeUnitId: timeUnitId,
         weightUnitId: weightUnitId,
@@ -99,10 +104,10 @@ class _AddSetDialogState extends State<AddSetDialog> {
         return;
       }
       widget.onAdd(
-        weight: weight, // Use weight as is without conversion
+        weight: weight,
         reps: null,
-        duration: duration, // Use duration as is without conversion
-        restTime: restTime, // Use restTime as is without conversion
+        duration: duration,
+        restTime: restTime,
         note: note.isNotEmpty ? note : null,
         timeUnitId: timeUnitId,
         weightUnitId: weightUnitId,
@@ -169,7 +174,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                     keyboardType: TextInputType.number,
                     style: const TextStyle(color: Colors.white),
                     decoration: const InputDecoration(
-                      labelText: 'Weight',
+                      labelText: 'Weight (optional)',
                       labelStyle: TextStyle(color: Colors.white70),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.white30),

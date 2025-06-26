@@ -417,7 +417,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   // Add set to exercise
   Future<void> addSetToExercise({
     required int reps,
-    required double weight,
+    double? weight,
     int? restTime,
     String? note,
     String? timeUnitId,
@@ -434,7 +434,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
 
     final setData = {
-      'weight': weight,
+      if (weight != null) 'weight': weight,
       'repetitions': reps,
       'duration': null,
       if (restTime != null) 'restTime': restTime,
@@ -524,7 +524,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   // Update the `addDurationSetToExercise` method in `workouts_cubit.dart` to not convert units
   Future<void> addDurationSetToExercise({
     required int duration,
-    required double weight,
+    double? weight,
     int? restTime,
     String? note,
     String? timeUnitId,
@@ -541,7 +541,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
 
     final setData = {
-      'weight': weight,
+      if (weight != null) 'weight': weight,
       'repetitions': null,
       'duration': duration,
       if (restTime != null) 'restTime': restTime,
@@ -625,7 +625,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   // Edit set
   Future<void> editSet({
     required String setId,
-    required double weight,
+    double? weight,
     required int? reps,
     required int? duration,
     int? restTime,
@@ -644,7 +644,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
 
     final setData = {
-      'weight': weight,
+      if (weight != null) 'weight': weight,
       if (reps != null) 'repetitions': reps,
       if (duration != null) 'duration': duration,
       if (restTime != null) 'restTime': restTime,

@@ -113,8 +113,11 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
             'Custom exercise added successfully',
             isError: false,
           );
-          // Then pop the screen
-          Navigator.pop(context);
+          // Return the newly created exercise (last one in the list)
+          final newExercise = state.customExercises.isNotEmpty
+              ? state.customExercises.last
+              : null;
+          Navigator.pop(context, newExercise);
         }
       },
       child: Scaffold(

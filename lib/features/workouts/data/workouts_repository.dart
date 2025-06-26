@@ -120,7 +120,7 @@ class WorkoutsRepository {
       final response = await _dioService.post(
         '/api/Workouts/exercise/$workoutExerciseId/sets',
         data: {
-          'weight': setData['weight'],
+          if (setData['weight'] != null) 'weight': setData['weight'],
           'repetitions': setData['repetitions'],
           'duration': setData['duration'],
           if (setData['restTime'] != null) 'restTime': setData['restTime'],
@@ -154,7 +154,7 @@ class WorkoutsRepository {
       final response = await _dioService.post(
         '/api/Workouts/exercise/$workoutExerciseId/sets',
         data: {
-          'weight': setData['weight'],
+          if (setData['weight'] != null) 'weight': setData['weight'],
           'duration': setData['duration'],
           if (setData['restTime'] != null) 'restTime': setData['restTime'],
         },
@@ -222,7 +222,7 @@ class WorkoutsRepository {
       final response = await _dioService.put(
         '/api/Workouts/set/$setId',
         data: {
-          'weight': setData['weight'],
+          if (setData['weight'] != null) 'weight': setData['weight'],
           'repetitions': setData['repetitions'],
           'duration': setData['duration'],
           if (setData['restTime'] != null) 'restTime': setData['restTime'],

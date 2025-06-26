@@ -148,7 +148,7 @@ class WorkoutExercise {
 
 class WorkoutSet {
   final String id;
-  final double weight;
+  final double? weight;
   final int? repetitions;
   final int? duration;
   final int? restTime;
@@ -160,7 +160,7 @@ class WorkoutSet {
 
   WorkoutSet({
     required this.id,
-    required this.weight,
+    this.weight,
     this.repetitions,
     this.duration,
     this.restTime,
@@ -174,7 +174,7 @@ class WorkoutSet {
   factory WorkoutSet.fromJson(Map<String, dynamic> json) {
     return WorkoutSet(
       id: json['id'],
-      weight: json['weight'].toDouble(),
+      weight: json['weight']?.toDouble(),
       repetitions: json['repetitions'],
       duration: json['duration'],
       restTime: json['restTime'],
@@ -189,7 +189,7 @@ class WorkoutSet {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'weight': weight,
+      if (weight != null) 'weight': weight,
       'repetitions': repetitions,
       'duration': duration,
       'restTime': restTime,

@@ -57,4 +57,8 @@ class ExercisesService {
       workoutId: exercise.workoutId,
     );
   }
+
+  Future<void> deleteCustomExercise(String exerciseId) async {
+    await dioService.delete('/api/customExercises/$exerciseId');
+  }
 }

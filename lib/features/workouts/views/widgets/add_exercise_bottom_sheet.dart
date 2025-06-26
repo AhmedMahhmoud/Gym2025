@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/core/utils/shared_utils.dart';
 import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:gym/features/exercises/view/widgets/custom_exercise_form.dart';
 import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
 import 'package:gym/Shared/ui/custom_snackbar.dart';
 import 'package:gym/routes/route_names.dart';
@@ -135,11 +136,17 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
 
     final exercises = groupedExercises[_selectedCategory] ?? [];
 
-    if (_searchQuery.isEmpty) return exercises;
+    // Use the cubit's search query (which is the same as _searchQuery now)
+    if (state.searchQuery.isEmpty) return exercises;
 
     return exercises
         .where((exercise) =>
-            exercise.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+            exercise.name
+                .toLowerCase()
+                .contains(state.searchQuery.toLowerCase()) ||
+            exercise.description
+                .toLowerCase()
+                .contains(state.searchQuery.toLowerCase()))
         .toList();
   }
 
@@ -313,6 +320,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
             setState(() {
               _searchQuery = value;
             });
+            // Update the ExercisesCubit search query for consistent filtering
+            context.read<ExercisesCubit>().setSearchQuery(value);
           },
           decoration: InputDecoration(
             hintText: 'Search exercises...',
@@ -427,6 +436,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
             setState(() {
               _searchQuery = value;
             });
+            // Update the ExercisesCubit search query to filter custom exercises
+            context.read<ExercisesCubit>().setSearchQuery(value);
           },
           decoration: InputDecoration(
             hintText: 'Search custom exercises...',
@@ -439,6 +450,46 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
             ),
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
           ),
+        ),
+        const SizedBox(height: 12),
+
+        // Add custom exercise row
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Add new custom exercise?',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () => _navigateToCustomExerciseForm(context),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
 
@@ -512,5 +563,36 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         ),
       ],
     );
+  }
+
+  // Navigate to custom exercise form and handle the result
+  Future<void> _navigateToCustomExerciseForm(BuildContext context) async {
+    // Navigate to custom exercise form and wait for result
+    final Exercise? newExercise = await Navigator.push<Exercise>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CustomExerciseForm(),
+      ),
+    );
+
+    // If an exercise was created, add it to the current state without API call
+    if (mounted && newExercise != null) {
+      // Get current cubit and state
+      final exercisesCubit = context.read<ExercisesCubit>();
+      final currentState = exercisesCubit.state;
+
+      // Create updated custom exercises list with the new exercise
+      final updatedCustomExercises = [...currentState.customExercises];
+
+      // Check if exercise already exists to avoid duplicates
+      if (!updatedCustomExercises.any((e) => e.id == newExercise.id)) {
+        updatedCustomExercises.add(newExercise);
+
+        // Update state directly without API call
+        exercisesCubit.emit(currentState.copyWith(
+          customExercises: updatedCustomExercises,
+        ));
+      }
+    }
   }
 }

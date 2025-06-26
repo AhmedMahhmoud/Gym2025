@@ -51,7 +51,7 @@ class AuthRepository {
   }) async {
     try {
       final formData = FormData.fromMap({
-        'profile_picture': await MultipartFile.fromFile(imagePath),
+        'profilePicture': await MultipartFile.fromFile(imagePath),
       });
 
       final response = await _dioService.multipart(
