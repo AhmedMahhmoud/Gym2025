@@ -68,7 +68,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     final selectedExercises = workoutsCubit.state.selectedExercises;
 
     // Check if exercise already exists in the workout
-    final exerciseExists = selectedExercises.any((e) => e?.id == exercise.id);
+    final exerciseExists = selectedExercises.any((e) => e.id == exercise.id);
 
     if (exerciseExists) {
       CustomSnackbar.show(
@@ -362,7 +362,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                   itemBuilder: (context, index) {
                     final exercise = filteredExercises[index];
                     final isAdded =
-                        selectedExercises.any((e) => e?.id == exercise.id);
+                        selectedExercises.any((e) => e.id == exercise.id);
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -507,7 +507,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                   itemBuilder: (context, index) {
                     final exercise = customExercises[index];
                     final isAdded =
-                        selectedExercises.any((e) => e?.id == exercise.id);
+                        selectedExercises.any((e) => e.id == exercise.id);
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),

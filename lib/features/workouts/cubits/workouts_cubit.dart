@@ -310,20 +310,21 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     final exercises = latestWorkout.workoutExercises
         .map((we) {
           if (we.exercise != null) {
-            return we.exercise;
+            return we.exercise!;
           } else if (we.customExercise != null) {
-            return we.customExercise;
+            return we.customExercise!;
           }
           return null;
         })
         .where((e) => e != null)
+        .cast<Exercise>()
         .toList();
 
     // Remove any duplicates based on exercise ID
     final uniqueExercises =
         exercises.fold<List<Exercise>>([], (list, exercise) {
-      if (!list.any((e) => e.id == exercise!.id)) {
-        list.add(exercise!);
+      if (!list.any((e) => e.id == exercise.id)) {
+        list.add(exercise);
       }
       return list;
     });
@@ -501,22 +502,21 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
         // Update the selected exercises to ensure they have the latest workout exercise ID
         final updatedSelectedExercises = state.selectedExercises.map((e) {
-          if (e?.id ==
+          if (e.id ==
               (updatedWorkoutExercise.exercise?.id ??
                   updatedWorkoutExercise.customExercise?.id)) {
-            return e?.copyWith(workoutExerciseID: updatedWorkoutExercise.id);
+            return e.copyWith(workoutExerciseID: updatedWorkoutExercise.id);
           }
           return e;
         }).toList();
 
         emit(state.copyWith(
-          status: WorkoutsStatus.success,
-          sets: updatedSets,
-          currentWorkoutExercise: updatedWorkoutExercise,
-          currentWorkout: updatedWorkout,
-          workouts: updatedWorkouts,
-          selectedExercises: updatedSelectedExercises,
-        ));
+            status: WorkoutsStatus.success,
+            sets: updatedSets,
+            currentWorkoutExercise: updatedWorkoutExercise,
+            currentWorkout: updatedWorkout,
+            workouts: updatedWorkouts,
+            selectedExercises: updatedSelectedExercises));
       },
     );
   }
@@ -920,10 +920,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
             .toList();
 
         // Combine existing exercises with new ones, avoiding duplicates
-        final existingExercises = List<Exercise>.from(state.selectedExercises)
-            .where((e) => e != null)
-            .cast<Exercise>()
-            .toList();
+        final existingExercises = List<Exercise>.from(state.selectedExercises);
         final allExercises = [...existingExercises];
 
         // Add only new exercises that don't already exist

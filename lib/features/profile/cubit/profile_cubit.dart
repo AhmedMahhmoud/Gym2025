@@ -1,11 +1,12 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:gym/core/constants/constants.dart';
 import 'package:gym/core/services/jwt_service.dart';
 import 'package:gym/core/services/token_manager.dart';
 import 'package:gym/features/profile/cubit/profile_state.dart';
 import 'package:gym/features/profile/data/repositories/profile_repository.dart';
 
-class ProfileCubit extends Cubit<ProfileState> {
+class ProfileCubit extends HydratedCubit<ProfileState> {
   final ProfileRepository _repository = ProfileRepository();
   final JwtService _jwtService = JwtService();
   final TokenManager _tokenManager = TokenManager();
@@ -14,8 +15,46 @@ class ProfileCubit extends Cubit<ProfileState> {
     loadUserDataFromToken();
   }
 
+  @override
+  ProfileState? fromJson(Map<String, dynamic> json) {
+    try {
+      return ProfileState(
+        status: ProfileStatus.values[json['status'] ?? 0],
+        displayName: json['displayName'] ?? 'Fitness Enthusiast',
+        profileImage: json['profileImage'],
+        profileImageUrl: json['profileImageUrl'],
+        email: json['email'],
+        userId: json['userId'],
+        errorMessage: json['errorMessage'],
+        // Note: We don't persist userData for security reasons
+      );
+    } catch (e) {
+      log('Error deserializing profile state: $e');
+      return null;
+    }
+  }
+
+  @override
+  Map<String, dynamic>? toJson(ProfileState state) {
+    try {
+      return {
+        'status': state.status.index,
+        'displayName': state.displayName,
+        'profileImage': state.profileImage,
+        'profileImageUrl': state.profileImageUrl,
+        'email': state.email,
+        'userId': state.userId,
+        'errorMessage': state.errorMessage,
+        // Note: We don't persist userData for security reasons
+      };
+    } catch (e) {
+      log('Error serializing profile state: $e');
+      return null;
+    }
+  }
+
   /// Load user data from JWT token
-  Future<void> loadUserDataFromToken() async {
+  Future<void> loadUserDataFromToken({bool forceRefresh = false}) async {
     emit(state.copyWith(status: ProfileStatus.loading, clearError: true));
 
     try {
@@ -52,10 +91,18 @@ class ProfileCubit extends Cubit<ProfileState> {
         profileImageUrl: profileImageUrl,
       ));
     } catch (e) {
-      emit(state.copyWith(
-        status: ProfileStatus.error,
-        errorMessage: 'Error loading user data: $e',
-      ));
+      // If we have cached data, keep it and just show error
+      if (state.email != null && !forceRefresh) {
+        emit(state.copyWith(
+          status: ProfileStatus.success,
+          errorMessage: 'Using cached data: ${e.toString()}',
+        ));
+      } else {
+        emit(state.copyWith(
+          status: ProfileStatus.error,
+          errorMessage: 'Error loading user data: $e',
+        ));
+      }
     }
   }
 
@@ -101,10 +148,16 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   /// Refresh user data from token (useful after login or token update)
   Future<void> refreshUserData() async {
-    await loadUserDataFromToken();
+    await loadUserDataFromToken(forceRefresh: true);
   }
 
   void reset() {
     emit(const ProfileState());
+    clear(); // Clear hydrated storage
+  }
+
+  // Force update profile data from server
+  Future<void> forceRefresh() async {
+    await loadUserDataFromToken(forceRefresh: true);
   }
 }

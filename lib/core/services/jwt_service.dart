@@ -78,7 +78,6 @@ class UserTokenData {
   final String email;
   final String inAppName;
   final String? profilePictureUrl;
-  final String role;
   final String issuer;
   final String audience;
 
@@ -87,7 +86,6 @@ class UserTokenData {
     required this.email,
     required this.inAppName,
     this.profilePictureUrl,
-    required this.role,
     required this.issuer,
     required this.audience,
   });
@@ -100,9 +98,6 @@ class UserTokenData {
           '',
       inAppName: json['InAppName'] ?? '',
       profilePictureUrl: json['ProfilePictureUrl'],
-      role: json[
-              'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
-          '',
       issuer: json['iss'] ?? '',
       audience: json['aud'] ?? '',
     );
@@ -115,7 +110,6 @@ class UserTokenData {
           email,
       'InAppName': inAppName,
       'ProfilePictureUrl': profilePictureUrl,
-      'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': role,
       'iss': issuer,
       'aud': audience,
     };
@@ -136,10 +130,5 @@ class UserTokenData {
         : profilePictureUrl!;
 
     return '$baseUrl/$cleanPath';
-  }
-
-  @override
-  String toString() {
-    return 'UserTokenData(userId: $userId, email: $email, inAppName: $inAppName, profilePictureUrl: $profilePictureUrl, role: $role)';
   }
 }

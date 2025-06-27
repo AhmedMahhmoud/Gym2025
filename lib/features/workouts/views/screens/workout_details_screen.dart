@@ -145,6 +145,73 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
     );
   }
 
+  Widget _buildExerciseCard(Exercise exercise, int index) {
+    return Card(
+      key: ValueKey(exercise.id),
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.1),
+              Colors.white.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: ListTile(
+          title: Text(
+            exercise.name,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Colors.white,
+            ),
+          ),
+          subtitle: Text(
+            exercise.primaryMuscle!,
+            style: const TextStyle(
+              color: Colors.white70,
+            ),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(
+                  FontAwesomeIcons.circleInfo,
+                  color: Colors.white70,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    RouteNames.exercise_details_route,
+                    arguments: [
+                      exercise,
+                      SharedUtils.extractThumbnail(exercise.videoUrl)
+                    ],
+                  );
+                },
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Colors.white70,
+              ),
+            ],
+          ),
+          onTap: () => _navigateToExerciseSets(exercise),
+          onLongPress: () => _showDeleteConfirmationDialog(exercise),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,10 +278,11 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
 
             return ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: state.selectedExercises.where((e) => e != null).length,
+              itemCount: state.selectedExercises.length,
               itemBuilder: (context, index) {
                 final exercise = state.selectedExercises[index];
-                final isDeleting = _isDeleting[exercise?.id] ?? false;
+                final isDeleting = _isDeleting[exercise.id] ?? false;
+
                 return AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   switchOutCurve: Curves.easeOut,
@@ -233,10 +301,11 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                     );
                   },
                   child: isDeleting
-                      ? Container(key: ValueKey('${exercise?.id}_deleting'))
+                      ? Container(key: ValueKey('${exercise.id}_deleting'))
                       : Skeletonizer(
                           enabled: state.status == WorkoutsStatus.loading,
-                          child: _buildExerciseCard(exercise!, index)),
+                          child: _buildExerciseCard(exercise, index),
+                        ),
                 );
               },
             );
@@ -254,73 +323,6 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
           }
           return const SizedBox.shrink();
         },
-      ),
-    );
-  }
-
-  Widget _buildExerciseCard(Exercise exercise, int index) {
-    return Card(
-      key: ValueKey(exercise.id),
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: ListTile(
-          title: Text(
-            exercise.name,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.white,
-            ),
-          ),
-          subtitle: Text(
-            exercise.primaryMuscle!,
-            style: const TextStyle(
-              color: Colors.white70,
-            ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  FontAwesomeIcons.circleInfo,
-                  color: Colors.white70,
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    RouteNames.exercise_details_route,
-                    arguments: [
-                      exercise,
-                      SharedUtils.extractThumbnail(exercise.videoUrl)
-                    ],
-                  );
-                },
-              ),
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.white70,
-              ),
-            ],
-          ),
-          onTap: () => _navigateToExerciseSets(exercise),
-          onLongPress: () => _showDeleteConfirmationDialog(exercise),
-        ),
       ),
     );
   }

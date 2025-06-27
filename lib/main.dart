@@ -3,8 +3,11 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:gym/core/network/connectivity.dart';
 import 'package:gym/core/network/dio_service.dart';
+import 'package:gym/core/services/auth_initialization_service.dart';
 import 'package:gym/core/services/storage_service.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/features/auth/view/screens/auth_screen.dart';
@@ -22,6 +25,11 @@ import 'package:gym/features/workouts/data/units_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize HydratedBloc for offline data persistence
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: await getApplicationDocumentsDirectory(),
+  );
+
   // Initialize units service
   await UnitsService().initialize();
 
@@ -36,32 +44,97 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final storage = StorageService();
-  bool? _hasSeenOnboarding;
-  bool? _isSignedIn;
+  final AuthInitializationService _authService = AuthInitializationService();
+  AuthInitStatus _authStatus = AuthInitStatus.checking;
+  bool _hasSeenOnboarding = false;
   final ConnectivityService _connectivityService = ConnectivityService();
+
   @override
   void initState() {
     super.initState();
-    _checkIsTokenAvailable();
+    _initializeApp();
   }
 
-  Future<bool> _checkOnboardingStatus() async {
-    final seen = await storage.getHasSeenOnboarding();
-    log('User seen onboarding? $seen');
-    return seen;
+  Future<void> _initializeApp() async {
+    try {
+      log('Initializing app...');
+
+      // Initialize authentication
+      final authStatus = await _authService.initializeAuth();
+
+      // Check onboarding status
+      final hasSeenOnboarding = await _authService.checkOnboardingStatus();
+
+      setState(() {
+        _authStatus = authStatus;
+        _hasSeenOnboarding = hasSeenOnboarding;
+      });
+
+      log('App initialized - Auth: $authStatus, Onboarding: $hasSeenOnboarding');
+    } catch (e) {
+      log('Error initializing app: $e');
+      setState(() {
+        _authStatus = AuthInitStatus.error;
+        _hasSeenOnboarding = false;
+      });
+    }
   }
 
-  _checkIsTokenAvailable() async {
-    final String? isTokenActive = await storage.getAuthToken();
-    if (isTokenActive == null) {
-      _isSignedIn = false;
-      _hasSeenOnboarding = await _checkOnboardingStatus();
-      setState(() {});
-    } else {
-      _hasSeenOnboarding = true;
-      _isSignedIn = true;
-      setState(() {});
+  Widget _buildHomeScreen() {
+    switch (_authStatus) {
+      case AuthInitStatus.checking:
+        return const Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: Colors.white),
+                SizedBox(height: 16),
+                Text(
+                  'Initializing...',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        );
+
+      case AuthInitStatus.authenticated:
+        return const MainScaffold();
+
+      case AuthInitStatus.unauthenticated:
+        return _hasSeenOnboarding
+            ? const AuthScreen()
+            : const OnboardingScreen();
+
+      case AuthInitStatus.error:
+        return Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                const Text(
+                  'Something went wrong',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Please restart the app',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _initializeApp,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        );
     }
   }
 
@@ -91,16 +164,7 @@ class _MyAppState extends State<MyApp> {
                 theme: AppTheme.darkTheme,
                 debugShowCheckedModeBanner: false,
                 onGenerateRoute: OnPageRoute.generateRoute,
-                home: _isSignedIn == null
-                    ? const Scaffold(
-                        backgroundColor: Colors.black,
-                        body: Center(child: CircularProgressIndicator()),
-                      ) // 🟡 Show loading while waiting
-                    : _isSignedIn!
-                        ? const MainScaffold()
-                        : !_hasSeenOnboarding!
-                            ? const OnboardingScreen()
-                            : const AuthScreen(),
+                home: _buildHomeScreen(),
               ),
             ),
             Directionality(
