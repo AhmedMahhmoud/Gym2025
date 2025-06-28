@@ -32,7 +32,7 @@ class SignupView extends StatelessWidget {
             height: 10,
           ),
           AppTextField(
-            hintText: 'Username',
+            hintText: 'In App Name',
             onSaved: (p0) => authCubit.signUpModel.username = p0!,
             suffixIcon: const Icon(FontAwesomeIcons.dumbbell),
           ),

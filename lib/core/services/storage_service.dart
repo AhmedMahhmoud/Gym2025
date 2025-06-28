@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum StorageType {
@@ -78,6 +79,18 @@ class StorageService {
         return _prefs!.getStringList(key) as T? ?? defaultValue;
       }
       return defaultValue;
+    }
+  }
+
+  Future<void> checkForAppUpdateAndClearIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentVersion = (await PackageInfo.fromPlatform()).version;
+    final savedVersion = prefs.getString('app_version');
+
+    if (savedVersion != currentVersion) {
+      await prefs.clear();
+      await const FlutterSecureStorage().deleteAll();
+      await prefs.setString('app_version', currentVersion);
     }
   }
 
@@ -191,5 +204,11 @@ class StorageService {
     await delete(key: _userIdKey, type: StorageType.secure);
     await delete(key: _userEmailKey, type: StorageType.secure);
     await delete(key: _userNameKey, type: StorageType.secure);
+  }
+
+  // Clear All Data (both secure and non-secure)
+  Future<void> clearAllData() async {
+    await clearAll(type: StorageType.secure);
+    await clearAll(type: StorageType.nonSecure);
   }
 }

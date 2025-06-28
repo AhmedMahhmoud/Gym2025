@@ -21,6 +21,17 @@ class _MainScaffoldState extends State<MainScaffold> {
     false
   ]; // Track initialization state
 
+  @override
+  void initState() {
+    super.initState();
+    // Refresh ProfileCubit data when MainScaffold loads (after successful login)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<ProfileCubit>().refreshUserData();
+      }
+    });
+  }
+
   // Define the navigation bar items
   final List<FloatingNavBarItem> _navItems = [
     FloatingNavBarItem(

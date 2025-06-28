@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/core/services/storage_service.dart';
+import 'package:gym/features/profile/cubit/profile_cubit.dart';
 import 'package:gym/routes/route_names.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class SignOutBtn extends StatelessWidget {
   const SignOutBtn({
@@ -12,24 +16,46 @@ class SignOutBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        //clear the auth token
-        final storaage = StorageService();
-        await storaage.clearUserData();
+        try {
+          // Clear all storage types
+          final storage = StorageService();
+          await storage.clearAllData();
 
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          RouteNames.auth_screen_route,
-          (route) => false,
-        );
+          // Reset ProfileCubit state and clear hydrated storage
+          if (context.mounted) {
+            context.read<ProfileCubit>().reset();
+          }
+
+          // Clear cached network images
+          final cacheManager = DefaultCacheManager();
+          await cacheManager.emptyCache();
+
+          // Navigate to auth screen
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RouteNames.auth_screen_route,
+              (route) => false,
+            );
+          }
+        } catch (e) {
+          // If any error occurs, still try to navigate to auth screen
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RouteNames.auth_screen_route,
+              (route) => false,
+            );
+          }
+        }
       },
       child: const Column(
         children: [
           Text(
             'SignOut',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-          
           ),
-          const Icon(
+          Icon(
             FontAwesomeIcons.rightFromBracket,
             size: 20,
           ),

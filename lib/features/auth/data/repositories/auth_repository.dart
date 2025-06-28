@@ -17,7 +17,8 @@ class AuthRepository {
         data: {
           'email': signModel.mail,
           'password': signModel.password,
-          'username': signModel.username,
+          'inappname': signModel.username,
+          'Username': signModel.username,
           'roles': ['user'],
         },
       );

@@ -57,6 +57,7 @@ dependencies:
   image_picker: ^1.0.7
   shimmer: ^3.0.0
   dart_jsonwebtoken: ^2.12.2
+  package_info_plus: ^8.3.0
 
 dev_dependencies:
   flutter_test:

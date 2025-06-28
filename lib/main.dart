@@ -24,7 +24,7 @@ import 'package:gym/features/workouts/data/units_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await StorageService().checkForAppUpdateAndClearIfNeeded();
   // Initialize HydratedBloc for offline data persistence
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: await getApplicationDocumentsDirectory(),
