@@ -45,7 +45,7 @@ class WorkoutsRepository {
         data: {
           'title': title,
           'planId': planId,
-          if (notes != null) 'notes': notes, // Add notes to request if not null
+          if (notes != null) 'note': notes, // Add notes to request if not null
         },
       );
 
@@ -57,15 +57,6 @@ class WorkoutsRepository {
 
   // Get all exercises
   Future<Either<Failure, List<Map<String, dynamic>>>> getExercises() async {
-    if (useStaticData) {
-      try {
-        final exercises = StaticWorkoutsData.getAllExercises();
-        return Right(exercises.map((e) => e.toJson()).toList());
-      } catch (e) {
-        return Left(BadRequestFailure(message: 'Failed to get exercises: $e'));
-      }
-    }
-
     try {
       final response = await _dioService.get('/exercises');
       return Right(
@@ -78,17 +69,6 @@ class WorkoutsRepository {
   // Add exercise to workout
   Future<Either<Failure, Map<String, dynamic>>> addExerciseToWorkout(
       String workoutId, String exerciseId) async {
-    if (useStaticData) {
-      try {
-        // In static data, we'll just return the exercise data
-        final allExercises = StaticWorkoutsData.getAllExercises();
-        final exercise = allExercises.firstWhere((e) => e.id == exerciseId);
-        return Right(exercise.toJson());
-      } catch (e) {
-        return Left(BadRequestFailure(message: 'Failed to add exercise: $e'));
-      }
-    }
-
     try {
       final response = await _dioService.post(
         '/workouts/$workoutId/exercises',
@@ -352,7 +332,7 @@ class WorkoutsRepository {
         '/api/Workouts/UpdateWorkoutInfo/$workoutId',
         data: {
           if (title != null) 'title': title,
-          if (notes != null) 'notes': notes,
+          if (notes != null) 'note': notes,
         },
       );
       return Right(response.data['message']);

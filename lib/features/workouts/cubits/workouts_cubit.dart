@@ -241,6 +241,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
             id: workout.id,
             planId: workout.planId,
             userId: workout.userId,
+            notes: workout.notes,
             title: workout.title,
             date: workout.date,
             workoutExercises: processedExercises,

@@ -12,26 +12,54 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
   final TokenManager _tokenManager = TokenManager();
 
   ProfileCubit() : super(const ProfileState()) {
-    loadUserDataFromToken();
+    _initializeProfile();
+  }
+
+  /// Initialize profile data only if user is authenticated
+  Future<void> _initializeProfile() async {
+    try {
+      final token = await _tokenManager.getToken();
+      if (token != null && token.isNotEmpty) {
+        // Only load data if we have a valid token
+        await loadUserDataFromToken();
+      } else {
+        // No token - ensure we start with clean state
+        log('ProfileCubit: No token found during initialization, starting with clean state');
+        emit(const ProfileState());
+      }
+    } catch (e) {
+      log('ProfileCubit: Error during initialization: $e');
+      emit(const ProfileState());
+    }
   }
 
   @override
   ProfileState? fromJson(Map<String, dynamic> json) {
     try {
-      return ProfileState(
-        status: ProfileStatus.values[json['status'] ?? 0],
-        displayName: json['displayName'] ?? 'Fitness Enthusiast',
-        profileImage: json['profileImage'],
-        profileImageUrl: json['profileImageUrl'],
-        email: json['email'],
-        userId: json['userId'],
-        errorMessage: json['errorMessage'],
-        // Note: We don't persist userData for security reasons
-      );
+      // Check if we should restore data (only if we have a valid token)
+      return _shouldRestoreData()
+          ? ProfileState(
+              status: ProfileStatus.values[json['status'] ?? 0],
+              displayName: json['displayName'] ?? 'Fitness Enthusiast',
+              profileImage: json['profileImage'],
+              profileImageUrl: json['profileImageUrl'],
+              email: json['email'],
+              userId: json['userId'],
+              errorMessage: json['errorMessage'],
+              // Note: We don't persist userData for security reasons
+            )
+          : null; // Return null to start with clean state
     } catch (e) {
       log('Error deserializing profile state: $e');
       return null;
     }
+  }
+
+  /// Check if we should restore hydrated data
+  bool _shouldRestoreData() {
+    // Don't restore data if user is not authenticated
+    // This is a synchronous check, so we'll be conservative
+    return false; // Always start fresh to avoid cross-user data issues
   }
 
   @override
@@ -55,26 +83,34 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
 
   /// Load user data from JWT token
   Future<void> loadUserDataFromToken({bool forceRefresh = false}) async {
+    log('ProfileCubit: Starting to load user data from token (forceRefresh: $forceRefresh)');
     emit(state.copyWith(status: ProfileStatus.loading, clearError: true));
 
     try {
       final token = await _tokenManager.getToken();
       if (token == null || token.isEmpty) {
-        emit(state.copyWith(
+        log('ProfileCubit: No authentication token found');
+        // No token means user is not authenticated - clear all data
+        emit(const ProfileState(
           status: ProfileStatus.error,
           errorMessage: 'No authentication token found',
         ));
         return;
       }
 
+      log('ProfileCubit: Token found, extracting user data');
       final userData = _jwtService.extractUserData(token);
       if (userData == null) {
-        emit(state.copyWith(
+        log('ProfileCubit: Failed to extract user data from token');
+        // Invalid token - clear all data
+        emit(const ProfileState(
           status: ProfileStatus.error,
           errorMessage: 'Failed to decode user data from token',
         ));
         return;
       }
+
+      log('ProfileCubit: User data extracted successfully - User: ${userData.email}, Name: ${userData.inAppName}');
 
       final profileImageUrl =
           userData.getFullProfilePictureUrl(AppConstants.baseUrl);
@@ -82,6 +118,7 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
           ? userData.inAppName
           : userData.email.split('@').first;
 
+      log('ProfileCubit: Emitting new profile state with displayName: $displayName');
       emit(state.copyWith(
         status: ProfileStatus.success,
         userData: userData,
@@ -89,20 +126,16 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
         email: userData.email,
         userId: userData.userId,
         profileImageUrl: profileImageUrl,
+        // Clear any previous local profile image when loading fresh data
+        profileImage: null,
       ));
     } catch (e) {
-      // If we have cached data, keep it and just show error
-      if (state.email != null && !forceRefresh) {
-        emit(state.copyWith(
-          status: ProfileStatus.success,
-          errorMessage: 'Using cached data: ${e.toString()}',
-        ));
-      } else {
-        emit(state.copyWith(
-          status: ProfileStatus.error,
-          errorMessage: 'Error loading user data: $e',
-        ));
-      }
+      log('ProfileCubit: Error loading user data: $e');
+      // On error, clear all data instead of falling back to cached data
+      emit(const ProfileState(
+        status: ProfileStatus.error,
+        errorMessage: 'Error loading user data',
+      ));
     }
   }
 
@@ -148,12 +181,44 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
 
   /// Refresh user data from token (useful after login or token update)
   Future<void> refreshUserData() async {
+    log('ProfileCubit: Refreshing user data');
+    await loadUserDataFromToken(forceRefresh: true);
+  }
+
+  /// Force a complete refresh after login - clears state and reloads
+  Future<void> forceCompleteRefresh() async {
+    log('ProfileCubit: Force complete refresh - clearing state and reloading');
+
+    // First emit loading state
+    emit(state.copyWith(status: ProfileStatus.loading, clearError: true));
+
+    // Small delay to ensure token is properly set
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    // Force reload user data
     await loadUserDataFromToken(forceRefresh: true);
   }
 
   void reset() {
+    log('ProfileCubit: Resetting all data and clearing hydrated storage');
+    // First clear hydrated storage
+    clear();
+    // Then emit clean state
     emit(const ProfileState());
-    clear(); // Clear hydrated storage
+  }
+
+  /// Completely clear all ProfileCubit data and hydrated storage
+  Future<void> clearAllData() async {
+    log('ProfileCubit: Clearing all data and hydrated storage');
+
+    // Clear hydrated storage
+    clear();
+
+    // Emit completely clean state
+    emit(const ProfileState());
+
+    // Force save the clean state to hydrated storage
+    await Future.delayed(const Duration(milliseconds: 100));
   }
 
   // Force update profile data from server

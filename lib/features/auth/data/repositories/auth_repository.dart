@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:gym/core/services/storage_service.dart';
+import 'package:gym/core/services/token_manager.dart';
 import 'package:gym/features/auth/data/models/sign_up_model.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/dio_service.dart';
@@ -9,6 +10,7 @@ import '../../../../core/network/error_handler.dart';
 class AuthRepository {
   AuthRepository();
   final DioService _dioService = DioService();
+  final TokenManager _tokenManager = TokenManager();
 
   Future<Either<Failure, Unit>> signUp(SignUpModel signModel) async {
     try {
@@ -39,9 +41,13 @@ class AuthRepository {
           'roles': ['user'],
         },
       );
-      final storage = StorageService();
-      await storage.setAuthToken(res.data['message']['jwtToken']);
-      return Right(res.data['message']['jwtToken']);
+
+      final token = res.data['message']['jwtToken'];
+
+      // Use TokenManager to store token (this updates both cache and storage)
+      await _tokenManager.setToken(token);
+
+      return Right(token);
     } catch (e) {
       return Left(ErrorHandler.handle(e));
     }

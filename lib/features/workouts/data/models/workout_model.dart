@@ -46,7 +46,7 @@ class WorkoutModel {
       planId: json['planId'],
       userId: json['userId'],
       title: json['title'],
-      notes: json['notes'],
+      notes: json['note'],
       date: DateTime.parse(json['date']),
       workoutExercises: (json['workoutExercises'] as List<dynamic>?)
               ?.map((e) => WorkoutExercise.fromJson(e))

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/core/services/storage_service.dart';
+import 'package:gym/core/services/token_manager.dart';
 import 'package:gym/features/profile/cubit/profile_cubit.dart';
 import 'package:gym/routes/route_names.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -17,13 +18,17 @@ class SignOutBtn extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         try {
+          // Clear TokenManager cache first
+          final tokenManager = TokenManager();
+          await tokenManager.clearToken();
+
           // Clear all storage types
           final storage = StorageService();
           await storage.clearAllData();
 
           // Reset ProfileCubit state and clear hydrated storage
           if (context.mounted) {
-            context.read<ProfileCubit>().reset();
+            await context.read<ProfileCubit>().clearAllData();
           }
 
           // Clear cached network images

@@ -25,9 +25,13 @@ class _MainScaffoldState extends State<MainScaffold> {
   void initState() {
     super.initState();
     // Refresh ProfileCubit data when MainScaffold loads (after successful login)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
-        context.read<ProfileCubit>().refreshUserData();
+        // Add a delay to ensure token is properly stored before refreshing
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (mounted) {
+          await context.read<ProfileCubit>().forceCompleteRefresh();
+        }
       }
     });
   }
