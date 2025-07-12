@@ -8,6 +8,7 @@ class WorkoutModel {
   final String title;
   final DateTime date;
   final String? notes;
+  final int? sortOrder;
   final List<WorkoutExercise> workoutExercises;
 
   WorkoutModel({
@@ -17,6 +18,7 @@ class WorkoutModel {
     required this.title,
     required this.date,
     this.notes,
+    this.sortOrder,
     this.workoutExercises = const [],
   });
 
@@ -27,6 +29,7 @@ class WorkoutModel {
     String? title,
     String? notes,
     DateTime? date,
+    int? sortOrder,
     List<WorkoutExercise>? workoutExercises,
   }) {
     return WorkoutModel(
@@ -36,6 +39,7 @@ class WorkoutModel {
       title: title ?? this.title,
       notes: notes ?? this.notes,
       date: date ?? this.date,
+      sortOrder: sortOrder ?? this.sortOrder,
       workoutExercises: workoutExercises ?? this.workoutExercises,
     );
   }
@@ -47,6 +51,7 @@ class WorkoutModel {
       userId: json['userId'],
       title: json['title'],
       notes: json['note'],
+      sortOrder: json['sortOrder'],
       date: DateTime.parse(json['date']),
       workoutExercises: (json['workoutExercises'] as List<dynamic>?)
               ?.map((e) => WorkoutExercise.fromJson(e))
@@ -63,6 +68,7 @@ class WorkoutModel {
       'title': title,
       'date': date.toIso8601String(),
       'notes': notes,
+      'sortOrder': sortOrder,
       'workoutExercises': workoutExercises.map((e) => e.toJson()).toList(),
     };
   }

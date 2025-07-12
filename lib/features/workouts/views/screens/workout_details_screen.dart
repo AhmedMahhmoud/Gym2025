@@ -220,6 +220,31 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
           selector: (state) => state.currentWorkout?.title,
           builder: (context, title) => Text(title ?? 'Workout Details'),
         ),
+        actions: [
+          IconButton(
+            onPressed: _showAddExerciseBottomSheet,
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         bottom: true,
@@ -311,18 +336,6 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
             );
           },
         ),
-      ),
-      floatingActionButton: BlocBuilder<WorkoutsCubit, WorkoutsState>(
-        builder: (context, state) {
-          if (state.selectedExercises.isNotEmpty) {
-            return FloatingActionButton(
-              onPressed: _showAddExerciseBottomSheet,
-              backgroundColor: AppColors.textSecondary,
-              child: const Icon(Icons.add),
-            );
-          }
-          return const SizedBox.shrink();
-        },
       ),
     );
   }

@@ -283,6 +283,35 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         title: Text(_workoutsCubit.state.currentPlan?.title ?? 'Workouts'),
         elevation: 0,
         backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _isAddingWorkout = true;
+              });
+            },
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         bottom: true,
@@ -610,13 +639,18 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                             ],
                           ),
                         )
-                      : ListView.builder(
+                      : ReorderableListView.builder(
                           padding: const EdgeInsets.all(16),
                           itemCount: state.workouts.length,
+                          onReorder: (oldIndex, newIndex) async {
+                            await _workoutsCubit.reorderWorkouts(
+                                oldIndex, newIndex);
+                          },
                           itemBuilder: (context, index) {
                             final workout = state.workouts[index];
                             final isDeleting = _isDeleting[workout.id] ?? false;
                             return AnimatedSwitcher(
+                              key: ValueKey(workout.id),
                               duration: const Duration(milliseconds: 300),
                               switchOutCurve: Curves.easeOut,
                               switchInCurve: Curves.easeIn,
@@ -646,52 +680,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           },
         ),
       ),
-      floatingActionButton: context
-              .watch<WorkoutsCubit>()
-              .state
-              .workouts
-              .isNotEmpty
-          ? Padding(
-              padding: const EdgeInsets.only(bottom: 100),
-              child: FloatingActionButton(
-                onPressed: () {
-                  setState(() {
-                    _isAddingWorkout = true;
-                  });
-                },
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).primaryColor,
-                        Theme.of(context).primaryColor.withOpacity(0.7),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).primaryColor.withOpacity(0.5),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(15),
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ),
-              ),
-            )
-          : null,
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.miniCenterFloat,
     );
   }
 
@@ -739,9 +727,13 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(FontAwesomeIcons.squarePen,
-                    color: Colors.white70),
+                icon: const Icon(FontAwesomeIcons.edit, color: Colors.white70),
                 onPressed: () => _showEditWorkoutDialog(workout),
+              ),
+              IconButton(
+                icon: const Icon(FontAwesomeIcons.circleXmark,
+                    color: Colors.redAccent),
+                onPressed: () => _showDeleteConfirmationDialog(workout),
               ),
               const Icon(
                 Icons.chevron_right,
@@ -750,7 +742,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
             ],
           ),
           onTap: () => _navigateToExercises(workout),
-          onLongPress: () => _showDeleteConfirmationDialog(workout),
         ),
       ),
     );

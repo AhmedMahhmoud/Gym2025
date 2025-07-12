@@ -486,6 +486,31 @@ class _SetsScreenState extends State<SetsScreen> {
           selector: (state) => state.currentExercise?.name,
           builder: (context, name) => Text(name ?? 'Sets'),
         ),
+        actions: [
+          IconButton(
+            onPressed: _showAddSetDialog,
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: BlocConsumer<WorkoutsCubit, WorkoutsState>(
         listenWhen: (previous, current) =>
@@ -570,11 +595,6 @@ class _SetsScreenState extends State<SetsScreen> {
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddSetDialog,
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add),
       ),
     );
   }

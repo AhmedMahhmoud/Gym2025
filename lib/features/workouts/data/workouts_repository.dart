@@ -340,4 +340,20 @@ class WorkoutsRepository {
       return Left(ErrorHandler.handle(e));
     }
   }
+
+  // Update workout order for a plan
+  Future<Either<Failure, void>> updateWorkoutOrder(
+    String planId,
+    List<Map<String, dynamic>> workoutOrders,
+  ) async {
+    try {
+      await _dioService.put(
+        '/api/Plans/$planId/workouts/reorder',
+        data: {'workoutOrders': workoutOrders},
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
 }

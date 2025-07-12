@@ -85,6 +85,35 @@ class _PlansScreenState extends State<PlansScreen> {
         title: const Text('Workout Plans'),
         elevation: 0,
         backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _isAddingPlan = true;
+              });
+            },
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         bottom: true,
@@ -427,47 +456,6 @@ class _PlansScreenState extends State<PlansScreen> {
           },
         ),
       ),
-      floatingActionButton:
-          !_isAddingPlan && context.read<WorkoutsCubit>().state.plans.isNotEmpty
-              ? Padding(
-                  padding: const EdgeInsets.only(bottom: 100),
-                  child: FloatingActionButton(
-                    elevation: 0,
-                    onPressed: () {
-                      setState(() {
-                        _isAddingPlan = true;
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.divider,
-                            AppColors.cardBackground.withOpacity(0.9),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.divider.withOpacity(0.5),
-                            blurRadius: 1,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(15),
-                      child: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                )
-              : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

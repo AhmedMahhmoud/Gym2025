@@ -89,6 +89,31 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
           selector: (state) => state.currentExercise?.name,
           builder: (context, name) => Text(name ?? 'Exercise Sets'),
         ),
+        actions: [
+          IconButton(
+            onPressed: _showAddSetDialog,
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: BlocConsumer<WorkoutsCubit, WorkoutsState>(
         listener: (context, state) {
@@ -144,18 +169,6 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
               );
             },
           );
-        },
-      ),
-      floatingActionButton: BlocBuilder<WorkoutsCubit, WorkoutsState>(
-        builder: (context, state) {
-          if (state.sets.isNotEmpty) {
-            return FloatingActionButton(
-              onPressed: _showAddSetDialog,
-              backgroundColor: AppColors.textSecondary,
-              child: const Icon(Icons.add),
-            );
-          }
-          return const SizedBox.shrink();
         },
       ),
     );

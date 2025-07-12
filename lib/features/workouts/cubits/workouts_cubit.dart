@@ -49,6 +49,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
             planId: state.currentWorkout!.planId,
             userId: state.currentWorkout!.userId,
             title: state.currentWorkout!.title,
+            notes: state.currentWorkout!.notes,
             date: state.currentWorkout!.date,
             workoutExercises: updatedWorkoutExercises,
           );
@@ -247,6 +248,15 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
             workoutExercises: processedExercises,
           );
         }).toList();
+
+        // Sort workouts by sortOrder if available, otherwise keep original order
+        processedWorkouts.sort((a, b) {
+          if (a.sortOrder != null && b.sortOrder != null) {
+            return a.sortOrder!.compareTo(b.sortOrder!);
+          }
+          // If no sortOrder, maintain original order (likely by creation date)
+          return 0;
+        });
 
         emit(state.copyWith(
           status: WorkoutsStatus.success,
@@ -489,6 +499,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           planId: state.currentWorkout!.planId,
           userId: state.currentWorkout!.userId,
           title: state.currentWorkout!.title,
+          notes: state.currentWorkout!.notes,
           date: state.currentWorkout!.date,
           workoutExercises: updatedWorkoutExercises,
         );
@@ -595,6 +606,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           planId: state.currentWorkout!.planId,
           userId: state.currentWorkout!.userId,
           title: state.currentWorkout!.title,
+          notes: state.currentWorkout!.notes,
           date: state.currentWorkout!.date,
           workoutExercises: updatedWorkoutExercises,
         );
@@ -707,6 +719,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           planId: state.currentWorkout!.planId,
           userId: state.currentWorkout!.userId,
           title: state.currentWorkout!.title,
+          notes: state.currentWorkout!.notes,
           date: state.currentWorkout!.date,
           workoutExercises: updatedWorkoutExercises,
         );
@@ -983,6 +996,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           planId: state.currentWorkout!.planId,
           userId: state.currentWorkout!.userId,
           title: state.currentWorkout!.title,
+          notes: state.currentWorkout!.notes,
           date: state.currentWorkout!.date,
           workoutExercises: allWorkoutExercises,
         );
@@ -1024,6 +1038,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       planId: state.currentWorkout!.planId,
       userId: state.currentWorkout!.userId,
       title: state.currentWorkout!.title,
+      notes: state.currentWorkout!.notes,
       date: state.currentWorkout!.date,
       workoutExercises: [
         ...state.currentWorkout!.workoutExercises,
@@ -1086,5 +1101,63 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         ));
       },
     );
+  }
+
+  // Reorder workouts
+  Future<void> reorderWorkouts(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    final workouts = List<WorkoutModel>.from(state.workouts);
+    final item = workouts.removeAt(oldIndex);
+    workouts.insert(newIndex, item);
+
+    // Update local state immediately for responsive UI
+    emit(state.copyWith(workouts: workouts));
+
+    // Persist the new order to backend
+    if (state.currentPlan != null) {
+      try {
+        // Create workout orders list with new positions
+        final workoutOrders = workouts.asMap().entries.map((entry) {
+          return {
+            'workoutId': entry.value.id,
+            'order': entry.key,
+          };
+        }).toList();
+
+        final result = await _repository.updateWorkoutOrder(
+          state.currentPlan!.id,
+          workoutOrders,
+        );
+
+        result.fold(
+          (failure) {
+            // If backend update fails, show error but keep local changes
+            emit(state.copyWith(
+              status: WorkoutsStatus.error,
+              errorMessage: 'Failed to save workout order: ${failure.message}',
+            ));
+          },
+          (_) {
+            // Success - update workouts with sort order values
+            final updatedWorkouts = workouts.asMap().entries.map((entry) {
+              return entry.value.copyWith(sortOrder: entry.key);
+            }).toList();
+
+            emit(state.copyWith(
+              workouts: updatedWorkouts,
+              status: WorkoutsStatus.success,
+            ));
+          },
+        );
+      } catch (e) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to save workout order: $e',
+        ));
+      }
+    }
   }
 }
