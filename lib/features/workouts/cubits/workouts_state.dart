@@ -23,6 +23,7 @@ enum WorkoutsStatus {
   deletingWorkout,
   deletingExercise,
   deletingSet,
+  updatingPlan,
   updatingWorkout,
 }
 

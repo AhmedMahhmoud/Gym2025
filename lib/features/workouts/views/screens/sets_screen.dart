@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/Shared/ui/custom_snackbar.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
 import 'package:gym/features/workouts/cubits/workouts_state.dart';
 import 'package:gym/features/workouts/data/models/set_model.dart';
+import 'package:gym/features/workouts/views/screens/exercise_sets_screen.dart';
 import 'package:gym/features/workouts/views/widgets/error_message.dart';
 import 'package:gym/features/workouts/views/widgets/loading_indicator.dart';
-import 'package:gym/features/workouts/views/widgets/set_card.dart';
+import 'package:gym/Shared/ui/sticky_add_button.dart';
 
 class SetsScreen extends StatefulWidget {
   const SetsScreen({Key? key}) : super(key: key);
@@ -486,115 +488,237 @@ class _SetsScreenState extends State<SetsScreen> {
           selector: (state) => state.currentExercise?.name,
           builder: (context, name) => Text(name ?? 'Sets'),
         ),
-        actions: [
-          IconButton(
-            onPressed: _showAddSetDialog,
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary,
-                    AppColors.primary.withOpacity(0.7),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
-      body: BlocConsumer<WorkoutsCubit, WorkoutsState>(
-        listenWhen: (previous, current) =>
-            (current.status == WorkoutsStatus.addingSet &&
-                previous.status != WorkoutsStatus.addingSet) ||
-            (current.status == WorkoutsStatus.deletingSet &&
-                previous.status != WorkoutsStatus.deletingSet) ||
-            (current.status == WorkoutsStatus.error &&
-                (previous.status == WorkoutsStatus.addingSet ||
-                    previous.status == WorkoutsStatus.deletingSet)),
-        buildWhen: (previous, current) =>
-            current.status == WorkoutsStatus.success ||
-            current.status == WorkoutsStatus.addingSet ||
-            current.status == WorkoutsStatus.deletingSet,
-        listener: (context, state) {
-          if (state.status == WorkoutsStatus.error) {
-            CustomSnackbar.show(
-                context, state.errorMessage ?? 'An error occurred',
-                isError: true);
-          }
-        },
-        builder: (context, state) {
-          if (state.status == WorkoutsStatus.loading && state.sets.isEmpty) {
-            return const LoadingIndicator();
-          }
+      body: Stack(children: [
+        BlocConsumer<WorkoutsCubit, WorkoutsState>(
+          listenWhen: (previous, current) =>
+              (current.status == WorkoutsStatus.addingSet &&
+                  previous.status != WorkoutsStatus.addingSet) ||
+              (current.status == WorkoutsStatus.deletingSet &&
+                  previous.status != WorkoutsStatus.deletingSet) ||
+              (current.status == WorkoutsStatus.error &&
+                  (previous.status == WorkoutsStatus.addingSet ||
+                      previous.status == WorkoutsStatus.deletingSet)),
+          buildWhen: (previous, current) =>
+              current.status == WorkoutsStatus.success ||
+              current.status == WorkoutsStatus.addingSet ||
+              current.status == WorkoutsStatus.deletingSet,
+          listener: (context, state) {
+            if (state.status == WorkoutsStatus.error) {
+              CustomSnackbar.show(
+                  context, state.errorMessage ?? 'An error occurred',
+                  isError: true);
+            }
+          },
+          builder: (context, state) {
+            if (state.status == WorkoutsStatus.loading && state.sets.isEmpty) {
+              return const LoadingIndicator();
+            }
 
-          if (state.sets.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.fitness_center,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No sets added yet',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Add your first set to start tracking',
-                    style: TextStyle(
+            if (state.sets.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.fitness_center,
+                      size: 64,
                       color: Colors.grey,
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _showAddSetDialog,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Set'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No sets added yet',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Add your first set to start tracking',
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: _showAddSetDialog,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Set'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+              itemCount: state.sets.length,
+              itemBuilder: (context, index) {
+                final set = state.sets[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildSetCard(set, index + 1),
+                );
+              },
+            );
+          },
+        ),
+        // Sticky Add Button
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: BlocBuilder<WorkoutsCubit, WorkoutsState>(
+            builder: (context, state) {
+              return StickyAddButton(
+                onPressed: _showAddSetDialog,
+                text: 'Add Set',
+                icon: Icons.add,
+                isVisible: state.sets.isNotEmpty,
+              );
+            },
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildSetCard(SetModel set, int setNumber) {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.1),
+              Colors.white.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Set number
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Center(
+                  child: Text(
+                    '$setNumber',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              // Set details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        if (set.repetitions != null) ...[
+                          const Icon(Icons.repeat,
+                              color: Colors.white70, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${set.repetitions} reps',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                        if (set.duration != null) ...[
+                          const Icon(Icons.timer,
+                              color: Colors.white70, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${set.duration}s',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                        if (set.weight != null) ...[
+                          const SizedBox(width: 16),
+                          const Icon(Icons.fitness_center,
+                              color: Colors.white70, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${set.weight}kg',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (set.restTime != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.schedule,
+                              color: Colors.white54, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Rest: ${set.restTime}s',
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // Edit and delete buttons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(FontAwesomeIcons.edit,
+                        color: Colors.white70, size: 16),
+                    onPressed: () => _showEditSetDialog(set),
+                  ),
+                  IconButton(
+                    icon: const Icon(FontAwesomeIcons.circleXmark,
+                        color: Colors.redAccent, size: 16),
+                    onPressed: () => _showDeleteConfirmationDialog(set),
                   ),
                 ],
               ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: state.sets.length,
-            itemBuilder: (context, index) {
-              final set = state.sets[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: SetCard(
-                  set: set,
-                  onEdit: () => _showEditSetDialog(set),
-                  onDelete: () => _showDeleteConfirmationDialog(set),
-                ),
-              );
-            },
-          );
-        },
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -886,6 +886,56 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     );
   }
 
+  // Update a plan
+  Future<void> updatePlan(
+    String planId, {
+    String? title,
+    String? notes,
+  }) async {
+    emit(state.copyWith(status: WorkoutsStatus.updatingPlan, clearError: true));
+
+    final result = await _repository.updatePlan(
+      planId,
+      title: title,
+      notes: notes,
+    );
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to update plan: ${failure.message}',
+        ));
+      },
+      (msg) {
+        final planIndex = state.plans.indexWhere((plan) => plan.id == planId);
+        if (planIndex == -1) {
+          emit(state.copyWith(
+            status: WorkoutsStatus.error,
+            errorMessage: 'Plan not found to update',
+          ));
+          return;
+        }
+        final oldPlan = state.plans[planIndex];
+        final newPlan = oldPlan.copyWith(
+          title: title,
+          notes: notes,
+        );
+
+        final updatedPlans = List<PlanResponse>.from(state.plans);
+        updatedPlans[planIndex] = newPlan;
+
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          plans: updatedPlans,
+          clearError: true,
+          currentPlan:
+              state.currentPlan?.id == planId ? newPlan : state.currentPlan,
+        ));
+      },
+    );
+  }
+
   // Add multiple exercises to workout
   Future<void> addExercisesToWorkout(
     List<String> exerciseIds, {

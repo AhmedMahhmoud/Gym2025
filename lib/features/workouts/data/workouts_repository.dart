@@ -341,6 +341,26 @@ class WorkoutsRepository {
     }
   }
 
+  // Update plan
+  Future<Either<Failure, String>> updatePlan(
+    String planId, {
+    String? title,
+    String? notes,
+  }) async {
+    try {
+      final response = await _dioService.put(
+        '/api/Plans/$planId',
+        data: {
+          if (title != null) 'title': title,
+          if (notes != null) 'notes': notes,
+        },
+      );
+      return Right(response.data['message']);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
   // Update workout order for a plan
   Future<Either<Failure, void>> updateWorkoutOrder(
     String planId,

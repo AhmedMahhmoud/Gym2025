@@ -11,6 +11,7 @@ import 'package:gym/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:gym/features/workouts/views/widgets/set_card.dart';
 import 'package:gym/features/workouts/views/widgets/add_set_dialog.dart';
 import 'package:gym/core/widgets/dialogs/input_dialog_container.dart';
+import 'package:gym/Shared/ui/sticky_add_button.dart';
 
 class ExerciseSetsScreen extends StatefulWidget {
   const ExerciseSetsScreen({Key? key}) : super(key: key);
@@ -89,88 +90,81 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
           selector: (state) => state.currentExercise?.name,
           builder: (context, name) => Text(name ?? 'Exercise Sets'),
         ),
-        actions: [
-          IconButton(
-            onPressed: _showAddSetDialog,
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary,
-                    AppColors.primary.withOpacity(0.7),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
-      body: BlocConsumer<WorkoutsCubit, WorkoutsState>(
-        listener: (context, state) {
-          if (state.status == WorkoutsStatus.error) {
-            CustomSnackbar.show(
-                context, state.errorMessage ?? 'An error occurred',
-                isError: true);
-          }
-        },
-        builder: (context, state) {
-          if (state.status == WorkoutsStatus.loading && state.sets.isEmpty) {
-            return const LoadingIndicator();
-          }
+      body: Stack(children: [
+        BlocConsumer<WorkoutsCubit, WorkoutsState>(
+          listener: (context, state) {
+            if (state.status == WorkoutsStatus.error) {
+              CustomSnackbar.show(
+                  context, state.errorMessage ?? 'An error occurred',
+                  isError: true);
+            }
+          },
+          builder: (context, state) {
+            if (state.status == WorkoutsStatus.loading && state.sets.isEmpty) {
+              return const LoadingIndicator();
+            }
 
-          if (state.sets.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'No sets added yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _showAddSetDialog,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+            if (state.sets.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'No sets added yet',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white70,
                       ),
                     ),
-                    child: const Text('Add Set'),
-                  ),
-                ],
-              ),
-            );
-          }
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _showAddSetDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text('Add Set'),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: state.sets.length,
-            itemBuilder: (context, index) {
-              final set = state.sets[index];
-              return SetCard(
-                set: set,
-                onEdit: () => _showEditSetDialog(set, _workoutsCubit),
-                onDelete: () =>
-                    _showDeleteConfirmationDialog(set, _workoutsCubit),
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+              itemCount: state.sets.length,
+              itemBuilder: (context, index) {
+                final set = state.sets[index];
+                return SetCard(
+                  set: set,
+                  onEdit: () => _showEditSetDialog(set, _workoutsCubit),
+                  onDelete: () =>
+                      _showDeleteConfirmationDialog(set, _workoutsCubit),
+                );
+              },
+            );
+          },
+        ),
+        // Sticky Add Button
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: BlocBuilder<WorkoutsCubit, WorkoutsState>(
+            builder: (context, state) {
+              return StickyAddButton(
+                onPressed: _showAddSetDialog,
+                text: 'Add Set',
+                icon: Icons.add,
+                isVisible: state.sets.isNotEmpty,
               );
             },
-          );
-        },
-      ),
+          ),
+        ),
+      ]),
     );
   }
 
@@ -189,331 +183,332 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
         UnitsService().getTimeUnitById(set.timeUnitId!)?.title == 'Min';
     bool isRepsBased = set.repetitions != null;
 
-    showGeneralDialog(
+    showDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: '',
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, animation, secondaryAnimation) {
+      builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
-          return ScaleTransition(
-            scale: Tween<double>(begin: 0.8, end: 1.0).animate(animation),
-            child: FadeTransition(
-              opacity: Tween<double>(begin: 0.0, end: 1.0).animate(animation),
-              child: Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(16),
+            child: Container(
+              width: double.maxFinite,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.2),
+                  width: 1,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Edit Set',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      // Weight field with unit toggle
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _weightController,
-                              decoration: InputDecoration(
-                                hintText: 'e.g., 60.5',
-                                filled: true,
-                                fillColor: AppColors.background,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                prefixIcon: const Icon(Icons.fitness_center,
-                                    color: Colors.white70),
-                              ),
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      decimal: true),
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ToggleButtons(
-                              isSelected: [isWeightInKg, !isWeightInKg],
-                              onPressed: (index) {
-                                setState(() {
-                                  isWeightInKg = index == 0;
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(8),
-                              selectedColor: Colors.white,
-                              fillColor: AppColors.primary,
-                              children: const [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 12),
-                                  child: Text('kg'),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 12),
-                                  child: Text('lbs'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Reps field
-                      if (isRepsBased)
-                        TextField(
-                          controller: _repsController,
-                          decoration: InputDecoration(
-                            hintText: 'e.g., 12',
-                            filled: true,
-                            fillColor: AppColors.background,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            prefixIcon:
-                                const Icon(Icons.repeat, color: Colors.white70),
-                          ),
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(color: Colors.white),
-                          autofocus: true,
-                        ),
-                      // Duration field for duration-based sets
-                      if (!isRepsBased)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _durationController,
-                                decoration: InputDecoration(
-                                  hintText: 'e.g., 60',
-                                  filled: true,
-                                  fillColor: AppColors.background,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  prefixIcon: const Icon(Icons.timer_outlined,
-                                      color: Colors.white70),
-                                ),
-                                keyboardType: TextInputType.number,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: ToggleButtons(
-                                isSelected: [
-                                  isDurationInMinutes,
-                                  !isDurationInMinutes
-                                ],
-                                onPressed: (index) {
-                                  setState(() {
-                                    isDurationInMinutes = index == 0;
-                                  });
-                                },
-                                borderRadius: BorderRadius.circular(8),
-                                selectedColor: Colors.white,
-                                fillColor: AppColors.primary,
-                                children: const [
-                                  Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 12),
-                                    child: Text('min'),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 12),
-                                    child: Text('sec'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      const SizedBox(height: 16),
-                      // Rest time field with unit toggle
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _restTimeController,
-                              decoration: InputDecoration(
-                                hintText: 'e.g., 60',
-                                filled: true,
-                                fillColor: AppColors.background,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                prefixIcon: const Icon(Icons.timer,
-                                    color: Colors.white70),
-                              ),
-                              keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ToggleButtons(
-                              isSelected: [
-                                isDurationInMinutes,
-                                !isDurationInMinutes
-                              ],
-                              onPressed: (index) {
-                                setState(() {
-                                  isDurationInMinutes = index == 0;
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(8),
-                              selectedColor: Colors.white,
-                              fillColor: AppColors.primary,
-                              children: const [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 12),
-                                  child: Text('min'),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 12),
-                                  child: Text('sec'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Note field
-                      TextField(
-                        controller: _noteController,
-                        decoration: InputDecoration(
-                          hintText: 'Add a note (optional)',
-                          filled: true,
-                          fillColor: AppColors.background,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          prefixIcon:
-                              const Icon(Icons.note, color: Colors.white70),
-                        ),
-                        style: const TextStyle(color: Colors.white),
-                        maxLines: 2,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white70,
-                            ),
-                            child: const Text('Cancel'),
-                          ),
-                          const SizedBox(width: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              final reps = isRepsBased
-                                  ? int.tryParse(_repsController.text) ?? 0
-                                  : null;
-                              final weight =
-                                  _weightController.text.trim().isEmpty
-                                      ? null
-                                      : double.tryParse(_weightController.text);
-                              final restTime =
-                                  int.tryParse(_restTimeController.text);
-
-                              // Only validate weight if provided
-                              if (_weightController.text.trim().isNotEmpty &&
-                                  (weight == null || weight <= 0)) {
-                                // Could show error snackbar here
-                                return;
-                              }
-
-                              // Parse duration for duration-based sets
-                              final duration = !isRepsBased
-                                  ? int.tryParse(_durationController.text) ?? 0
-                                  : null;
-
-                              // Get unit IDs based on selection without conversion (only if weight exists)
-                              final weightUnitId = weight != null
-                                  ? (isWeightInKg
-                                      ? UnitsService()
-                                          .getDefaultWeightUnit()
-                                          ?.id
-                                      : UnitsService()
-                                          .weightUnits
-                                          .where((unit) => unit.title == 'Lbs')
-                                          .firstOrNull
-                                          ?.id)
-                                  : null;
-
-                              final timeUnitId = isDurationInMinutes
-                                  ? UnitsService()
-                                      .timeUnits
-                                      .where((unit) => unit.title == 'Min')
-                                      .firstOrNull
-                                      ?.id
-                                  : UnitsService().getDefaultTimeUnit()?.id;
-
-                              final note = _noteController.text.trim();
-
-                              if ((isRepsBased && reps != null && reps > 0) ||
-                                  (!isRepsBased &&
-                                      duration != null &&
-                                      duration > 0)) {
-                                cubit.editSet(
-                                  setId: set.id,
-                                  reps: reps,
-                                  weight: weight,
-                                  duration: duration, // Pass the duration value
-                                  restTime: restTime,
-                                  note: note.isNotEmpty ? note : null,
-                                  timeUnitId: timeUnitId,
-                                  weightUnitId: weightUnitId,
-                                );
-                                Navigator.pop(context);
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 12),
-                            ),
-                            child: const Text('Save Changes'),
-                          ),
-                        ],
-                      ),
-                    ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                    offset: const Offset(0, 10),
                   ),
-                ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary.withOpacity(0.1),
+                          Colors.transparent,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Text(
+                          'Edit Set',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close, color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Scrollable content
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Weight Section
+                          _buildSectionCard(
+                            title: 'Weight',
+                            icon: Icons.fitness_center,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildModernTextField(
+                                    controller: _weightController,
+                                    hintText: 'e.g., 60.5',
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    prefixIcon: Icons.fitness_center,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                _buildModernToggle(
+                                  values: ['kg', 'lbs'],
+                                  selectedIndex: isWeightInKg ? 0 : 1,
+                                  onChanged: (index) {
+                                    setState(() {
+                                      isWeightInKg = index == 0;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Reps/Duration Section
+                          _buildSectionCard(
+                            title: isRepsBased ? 'Repetitions' : 'Duration',
+                            icon: isRepsBased
+                                ? Icons.repeat
+                                : Icons.timer_outlined,
+                            child: isRepsBased
+                                ? _buildModernTextField(
+                                    controller: _repsController,
+                                    hintText: 'e.g., 12',
+                                    keyboardType: TextInputType.number,
+                                    prefixIcon: Icons.repeat,
+                                  )
+                                : Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildModernTextField(
+                                          controller: _durationController,
+                                          hintText: 'e.g., 60',
+                                          keyboardType: TextInputType.number,
+                                          prefixIcon: Icons.timer_outlined,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      _buildModernToggle(
+                                        values: ['min', 'sec'],
+                                        selectedIndex:
+                                            isDurationInMinutes ? 0 : 1,
+                                        onChanged: (index) {
+                                          setState(() {
+                                            isDurationInMinutes = index == 0;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Rest Time Section
+                          _buildSectionCard(
+                            title: 'Rest Time',
+                            icon: Icons.timer,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildModernTextField(
+                                    controller: _restTimeController,
+                                    hintText: 'e.g., 60',
+                                    keyboardType: TextInputType.number,
+                                    prefixIcon: Icons.timer,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                _buildModernToggle(
+                                  values: ['min', 'sec'],
+                                  selectedIndex: isDurationInMinutes ? 0 : 1,
+                                  onChanged: (index) {
+                                    setState(() {
+                                      isDurationInMinutes = index == 0;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Notes Section
+                          _buildSectionCard(
+                            title: 'Notes',
+                            icon: Icons.note,
+                            child: _buildModernTextField(
+                              controller: _noteController,
+                              hintText: 'Add a note (optional)',
+                              prefixIcon: Icons.note,
+                              maxLines: 3,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Action buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.white70,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    final reps = isRepsBased
+                                        ? int.tryParse(_repsController.text) ??
+                                            0
+                                        : null;
+                                    final weight =
+                                        _weightController.text.trim().isEmpty
+                                            ? null
+                                            : double.tryParse(
+                                                _weightController.text);
+                                    final restTime =
+                                        int.tryParse(_restTimeController.text);
+
+                                    // Only validate weight if provided
+                                    if (_weightController.text
+                                            .trim()
+                                            .isNotEmpty &&
+                                        (weight == null || weight <= 0)) {
+                                      return;
+                                    }
+
+                                    // Parse duration for duration-based sets
+                                    final duration = !isRepsBased
+                                        ? int.tryParse(
+                                                _durationController.text) ??
+                                            0
+                                        : null;
+
+                                    // Get unit IDs based on selection
+                                    final weightUnitId = weight != null
+                                        ? (isWeightInKg
+                                            ? UnitsService()
+                                                .getDefaultWeightUnit()
+                                                ?.id
+                                            : UnitsService()
+                                                .weightUnits
+                                                .where((unit) =>
+                                                    unit.title == 'Lbs')
+                                                .firstOrNull
+                                                ?.id)
+                                        : null;
+
+                                    final timeUnitId = isDurationInMinutes
+                                        ? UnitsService()
+                                            .timeUnits
+                                            .where(
+                                                (unit) => unit.title == 'Min')
+                                            .firstOrNull
+                                            ?.id
+                                        : UnitsService()
+                                            .getDefaultTimeUnit()
+                                            ?.id;
+
+                                    final note = _noteController.text.trim();
+
+                                    if ((isRepsBased &&
+                                            reps != null &&
+                                            reps > 0) ||
+                                        (!isRepsBased &&
+                                            duration != null &&
+                                            duration > 0)) {
+                                      cubit.editSet(
+                                        setId: set.id,
+                                        reps: reps,
+                                        weight: weight,
+                                        duration: duration,
+                                        restTime: restTime,
+                                        note: note.isNotEmpty ? note : null,
+                                        timeUnitId: timeUnitId,
+                                        weightUnitId: weightUnitId,
+                                      );
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Save Changes',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -560,6 +555,122 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData prefixIcon,
+    TextInputType? keyboardType,
+    int? maxLines,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines ?? 1,
+      style: const TextStyle(color: Colors.white, fontSize: 16),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        prefixIcon: Icon(prefixIcon, color: AppColors.primary.withOpacity(0.7)),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.05),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.primary, width: 2),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      ),
+    );
+  }
+
+  Widget _buildModernToggle({
+    required List<String> values,
+    required int selectedIndex,
+    required Function(int) onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: values.asMap().entries.map((entry) {
+          final index = entry.key;
+          final value = entry.value;
+          final isSelected = index == selectedIndex;
+
+          return GestureDetector(
+            onTap: () => onChanged(index),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                value,
+                style: TextStyle(
+                  color:
+                      isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
