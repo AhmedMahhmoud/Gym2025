@@ -91,80 +91,129 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
           builder: (context, name) => Text(name ?? 'Exercise Sets'),
         ),
       ),
-      body: Stack(children: [
-        BlocConsumer<WorkoutsCubit, WorkoutsState>(
-          listener: (context, state) {
-            if (state.status == WorkoutsStatus.error) {
-              CustomSnackbar.show(
-                  context, state.errorMessage ?? 'An error occurred',
-                  isError: true);
-            }
-          },
-          builder: (context, state) {
-            if (state.status == WorkoutsStatus.loading && state.sets.isEmpty) {
-              return const LoadingIndicator();
-            }
+      body: BlocConsumer<WorkoutsCubit, WorkoutsState>(
+        listener: (context, state) {
+          if (state.status == WorkoutsStatus.error) {
+            CustomSnackbar.show(
+                context, state.errorMessage ?? 'An error occurred',
+                isError: true);
+          }
+        },
+        builder: (context, state) {
+          if (state.status == WorkoutsStatus.loading && state.sets.isEmpty) {
+            return const LoadingIndicator();
+          }
 
-            if (state.sets.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'No sets added yet',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white70,
+          if (state.sets.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'No sets added yet',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _showAddSetDialog,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _showAddSetDialog,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    child: const Text('Add Set'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: state.sets.length,
+                  itemBuilder: (context, index) {
+                    final set = state.sets[index];
+                    return SetCard(
+                      set: set,
+                      onEdit: () => _showEditSetDialog(set, _workoutsCubit),
+                      onDelete: () =>
+                          _showDeleteConfirmationDialog(set, _workoutsCubit),
+                    );
+                  },
+                ),
+              ),
+              // Add button integrated into the scrollable content
+              if (state.sets.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  child: Container(
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary.withOpacity(0.8),
+                          AppColors.primary.withOpacity(0.9),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(15),
+                        onTap: _showAddSetDialog,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Add Set',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      child: const Text('Add Set'),
                     ),
-                  ],
+                  ),
                 ),
-              );
-            }
-
-            return ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-              itemCount: state.sets.length,
-              itemBuilder: (context, index) {
-                final set = state.sets[index];
-                return SetCard(
-                  set: set,
-                  onEdit: () => _showEditSetDialog(set, _workoutsCubit),
-                  onDelete: () =>
-                      _showDeleteConfirmationDialog(set, _workoutsCubit),
-                );
-              },
-            );
-          },
-        ),
-        // Sticky Add Button
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: BlocBuilder<WorkoutsCubit, WorkoutsState>(
-            builder: (context, state) {
-              return StickyAddButton(
-                onPressed: _showAddSetDialog,
-                text: 'Add Set',
-                icon: Icons.add,
-                isVisible: state.sets.isNotEmpty,
-              );
-            },
-          ),
-        ),
-      ]),
+            ],
+          );
+        },
+      ),
     );
   }
 

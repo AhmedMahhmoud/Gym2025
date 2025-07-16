@@ -228,112 +228,163 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
       ),
       body: SafeArea(
         bottom: false,
-        child: Stack(children: [
-          BlocConsumer<WorkoutsCubit, WorkoutsState>(
-            listener: (context, state) {
-              if (state.status == WorkoutsStatus.error) {
-                CustomSnackbar.show(context, state.errorMessage ?? '',
-                    isError: true);
-              }
-            },
-            builder: (context, state) {
-              print(
-                  'WorkoutDetailsScreen - Current workout: ${state.currentWorkout?.title}');
-              print(
-                  'WorkoutDetailsScreen - Selected exercises count: ${state.selectedExercises.length}');
+        child: BlocConsumer<WorkoutsCubit, WorkoutsState>(
+          listener: (context, state) {
+            if (state.status == WorkoutsStatus.error) {
+              CustomSnackbar.show(context, state.errorMessage ?? '',
+                  isError: true);
+            }
+          },
+          builder: (context, state) {
+            print(
+                'WorkoutDetailsScreen - Current workout: ${state.currentWorkout?.title}');
+            print(
+                'WorkoutDetailsScreen - Selected exercises count: ${state.selectedExercises.length}');
 
-              if (state.status == WorkoutsStatus.loading &&
-                  state.selectedExercises.isEmpty) {
-                return const LoadingIndicator();
-              }
+            if (state.status == WorkoutsStatus.loading &&
+                state.selectedExercises.isEmpty) {
+              return const LoadingIndicator();
+            }
 
-              if (state.status == WorkoutsStatus.error &&
-                  state.selectedExercises.isEmpty) {
-                return ErrorMessage(
-                  message: state.errorMessage ?? 'Failed to load exercises',
-                  onRetry: () => state.currentWorkout != null
-                      ? _workoutsCubit.loadExercisesForWorkout()
-                      : null,
-                );
-              }
+            if (state.status == WorkoutsStatus.error &&
+                state.selectedExercises.isEmpty) {
+              return ErrorMessage(
+                message: state.errorMessage ?? 'Failed to load exercises',
+                onRetry: () => state.currentWorkout != null
+                    ? _workoutsCubit.loadExercisesForWorkout()
+                    : null,
+              );
+            }
 
-              if (state.selectedExercises.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'No exercises added yet',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _showAddExerciseBottomSheet,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+            if (state.selectedExercises.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'No exercises added yet',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _showAddExerciseBottomSheet,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text('Add Exercise'),
                       ),
-                    ],
-                  ),
-                );
-              }
+                      child: const Text('Add Exercise'),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-              return ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                itemCount: state.selectedExercises.length,
-                itemBuilder: (context, index) {
-                  final exercise = state.selectedExercises[index];
-                  final isDeleting = _isDeleting[exercise.id] ?? false;
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: state.selectedExercises.length,
+                    itemBuilder: (context, index) {
+                      final exercise = state.selectedExercises[index];
+                      final isDeleting = _isDeleting[exercise.id] ?? false;
 
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    switchOutCurve: Curves.easeOut,
-                    switchInCurve: Curves.easeIn,
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                      if (!isDeleting) {
-                        return FadeInWidget(
-                          duration: Duration(milliseconds: 500 + (index * 100)),
-                          child: child,
-                        );
-                      }
-                      return FadeOut(
-                        curve: Curves.easeOut,
-                        child: child,
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        switchOutCurve: Curves.easeOut,
+                        switchInCurve: Curves.easeIn,
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
+                          if (!isDeleting) {
+                            return FadeInWidget(
+                              duration:
+                                  Duration(milliseconds: 500 + (index * 100)),
+                              child: child,
+                            );
+                          }
+                          return FadeOut(
+                            curve: Curves.easeOut,
+                            child: child,
+                          );
+                        },
+                        child: isDeleting
+                            ? Container(
+                                key: ValueKey('${exercise.id}_deleting'))
+                            : Skeletonizer(
+                                enabled: state.status == WorkoutsStatus.loading,
+                                child: _buildExerciseCard(exercise, index),
+                              ),
                       );
                     },
-                    child: isDeleting
-                        ? Container(key: ValueKey('${exercise.id}_deleting'))
-                        : Skeletonizer(
-                            enabled: state.status == WorkoutsStatus.loading,
-                            child: _buildExerciseCard(exercise, index),
+                  ),
+                ),
+                // Add button integrated into the scrollable content
+                if (state.selectedExercises.isNotEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                    child: Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(0.8),
+                            AppColors.primary.withOpacity(0.9),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                            offset: const Offset(0, 4),
                           ),
-                  );
-                },
-              );
-            },
-          ),
-          // Sticky Add Button
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: BlocBuilder<WorkoutsCubit, WorkoutsState>(
-              builder: (context, state) {
-                return StickyAddButton(
-                  onPressed: _showAddExerciseBottomSheet,
-                  text: 'Add Exercise',
-                  icon: Icons.add,
-                  isVisible: state.selectedExercises.isNotEmpty,
-                );
-              },
-            ),
-          ),
-        ]),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(15),
+                          onTap: _showAddExerciseBottomSheet,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Add Exercise',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

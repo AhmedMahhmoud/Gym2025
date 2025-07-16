@@ -288,286 +288,186 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       ),
       body: SafeArea(
         bottom: false,
-        child: Stack(children: [
-          BlocConsumer<WorkoutsCubit, WorkoutsState>(
-            listenWhen: (previous, current) =>
-                (current.status == WorkoutsStatus.creatingWorkout &&
-                    previous.status != WorkoutsStatus.creatingWorkout) ||
-                (current.status == WorkoutsStatus.deletingWorkout &&
-                    previous.status != WorkoutsStatus.deletingWorkout) ||
-                (current.status == WorkoutsStatus.error &&
-                    (previous.status == WorkoutsStatus.creatingWorkout ||
-                        previous.status == WorkoutsStatus.deletingWorkout)),
-            listener: (context, state) {
-              if (state.status == WorkoutsStatus.error) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.errorMessage ?? 'An error occurred'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            builder: (context, state) {
-              if (state.status == WorkoutsStatus.loading ||
-                  state.status == WorkoutsStatus.loadingWorkouts) {
-                return SizedBox(
-                  height: MediaQuery.sizeOf(context).height / 1.5,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                        const SizedBox(height: 16),
-                        if (state.status == WorkoutsStatus.loading ||
-                            state.status == WorkoutsStatus.loadingWorkouts)
-                          const Text(
-                            'Loading workouts ...',
-                            style: TextStyle(color: Colors.white70),
-                          )
-                        else
-                          const Text(
-                            'Loading workouts ...',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              if (state.status == WorkoutsStatus.error &&
-                  state.workouts.isEmpty) {
-                return Center(
+        child: BlocConsumer<WorkoutsCubit, WorkoutsState>(
+          listenWhen: (previous, current) =>
+              (current.status == WorkoutsStatus.creatingWorkout &&
+                  previous.status != WorkoutsStatus.creatingWorkout) ||
+              (current.status == WorkoutsStatus.deletingWorkout &&
+                  previous.status != WorkoutsStatus.deletingWorkout) ||
+              (current.status == WorkoutsStatus.error &&
+                  (previous.status == WorkoutsStatus.creatingWorkout ||
+                      previous.status == WorkoutsStatus.deletingWorkout)),
+          listener: (context, state) {
+            if (state.status == WorkoutsStatus.error) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage ?? 'An error occurred'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state.status == WorkoutsStatus.loading ||
+                state.status == WorkoutsStatus.loadingWorkouts) {
+              return SizedBox(
+                height: MediaQuery.sizeOf(context).height / 1.5,
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        state.errorMessage ?? 'Failed to load workouts',
-                        style: const TextStyle(color: Colors.red),
+                      const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => _workoutsCubit.loadWorkoutsForPlan(
-                            _workoutsCubit.state.currentPlan!.id),
-                        child: const Text('Retry'),
-                      ),
+                      if (state.status == WorkoutsStatus.loading ||
+                          state.status == WorkoutsStatus.loadingWorkouts)
+                        const Text(
+                          'Loading workouts ...',
+                          style: TextStyle(color: Colors.white70),
+                        )
+                      else
+                        const Text(
+                          'Loading workouts ...',
+                          style: TextStyle(color: Colors.white70),
+                        ),
                     ],
                   ),
-                );
-              }
+                ),
+              );
+            }
 
-              return Column(
-                children: [
-                  if (state.status == WorkoutsStatus.updatingWorkout)
-                    const LinearProgressIndicator(
-                      backgroundColor: AppColors.primary,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            if (state.status == WorkoutsStatus.error &&
+                state.workouts.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      state.errorMessage ?? 'Failed to load workouts',
+                      style: const TextStyle(color: Colors.red),
                     ),
-                  if (_isAddingWorkout)
-                    FadeIn(
-                      duration: const Duration(milliseconds: 500),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            TextField(
-                              controller: _titleController,
-                              decoration: InputDecoration(
-                                labelText: 'Workout Title',
-                                floatingLabelStyle: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 20,
-                                  color: Colors.white,
-                                ),
-                                hintText: 'e.g., Push Day',
-                                filled: true,
-                                fillColor: Colors.white.withOpacity(0.1),
-                                labelStyle: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey,
-                                ),
-                                hintStyle:
-                                    const TextStyle(color: Colors.white38),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 15,
-                                ),
-                              ),
-                              style: const TextStyle(color: Colors.white),
-                              onTapOutside: (event) =>
-                                  FocusScope.of(context).unfocus(),
-                              autofocus: true,
-                            ),
-                            const SizedBox(height: 16),
-                            // Add notes field
-                            TextField(
-                              controller: _notesController,
-                              decoration: InputDecoration(
-                                labelText: 'Notes (Optional)',
-                                floatingLabelStyle: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 20,
-                                  color: Colors.white,
-                                ),
-                                hintText: 'e.g., Focus on chest and triceps',
-                                filled: true,
-                                fillColor: Colors.white.withOpacity(0.1),
-                                labelStyle: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey,
-                                ),
-                                hintStyle:
-                                    const TextStyle(color: Colors.white38),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 15,
-                                ),
-                              ),
-                              style: const TextStyle(color: Colors.white),
-                              onTapOutside: (event) =>
-                                  FocusScope.of(context).unfocus(),
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                // Add cancel button
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isAddingWorkout = false;
-                                      _titleController.clear();
-                                      _notesController.clear();
-                                    });
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white70,
-                                  ),
-                                  child: const Text('Cancel'),
-                                ),
-                                const SizedBox(width: 16),
-                                if (state.status == WorkoutsStatus.loading)
-                                  Container(
-                                    width: double.infinity,
-                                    height: 4,
-                                    margin: const EdgeInsets.only(bottom: 20),
-                                    child: const LinearProgressIndicator(
-                                      backgroundColor: AppColors.primary,
-                                    ),
-                                  )
-                                else
-                                  ElasticIn(
-                                    duration: const Duration(milliseconds: 800),
-                                    child: ElevatedButton(
-                                      onPressed: _createWorkout,
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 40,
-                                          vertical: 15,
-                                        ),
-                                        backgroundColor: Colors.transparent,
-                                        shadowColor: Colors.transparent,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                        ),
-                                      ).copyWith(
-                                        backgroundColor:
-                                            MaterialStateProperty.all(
-                                          Colors.transparent,
-                                        ),
-                                        overlayColor: MaterialStateProperty.all(
-                                          Colors.white.withOpacity(0.1),
-                                        ),
-                                      ),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Theme.of(context).primaryColor,
-                                              Theme.of(context)
-                                                  .primaryColor
-                                                  .withOpacity(0.7),
-                                            ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Theme.of(context)
-                                                  .primaryColor
-                                                  .withOpacity(0.5),
-                                              blurRadius: 10,
-                                              spreadRadius: 2,
-                                            ),
-                                          ],
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 30,
-                                          vertical: 15,
-                                        ),
-                                        child: const Text(
-                                          'Create Workout',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => _workoutsCubit.loadWorkoutsForPlan(
+                          _workoutsCubit.state.currentPlan!.id),
+                      child: const Text('Retry'),
                     ),
-                  Expanded(
-                    child: state.workouts.isEmpty && !_isAddingWorkout
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                FadeIn(
+                  ],
+                ),
+              );
+            }
+
+            return Column(
+              children: [
+                if (state.status == WorkoutsStatus.updatingWorkout)
+                  const LinearProgressIndicator(
+                    backgroundColor: AppColors.primary,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                if (_isAddingWorkout)
+                  FadeIn(
+                    duration: const Duration(milliseconds: 500),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: _titleController,
+                            decoration: InputDecoration(
+                              labelText: 'Workout Title',
+                              floatingLabelStyle: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                                color: Colors.white,
+                              ),
+                              hintText: 'e.g., Push Day',
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.1),
+                              labelStyle: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                              hintStyle: const TextStyle(color: Colors.white38),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 15,
+                              ),
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            onTapOutside: (event) =>
+                                FocusScope.of(context).unfocus(),
+                            autofocus: true,
+                          ),
+                          const SizedBox(height: 16),
+                          // Add notes field
+                          TextField(
+                            controller: _notesController,
+                            decoration: InputDecoration(
+                              labelText: 'Notes (Optional)',
+                              floatingLabelStyle: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                                color: Colors.white,
+                              ),
+                              hintText: 'e.g., Focus on chest and triceps',
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.1),
+                              labelStyle: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                              hintStyle: const TextStyle(color: Colors.white38),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 15,
+                              ),
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            onTapOutside: (event) =>
+                                FocusScope.of(context).unfocus(),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              // Add cancel button
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isAddingWorkout = false;
+                                    _titleController.clear();
+                                    _notesController.clear();
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white70,
+                                ),
+                                child: const Text('Cancel'),
+                              ),
+                              const SizedBox(width: 16),
+                              if (state.status == WorkoutsStatus.loading)
+                                Container(
+                                  width: double.infinity,
+                                  height: 4,
+                                  margin: const EdgeInsets.only(bottom: 20),
+                                  child: const LinearProgressIndicator(
+                                    backgroundColor: AppColors.primary,
+                                  ),
+                                )
+                              else
+                                ElasticIn(
                                   duration: const Duration(milliseconds: 800),
-                                  child: const Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 30),
-                                    child: Text(
-                                      "Add New Workout",
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white70,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                SlideInUp(
-                                  duration: const Duration(milliseconds: 1000),
                                   child: ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isAddingWorkout = true;
-                                      });
-                                    },
+                                    onPressed: _createWorkout,
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 40,
@@ -591,98 +491,182 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            AppColors.textSecondary,
-                                            AppColors.backgroundSurface
+                                            Theme.of(context).primaryColor,
+                                            Theme.of(context)
+                                                .primaryColor
                                                 .withOpacity(0.7),
                                           ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
-                                        shape: BoxShape.circle,
+                                        borderRadius: BorderRadius.circular(30),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppColors.buttonText
+                                            color: Theme.of(context)
+                                                .primaryColor
                                                 .withOpacity(0.5),
-                                            blurRadius: 2,
+                                            blurRadius: 10,
                                             spreadRadius: 2,
                                           ),
                                         ],
                                       ),
-                                      padding: const EdgeInsets.all(15),
-                                      child: const Icon(
-                                        Icons.add,
-                                        color: Colors.white,
-                                        size: 30,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                        vertical: 15,
+                                      ),
+                                      child: const Text(
+                                        'Create Workout',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          )
-                        : ReorderableListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                            itemCount: state.workouts.length,
-                            onReorder: (oldIndex, newIndex) async {
-                              await _workoutsCubit.reorderWorkouts(
-                                  oldIndex, newIndex);
-                            },
-                            itemBuilder: (context, index) {
-                              final workout = state.workouts[index];
-                              final isDeleting =
-                                  _isDeleting[workout.id] ?? false;
-                              return AnimatedSwitcher(
-                                key: ValueKey(workout.id),
-                                duration: const Duration(milliseconds: 300),
-                                switchOutCurve: Curves.easeOut,
-                                switchInCurve: Curves.easeIn,
-                                transitionBuilder: (Widget child,
-                                    Animation<double> animation) {
-                                  if (!isDeleting) {
-                                    return FadeIn(
-                                      duration:
-                                          const Duration(milliseconds: 500),
-                                      child: child,
-                                    );
-                                  }
-                                  return FadeOut(
-                                    curve: Curves.easeOut,
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: state.workouts.isEmpty && !_isAddingWorkout
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FadeIn(
+                                duration: const Duration(milliseconds: 800),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 30),
+                                  child: Text(
+                                    "Add New Workout",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white70,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              SlideInUp(
+                                duration: const Duration(milliseconds: 1000),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _isAddingWorkout = true;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 40,
+                                      vertical: 15,
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ).copyWith(
+                                    backgroundColor: MaterialStateProperty.all(
+                                      Colors.transparent,
+                                    ),
+                                    overlayColor: MaterialStateProperty.all(
+                                      Colors.white.withOpacity(0.1),
+                                    ),
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.textSecondary,
+                                          AppColors.backgroundSurface
+                                              .withOpacity(0.7),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.buttonText
+                                              .withOpacity(0.5),
+                                          blurRadius: 2,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    padding: const EdgeInsets.all(15),
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ReorderableListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                          itemCount: state.workouts.length,
+                          onReorder: (oldIndex, newIndex) async {
+                            await _workoutsCubit.reorderWorkouts(
+                                oldIndex, newIndex);
+                          },
+                          itemBuilder: (context, index) {
+                            final workout = state.workouts[index];
+                            final isDeleting = _isDeleting[workout.id] ?? false;
+                            return AnimatedSwitcher(
+                              key: ValueKey(workout.id),
+                              duration: const Duration(milliseconds: 300),
+                              switchOutCurve: Curves.easeOut,
+                              switchInCurve: Curves.easeIn,
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                if (!isDeleting) {
+                                  return FadeIn(
+                                    duration: const Duration(milliseconds: 500),
                                     child: child,
                                   );
-                                },
-                                child: isDeleting
-                                    ? Container(
-                                        key: ValueKey('${workout.id}_deleting'))
-                                    : _buildWorkoutCard(workout, index),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              );
-            },
-          ),
-          // Sticky Add Button
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: BlocBuilder<WorkoutsCubit, WorkoutsState>(
-              builder: (context, state) {
-                return StickyAddButton(
-                  onPressed: () {
-                    setState(() {
-                      _isAddingWorkout = true;
-                    });
+                                }
+                                return FadeOut(
+                                  curve: Curves.easeOut,
+                                  child: child,
+                                );
+                              },
+                              child: isDeleting
+                                  ? Container(
+                                      key: ValueKey('${workout.id}_deleting'))
+                                  : _buildWorkoutCard(workout, index),
+                            );
+                          },
+                        ),
+                ),
+                BlocBuilder<WorkoutsCubit, WorkoutsState>(
+                  builder: (context, state) {
+                    return StickyAddButton(
+                      onPressed: () {
+                        setState(() {
+                          _isAddingWorkout = true;
+                        });
+                      },
+                      text: 'Add Workout',
+                      icon: Icons.add,
+                      isVisible: !_isAddingWorkout && state.workouts.isNotEmpty,
+                    );
                   },
-                  text: 'Add Workout',
-                  icon: Icons.add,
-                  isVisible: !_isAddingWorkout && state.workouts.isNotEmpty,
-                );
-              },
-            ),
-          ),
-        ]),
+                ),
+              ],
+            );
+          },
+        ),
+        // Sticky Add Button
       ),
     );
   }
