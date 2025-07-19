@@ -31,6 +31,15 @@ class ProfileState extends Equatable {
     this.userData,
   });
 
+  /// Check if user has admin role
+  bool get isAdmin => userData?.isAdmin ?? false;
+
+  /// Check if user has a specific role
+  bool hasRole(String role) => userData?.hasRole(role) ?? false;
+
+  /// Get all user roles
+  List<String> get roles => userData?.roles ?? [];
+
   ProfileState copyWith({
     ProfileStatus? status,
     String? displayName,

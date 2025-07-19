@@ -61,4 +61,28 @@ class ExercisesService {
   Future<void> deleteCustomExercise(String exerciseId) async {
     await dioService.delete('/api/customExercises/$exerciseId');
   }
+
+  Future<Exercise> updateExercise({
+    required String exerciseName,
+    required String title,
+    required String description,
+    String? videoUrl,
+    String? picturePath,
+    String? primaryMuscleId,
+    String? categoryId,
+  }) async {
+    final res = await dioService.put(
+      '/api/Exercises/UpdateExercise/$exerciseName',
+      data: {
+        'title': title,
+        'description': description,
+        'videoUrl': videoUrl,
+        'picturePath': picturePath,
+        if (primaryMuscleId != null) 'primaryMuscleId': primaryMuscleId,
+        if (categoryId != null) 'categoryId': categoryId,
+      },
+    );
+
+    return Exercise.fromJson(res.data);
+  }
 }

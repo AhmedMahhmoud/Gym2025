@@ -555,67 +555,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 24),
                         // Stats Card
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.white.withOpacity(0.1),
-                                Colors.white.withOpacity(0.05),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Row(
-                                children: [
-                                  Icon(
-                                    FontAwesomeIcons.chartLine,
-                                    color: Colors.white70,
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text(
-                                    'Your Stats',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildStatItem(
-                                      icon: FontAwesomeIcons.dumbbell,
-                                      label: 'Workouts',
-                                      value: '12',
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildStatItem(
-                                      icon: FontAwesomeIcons.calendar,
-                                      label: 'Days Active',
-                                      value: '28',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                        // Container(
+                        //   width: double.infinity,
+                        //   padding: const EdgeInsets.all(24),
+                        //   decoration: BoxDecoration(
+                        //     gradient: LinearGradient(
+                        //       begin: Alignment.topLeft,
+                        //       end: Alignment.bottomRight,
+                        //       colors: [
+                        //         Colors.white.withOpacity(0.1),
+                        //         Colors.white.withOpacity(0.05),
+                        //       ],
+                        //     ),
+                        //     borderRadius: BorderRadius.circular(20),
+                        //     border: Border.all(
+                        //       color: Colors.white.withOpacity(0.1),
+                        //     ),
+                        //   ),
+                        //   child: Column(
+                        //     crossAxisAlignment: CrossAxisAlignment.start,
+                        //     children: [
+                        //       const Row(
+                        //         children: [
+                        //           Icon(
+                        //             FontAwesomeIcons.chartLine,
+                        //             color: Colors.white70,
+                        //             size: 20,
+                        //           ),
+                        //           SizedBox(width: 12),
+                        //           Text(
+                        //             'Your Stats',
+                        //             style: TextStyle(
+                        //               color: Colors.white,
+                        //               fontSize: 18,
+                        //               fontWeight: FontWeight.bold,
+                        //             ),
+                        //           ),
+                        //         ],
+                        //       ),
+                        //       const SizedBox(height: 20),
+                        //       Row(
+                        //         children: [
+                        //           Expanded(
+                        //             child: _buildStatItem(
+                        //               icon: FontAwesomeIcons.dumbbell,
+                        //               label: 'Workouts',
+                        //               value: '12',
+                        //             ),
+                        //           ),
+                        //           const SizedBox(width: 16),
+                        //           Expanded(
+                        //             child: _buildStatItem(
+                        //               icon: FontAwesomeIcons.calendar,
+                        //               label: 'Days Active',
+                        //               value: '28',
+                        //             ),
+                        //           ),
+                        //         ],
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),

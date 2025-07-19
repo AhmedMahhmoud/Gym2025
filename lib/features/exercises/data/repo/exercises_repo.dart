@@ -52,4 +52,29 @@ class ExercisesRepository {
       return Left(ServerFailure(message: e.toString()));
     }
   }
+
+  Future<Either<Failure, Exercise>> updateExercise({
+    required String exerciseName,
+    required String title,
+    required String description,
+    String? videoUrl,
+    String? picturePath,
+    String? primaryMuscleId,
+    String? categoryId,
+  }) async {
+    try {
+      final exercise = await exercisesService.updateExercise(
+        exerciseName: exerciseName,
+        title: title,
+        description: description,
+        videoUrl: videoUrl,
+        picturePath: picturePath,
+        primaryMuscleId: primaryMuscleId,
+        categoryId: categoryId,
+      );
+      return Right(exercise);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
 }

@@ -6,4 +6,5 @@ abstract class RouteNames {
   static const String home_route = 'home';
   static const String forgot_password_route = 'forgot_password';
   static const String exercise_details_route = 'exercise_details';
+  static const String admin_exercise_edit_route = 'admin_exercise_edit';
 }

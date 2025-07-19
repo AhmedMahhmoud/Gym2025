@@ -80,6 +80,7 @@ class UserTokenData {
   final String? profilePictureUrl;
   final String issuer;
   final String audience;
+  final List<String> roles;
 
   UserTokenData({
     required this.userId,
@@ -88,9 +89,23 @@ class UserTokenData {
     this.profilePictureUrl,
     required this.issuer,
     required this.audience,
+    required this.roles,
   });
 
   factory UserTokenData.fromJson(Map<String, dynamic> json) {
+    // Extract roles from the JWT claims
+    List<String> roles = [];
+    final rolesClaim =
+        json['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+    if (rolesClaim != null) {
+      if (rolesClaim is List) {
+        roles = rolesClaim.map((role) => role.toString()).toList();
+      } else if (rolesClaim is String) {
+        roles = [rolesClaim];
+      }
+    }
+
     return UserTokenData(
       userId: json['UserId'] ?? '',
       email: json[
@@ -100,6 +115,7 @@ class UserTokenData {
       profilePictureUrl: json['ProfilePictureUrl'],
       issuer: json['iss'] ?? '',
       audience: json['aud'] ?? '',
+      roles: roles,
     );
   }
 
@@ -112,8 +128,15 @@ class UserTokenData {
       'ProfilePictureUrl': profilePictureUrl,
       'iss': issuer,
       'aud': audience,
+      'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': roles,
     };
   }
+
+  /// Check if user has admin role
+  bool get isAdmin => roles.contains('Admin');
+
+  /// Check if user has a specific role
+  bool hasRole(String role) => roles.contains(role);
 
   /// Get the full profile picture URL with base URL
   String? getFullProfilePictureUrl(String baseUrl) {
