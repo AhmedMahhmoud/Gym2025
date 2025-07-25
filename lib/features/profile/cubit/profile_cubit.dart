@@ -139,21 +139,33 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
     }
   }
 
-  void updateDisplayName(String newName) {
+  /// Update display name using the new API
+  Future<void> updateDisplayName(String newName) async {
     emit(state.copyWith(
       status: ProfileStatus.updating,
       clearError: true,
     ));
 
-    // Simulate API call delay
-    Future.delayed(const Duration(milliseconds: 500), () {
+    try {
+      await _repository.uploadProfile(inAppName: newName);
+
+      // Reload user data from the updated token
+      await loadUserDataFromToken();
+
+      // Update local state immediately
       emit(state.copyWith(
         status: ProfileStatus.success,
         displayName: newName,
       ));
-    });
+    } catch (e) {
+      emit(state.copyWith(
+        status: ProfileStatus.error,
+        errorMessage: e.toString(),
+      ));
+    }
   }
 
+  /// Update profile image using the new API
   Future<void> updateProfileImage(String imagePath) async {
     emit(state.copyWith(
       status: ProfileStatus.uploading,
@@ -161,7 +173,7 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
     ));
 
     try {
-      await _repository.uploadProfilePicture(imagePath);
+      await _repository.uploadProfile(imagePath: imagePath);
 
       // Reload user data from the updated token
       await loadUserDataFromToken();
@@ -170,6 +182,39 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
       emit(state.copyWith(
         status: ProfileStatus.success,
         profileImage: imagePath,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: ProfileStatus.error,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  /// Update both image and name in a single API call
+  Future<void> updateProfile({
+    String? imagePath,
+    String? inAppName,
+  }) async {
+    emit(state.copyWith(
+      status: ProfileStatus.uploading,
+      clearError: true,
+    ));
+
+    try {
+      await _repository.uploadProfile(
+        imagePath: imagePath,
+        inAppName: inAppName,
+      );
+
+      // Reload user data from the updated token
+      await loadUserDataFromToken();
+
+      // Update local state
+      emit(state.copyWith(
+        status: ProfileStatus.success,
+        displayName: inAppName ?? state.displayName,
+        profileImage: imagePath ?? state.profileImage,
       ));
     } catch (e) {
       emit(state.copyWith(

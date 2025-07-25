@@ -67,8 +67,9 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
       videoUrl: _videoUrlController.text.trim().isNotEmpty
           ? _videoUrlController.text.trim()
           : null,
-      primaryMuscleId: null, // We don't have ID mapping yet
-      categoryId: null, // We don't have ID mapping yet
+      primaryMuscleId:
+          widget.exercise.primaryMuscleId, // We don't have ID mapping yet
+      categoryId: widget.exercise.categoryId, // We don't have ID mapping yet
     );
   }
 
@@ -137,7 +138,8 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
               setState(() {
                 _isLoading = false;
               });
-              Navigator.pop(context, true);
+              Navigator.pop(context);
+              Navigator.pop(context);
             }
           },
           child: BlocBuilder<ExercisesCubit, ExercisesState>(
@@ -259,37 +261,37 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Note about read-only fields
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.orange.withOpacity(0.3),
-                          ),
-                        ),
-                        child: const Row(
-                          children: [
-                            const Icon(
-                              Icons.info_outline,
-                              color: Colors.orange,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Primary Muscle and Category are read-only. These require ID mappings that are not currently available.',
-                                style: const TextStyle(
-                                  color: Colors.orange,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                      // // Note about read-only fields
+                      // Container(
+                      //   padding: const EdgeInsets.all(12),
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.orange.withOpacity(0.1),
+                      //     borderRadius: BorderRadius.circular(8),
+                      //     border: Border.all(
+                      //       color: Colors.orange.withOpacity(0.3),
+                      //     ),
+                      //   ),
+                      //   child: const Row(
+                      //     children: [
+                      //       const Icon(
+                      //         Icons.info_outline,
+                      //         color: Colors.orange,
+                      //         size: 16,
+                      //       ),
+                      //       const SizedBox(width: 8),
+                      //       Expanded(
+                      //         child: Text(
+                      //           'Primary Muscle and Category are read-only. These require ID mappings that are not currently available.',
+                      //           style: const TextStyle(
+                      //             color: Colors.orange,
+                      //             fontSize: 12,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 16),
 
                       // Video URL
                       _buildTextField(

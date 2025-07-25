@@ -60,85 +60,211 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
       onTap: _handleTap,
       child: ScaleTransition(
         scale: _controller,
-        child: Stack(
-          children: [
-            CachedImage(
-              imageUrl: widget.imageUrl,
-              borderRadius: 20,
-              width: double.infinity,
-              height: 160,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1,
             ),
-            Container(
-              height: 160,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1.2,
-                ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              alignment: Alignment.center,
-            ),
-            // Delete button for custom exercises
-            if (widget.showDelete && widget.onDelete != null)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: GestureDetector(
-                  onTap: widget.isDeleteLoading ? null : widget.onDelete,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.7),
-                      border: Border.all(
-                        color: Colors.red.withOpacity(0.8),
-                        width: 1.5,
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Main content row
+              Row(
+                children: [
+                  // Thumbnail section (50% width)
+                  Container(
+                    width: (MediaQuery.of(context).size.width - 48) * 0.55,
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        bottomLeft: Radius.circular(16),
                       ),
                     ),
-                    child: Icon(
-                      Icons.delete_outline,
-                      color: widget.isDeleteLoading ? Colors.grey : Colors.red,
-                      size: 18,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        bottomLeft: Radius.circular(16),
+                      ),
+                      child: CachedImage(
+                        imageUrl: widget.imageUrl,
+                        borderRadius: 0,
+                        width: double.infinity,
+                        height: 120,
+                        fit: BoxFit
+                            .cover, // This will crop the image to fill the container
+                      ),
+                    ),
+                  ),
+                  // Exercise info section (60% width)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Exercise name
+                          Text(
+                            widget.exercise.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          // Muscle group and category with modern UI
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Muscle group
+                              if (widget.exercise.primaryMuscle.isNotEmpty)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        AppColors.primary.withOpacity(0.3),
+                                        AppColors.primary.withOpacity(0.1),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: AppColors.primary.withOpacity(0.4),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.fitness_center,
+                                        color: AppColors.primary,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          widget.exercise.primaryMuscle,
+                                          style: const TextStyle(
+                                            color: AppColors.primary,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              // Spacing between chips
+                              if (widget.exercise.primaryMuscle.isNotEmpty &&
+                                  widget.exercise.category.isNotEmpty)
+                                const SizedBox(height: 6),
+                              // Category (if available)
+                              if (widget.exercise.category.isNotEmpty)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.grey.withOpacity(0.3),
+                                        Colors.grey.withOpacity(0.1),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.grey.withOpacity(0.4),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.category,
+                                        color: Colors.grey,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          widget.exercise.category,
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              // Delete button for custom exercises
+              if (widget.showDelete && widget.onDelete != null)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: widget.isDeleteLoading ? null : widget.onDelete,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withOpacity(0.7),
+                        border: Border.all(
+                          color: Colors.red.withOpacity(0.8),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.delete_outline,
+                        color:
+                            widget.isDeleteLoading ? Colors.grey : Colors.red,
+                        size: 16,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            Positioned(
-              bottom: 0,
-              child: Container(
-                width: MediaQuery.of(context).size.width - 48,
-                decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20))),
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 10,
-                  ),
-                  child: Text(
-                    widget.exercise.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 18,
-                          color: Colors.black,
-                          offset: Offset(1, 1),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )
-          ],
+              // Chevron indicator
+            ],
+          ),
         ),
       ),
     );

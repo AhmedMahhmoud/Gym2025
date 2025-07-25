@@ -8,7 +8,9 @@ class Exercise {
         description: json['description'] ?? '',
         videoUrl: json['videoUrl'] ?? '',
         primaryMuscle: json['primaryMuscle'] ?? json['muscleGroup'] ?? '',
+        primaryMuscleId: json['primaryMuscleId'] ?? '',
         category: json['category'] ?? '',
+        categoryId: json['categoryId'] ?? '',
         weight:
             json['weight'] != null ? (json['weight'] as num).toDouble() : null,
         repetitions: json['repetitions'] as int?,
@@ -24,8 +26,10 @@ class Exercise {
       'description': description,
       'videoUrl': videoUrl,
       'primaryMuscle': primaryMuscle,
+      'primaryMuscleId': primaryMuscleId,
       'muscleGroup': primaryMuscle,
       'category': category,
+      'categoryId': categoryId,
       'weight': weight,
       'repetitions': repetitions,
       'imageUrl': imageUrl,
@@ -39,7 +43,9 @@ class Exercise {
       description: 'Loading...',
       videoUrl: '', // Avoid loading actual images
       primaryMuscle: '',
+      primaryMuscleId: '',
       category: '',
+      categoryId: '',
       id: '',
     );
   }
@@ -50,7 +56,9 @@ class Exercise {
       required this.description,
       required this.videoUrl,
       required this.primaryMuscle,
+      required this.primaryMuscleId,
       required this.category,
+      required this.categoryId,
       this.weight,
       this.repetitions,
       this.imageUrl,
@@ -63,7 +71,9 @@ class Exercise {
   final String? workoutExerciseID;
   final String videoUrl;
   final String primaryMuscle;
+  final String primaryMuscleId;
   final String category;
+  final String categoryId;
   final double? weight;
   final int? repetitions;
   final String? imageUrl;
@@ -80,7 +90,9 @@ class Exercise {
     String? description,
     String? videoUrl,
     String? primaryMuscle,
+    String? primaryMuscleId,
     String? category,
+    String? categoryId,
     double? weight,
     int? repetitions,
     String? imageUrl,
@@ -93,7 +105,9 @@ class Exercise {
       description: description ?? this.description,
       videoUrl: videoUrl ?? this.videoUrl,
       primaryMuscle: primaryMuscle ?? this.primaryMuscle,
+      primaryMuscleId: primaryMuscleId ?? this.primaryMuscleId,
       category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       weight: weight ?? this.weight,
       repetitions: repetitions ?? this.repetitions,
       imageUrl: imageUrl ?? this.imageUrl,

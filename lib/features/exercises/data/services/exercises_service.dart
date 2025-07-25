@@ -18,6 +18,8 @@ class ExercisesService {
         .map((e) => Exercise(
               id: e.id,
               name: e.name,
+              primaryMuscleId: e.primaryMuscleId,
+              categoryId: e.categoryId,
               description: e.description,
               primaryMuscle: e.primaryMuscle,
               category: e.category,
@@ -49,6 +51,8 @@ class ExercisesService {
     return Exercise(
       id: exercise.id,
       name: exercise.name,
+      categoryId: exercise.categoryId,
+      primaryMuscleId: exercise.primaryMuscleId,
       description: exercise.description,
       primaryMuscle: exercise.primaryMuscle,
       category: exercise.category,

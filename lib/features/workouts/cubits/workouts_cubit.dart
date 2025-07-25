@@ -171,6 +171,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       // Regular exercise
       return Exercise(
         id: workoutExercise.exercise!.id,
+        primaryMuscleId: workoutExercise.exercise!.primaryMuscleId,
+        categoryId: workoutExercise.exercise!.categoryId,
         workoutExerciseID: workoutExercise.id,
         name: workoutExercise.exercise!.name,
         description: workoutExercise.exercise!.description,
@@ -182,9 +184,11 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         workoutExercise.customExercise != null) {
       // Custom exercise
       return Exercise(
+        primaryMuscleId: workoutExercise.customExercise!.primaryMuscleId,
         id: workoutExercise.customExercise!.id,
         workoutExerciseID: workoutExercise.id,
         name: workoutExercise.customExercise!.name,
+        categoryId: workoutExercise.customExercise!.categoryId,
         description: workoutExercise.customExercise!.description,
         videoUrl: workoutExercise.customExercise!.videoUrl,
         primaryMuscle: workoutExercise.customExercise!.primaryMuscle,
@@ -194,8 +198,10 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       // Fallback case
       return Exercise(
         id: workoutExercise.id,
+        primaryMuscleId: '',
         workoutExerciseID: workoutExercise.id,
         name: 'Unknown Exercise',
+        categoryId: '',
         description: '',
         videoUrl: '',
         primaryMuscle: '',

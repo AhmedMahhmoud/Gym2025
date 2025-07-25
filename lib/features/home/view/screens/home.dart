@@ -31,7 +31,7 @@ class Home extends StatelessWidget {
                       width: 7,
                     ),
                     SizedBox(
-                      width: MediaQuery.sizeOf(context).width * 0.50,
+                      width: MediaQuery.sizeOf(context).width * 0.70,
                       child: BlocBuilder<ProfileCubit, ProfileState>(
                         builder: (context, state) {
                           return Text(
@@ -48,7 +48,6 @@ class Home extends StatelessWidget {
                     )
                   ],
                 ),
-                const SignOutBtn()
               ],
             ),
             const SizedBox(

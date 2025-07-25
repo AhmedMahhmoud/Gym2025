@@ -7,20 +7,40 @@ class ProfileRepository {
   final DioService _dioService = DioService();
   final TokenManager _tokenManager = TokenManager();
 
-  Future<String> uploadProfilePicture(String imagePath) async {
+  /// Upload profile picture and/or update display name
+  /// Both parameters are optional - only send what's being updated
+  Future<String> uploadProfile({
+    String? imagePath,
+    String? inAppName,
+  }) async {
     try {
-      final file = File(imagePath);
-      final fileName = file.path.split('/').last;
+      final Map<String, dynamic> formDataMap = {};
 
-      final formData = FormData.fromMap({
-        'profilePicture': await MultipartFile.fromFile(
+      // Add image if provided
+      if (imagePath != null && imagePath.isNotEmpty) {
+        final file = File(imagePath);
+        final fileName = file.path.split('/').last;
+
+        formDataMap['profilePicture'] = await MultipartFile.fromFile(
           imagePath,
           filename: fileName,
-        ),
-      });
+        );
+      }
+
+      // Add name if provided
+      if (inAppName != null && inAppName.isNotEmpty) {
+        formDataMap['inAppName'] = inAppName;
+      }
+
+      // Ensure at least one field is provided
+      if (formDataMap.isEmpty) {
+        throw Exception('At least one field (image or name) must be provided');
+      }
+
+      final formData = FormData.fromMap(formDataMap);
 
       final response = await _dioService.multipart(
-        '/api/Auth/UploadProfilePicture',
+        '/api/Auth/UpdateProfile',
         formData: formData,
       );
 
@@ -43,12 +63,18 @@ class ProfileRepository {
           throw Exception('Invalid token format received');
         }
       } else {
-        throw Exception('Failed to upload profile picture');
+        throw Exception('Failed to update profile');
       }
     } on DioException catch (e) {
-      throw Exception(e.error ?? 'Failed to upload profile picture');
+      throw Exception(e.error ?? 'Failed to update profile');
     } catch (e) {
       throw Exception('An unexpected error occurred: $e');
     }
+  }
+
+  /// Legacy method for backward compatibility
+  /// @deprecated Use uploadProfile instead
+  Future<String> uploadProfilePicture(String imagePath) async {
+    return uploadProfile(imagePath: imagePath);
   }
 }

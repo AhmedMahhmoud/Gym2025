@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gym/core/theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:gym/features/home/view/widgets/signout.dart';
 import 'package:gym/features/profile/cubit/profile_cubit.dart';
 import 'package:gym/features/profile/cubit/profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -204,12 +205,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_nameController.text.trim().isNotEmpty) {
-                        context.read<ProfileCubit>().updateDisplayName(
+                        await context.read<ProfileCubit>().updateDisplayName(
                               _nameController.text.trim(),
                             );
-                        Navigator.pop(context);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -245,14 +248,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   backgroundColor: Colors.red,
                 ),
               );
-            } else if (state.status == ProfileStatus.success &&
-                state.profileImage != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Profile picture updated successfully!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+            } else if (state.status == ProfileStatus.success) {
+              // Show success message for both image and name updates
+              if (state.profileImage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Profile picture updated successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                // This handles name updates (no image change)
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Profile updated successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
             }
           },
           builder: (context, state) {
@@ -272,35 +285,152 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           end: Alignment.bottomRight,
                           colors: [
                             AppColors.primary,
-                            AppColors.primary.withOpacity(0.7),
+                            AppColors.primary.withOpacity(0.8),
+                            AppColors.primary.withOpacity(0.6),
                           ],
+                          stops: const [0.0, 0.5, 1.0],
                         ),
                       ),
                       child: Stack(
                         children: [
-                          // Background decoration
+                          // Animated background elements
                           Positioned(
-                            top: -50,
-                            right: -50,
+                            top: -80,
+                            right: -80,
+                            child: Container(
+                              width: 200,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0.15),
+                                    Colors.white.withOpacity(0.05),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: -60,
+                            left: -60,
                             child: Container(
                               width: 150,
                               height: 150,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(0.1),
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0.1),
+                                    Colors.white.withOpacity(0.03),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Geometric accent shapes
+                          Positioned(
+                            top: 40,
+                            left: 20,
+                            child: Transform.rotate(
+                              angle: 0.785, // 45 degrees
+                              child: Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.white.withOpacity(0.1),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.2),
+                                    width: 1,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                           Positioned(
-                            bottom: -30,
-                            left: -30,
+                            bottom: 60,
+                            right: 30,
+                            child: Transform.rotate(
+                              angle: -0.785, // -45 degrees
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.white.withOpacity(0.08),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.15),
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Floating particles effect
+                          Positioned(
+                            top: 80,
+                            right: 40,
                             child: Container(
-                              width: 100,
-                              height: 100,
+                              width: 8,
+                              height: 8,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withOpacity(0.3),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.2),
+                                    blurRadius: 4,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
                               ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 120,
+                            right: 80,
+                            child: Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withOpacity(0.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.15),
+                                    blurRadius: 3,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 100,
+                            left: 60,
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withOpacity(0.25),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.2),
+                                    blurRadius: 5,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Subtle grid pattern
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: GridPainter(),
                             ),
                           ),
                           // Profile content
@@ -329,7 +459,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             BoxShadow(
                                               color:
                                                   Colors.black.withOpacity(0.3),
-                                              blurRadius: 10,
+                                              blurRadius: 15,
                                               spreadRadius: 2,
                                             ),
                                           ],
@@ -356,6 +486,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 color: Colors.white,
                                                 width: 2,
                                               ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withOpacity(0.2),
+                                                  blurRadius: 4,
+                                                  spreadRadius: 1,
+                                                ),
+                                              ],
                                             ),
                                             child: const Icon(
                                               FontAwesomeIcons.camera,
@@ -388,13 +526,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                // Display Name
-                                Text(
-                                  state.displayName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                                // Display Name with clean styling
+                                Container(
+                                  constraints: BoxConstraints(
+                                    maxWidth:
+                                        MediaQuery.of(context).size.width * 0.9,
+                                  ),
+                                  child: Text(
+                                    state.displayName,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.8,
+                                      height: 1.2,
+                                      shadows: [
+                                        const Shadow(
+                                          color: Colors.black,
+                                          offset: Offset(0, 2),
+                                          blurRadius: 4,
+                                        ),
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          offset: const Offset(0, 1),
+                                          blurRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                // Subtle accent line
+                                Container(
+                                  width: 60,
+                                  height: 2,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.white.withOpacity(0.6),
+                                        Colors.white.withOpacity(0.3),
+                                        Colors.transparent,
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(1),
                                   ),
                                 ),
                               ],
@@ -554,10 +731,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
+                        const SignOutBtn()
                         // Stats Card
                         // Container(
                         //   width: double.infinity,
-                        //   padding: const EdgeInsets.all(24),
+
                         //   decoration: BoxDecoration(
                         //     gradient: LinearGradient(
                         //       begin: Alignment.topLeft,
@@ -740,4 +918,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+}
+
+// Custom painter for subtle grid pattern
+class GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.03)
+      ..strokeWidth = 0.5;
+
+    const spacing = 30.0;
+
+    // Draw vertical lines
+    for (double x = 0; x < size.width; x += spacing) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+
+    // Draw horizontal lines
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
