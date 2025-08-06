@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/Shared/ui/custom_text_form_field.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/core/utils/validators/validations.dart';
-import 'package:gym/features/auth/view/cubit/auth_cubit.dart';
-import 'package:gym/features/auth/view/widgets/auth_toggle_btns.dart';
-import 'package:gym/features/auth/view/widgets/sign_btns_row.dart';
-import 'package:gym/routes/route_names.dart';
+import 'package:trackletics/Shared/ui/custom_text_form_field.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/core/utils/validators/validations.dart';
+import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
+import 'package:trackletics/features/auth/view/widgets/auth_toggle_btns.dart';
+import 'package:trackletics/features/auth/view/widgets/sign_btns_row.dart';
+import 'package:trackletics/routes/route_names.dart';
 
 class SignInView extends StatelessWidget {
   const SignInView({

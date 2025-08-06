@@ -2,12 +2,12 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/Shared/ui/custom_snackbar.dart';
-import 'package:gym/Shared/ui/rounded_primary_btn.dart';
-import 'package:gym/features/auth/view/cubit/auth_cubit.dart';
-import 'package:gym/features/auth/view/widgets/auth_toggle_btns.dart';
-import 'package:gym/features/auth/view/widgets/social_sign_btn.dart';
-import 'package:gym/routes/route_names.dart';
+import 'package:trackletics/Shared/ui/custom_snackbar.dart';
+import 'package:trackletics/Shared/ui/rounded_primary_btn.dart';
+import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
+import 'package:trackletics/features/auth/view/widgets/auth_toggle_btns.dart';
+import 'package:trackletics/features/auth/view/widgets/social_sign_btn.dart';
+import 'package:trackletics/routes/route_names.dart';
 
 class LoginButtonsRow extends StatelessWidget {
   const LoginButtonsRow({
@@ -19,30 +19,10 @@ class LoginButtonsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Social Buttons (Apple & Google)
-        Row(
-          children: [
-            SocialLoginButton(
-              icon: Icons.apple,
-              onPressed: () {
-                // TODO: Handle Apple Login
-              },
-            ),
-            const SizedBox(width: 15),
-            SocialLoginButton(
-              icon: Icons.g_mobiledata,
-              onPressed: () {
-                // TODO: Handle Google Login
-              },
-            ),
-          ],
-        ),
-        const SizedBox(
-          width: 50,
-        ),
-        // Primary Rounded Login Button
+
         BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state) {
             if (state is AuthUnauthenticated) {
@@ -60,6 +40,8 @@ class LoginButtonsRow extends StatelessWidget {
           },
           builder: (context, state) {
             return PrimaryRoundedButton(
+              width: 300,
+              borderRadius: 18,
               isLoading: state is AuthLoading,
               text: authtype == AuthType.login ? 'Login' : 'Sign up',
               icon: FontAwesomeIcons.arrowRight,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gym/Shared/ui/cached_network_img.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/Shared/ui/cached_network_img.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
 
 class PopAnimatedCard extends StatefulWidget {
   final Exercise exercise;
@@ -10,6 +10,8 @@ class PopAnimatedCard extends StatefulWidget {
   final bool showDelete;
   final VoidCallback? onDelete;
   final bool isDeleteLoading;
+  final bool showEdit;
+  final VoidCallback? onEdit;
 
   const PopAnimatedCard({
     super.key,
@@ -19,6 +21,8 @@ class PopAnimatedCard extends StatefulWidget {
     this.showDelete = false,
     this.onDelete,
     this.isDeleteLoading = false,
+    this.showEdit = false,
+    this.onEdit,
   });
 
   @override
@@ -113,6 +117,7 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          const SizedBox(height: 20),
                           // Exercise name
                           Text(
                             widget.exercise.name,
@@ -155,7 +160,7 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.fitness_center,
                                         color: AppColors.primary,
                                         size: 14,
@@ -206,7 +211,7 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.category,
                                         color: Colors.grey,
                                         size: 14,
@@ -235,31 +240,63 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                   ),
                 ],
               ),
-              // Delete button for custom exercises
-              if (widget.showDelete && widget.onDelete != null)
+              // Action buttons for custom exercises
+              if (widget.showDelete || widget.showEdit)
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: GestureDetector(
-                    onTap: widget.isDeleteLoading ? null : widget.onDelete,
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withOpacity(0.7),
-                        border: Border.all(
-                          color: Colors.red.withOpacity(0.8),
-                          width: 1.5,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Edit button
+                      if (widget.showEdit && widget.onEdit != null)
+                        GestureDetector(
+                          onTap: widget.onEdit,
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withOpacity(0.7),
+                              border: Border.all(
+                                color: Colors.orange.withOpacity(0.8),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.edit,
+                              color: Colors.orange,
+                              size: 16,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Icon(
-                        Icons.delete_outline,
-                        color:
-                            widget.isDeleteLoading ? Colors.grey : Colors.red,
-                        size: 16,
-                      ),
-                    ),
+                      // Delete button
+                      if (widget.showDelete && widget.onDelete != null)
+                        GestureDetector(
+                          onTap:
+                              widget.isDeleteLoading ? null : widget.onDelete,
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withOpacity(0.7),
+                              border: Border.all(
+                                color: Colors.red.withOpacity(0.8),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.delete_outline,
+                              color: widget.isDeleteLoading
+                                  ? Colors.grey
+                                  : Colors.red,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               // Chevron indicator

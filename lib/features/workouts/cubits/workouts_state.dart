@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
-import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/workouts/data/models/plan_model.dart';
-import 'package:gym/features/workouts/data/models/plan_response.dart';
-import 'package:gym/features/workouts/data/models/set_model.dart';
-import 'package:gym/features/workouts/data/models/workout_model.dart';
+import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/workouts/data/models/plan_model.dart';
+import 'package:trackletics/features/workouts/data/models/plan_response.dart';
+import 'package:trackletics/features/workouts/data/models/set_model.dart';
+import 'package:trackletics/features/workouts/data/models/workout_model.dart';
 
 enum WorkoutsStatus {
   initial,

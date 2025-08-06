@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/workouts/data/models/set_model.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/workouts/data/models/set_model.dart';
 
 class SetCard extends StatelessWidget {
   final SetModel set;

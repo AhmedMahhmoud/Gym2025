@@ -1,5 +1,5 @@
-import 'package:gym/core/network/dio_service.dart';
-import 'package:gym/features/workouts/data/models/unit_model.dart';
+import 'package:trackletics/core/network/dio_service.dart';
+import 'package:trackletics/features/workouts/data/models/unit_model.dart';
 
 class UnitsService {
   static final UnitsService _instance = UnitsService._internal();

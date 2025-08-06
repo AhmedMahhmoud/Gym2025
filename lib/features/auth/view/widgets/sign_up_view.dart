@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/Shared/ui/custom_text_form_field.dart';
-import 'package:gym/core/utils/validators/validations.dart';
-import 'package:gym/features/auth/view/cubit/auth_cubit.dart';
-import 'package:gym/features/auth/view/widgets/auth_toggle_btns.dart';
-import 'package:gym/features/auth/view/widgets/sign_btns_row.dart';
+import 'package:trackletics/Shared/ui/custom_text_form_field.dart';
+import 'package:trackletics/core/utils/validators/validations.dart';
+import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
+import 'package:trackletics/features/auth/view/widgets/auth_toggle_btns.dart';
+import 'package:trackletics/features/auth/view/widgets/sign_btns_row.dart';
 
 class SignupView extends StatelessWidget {
   const SignupView({
@@ -32,8 +32,16 @@ class SignupView extends StatelessWidget {
             height: 10,
           ),
           AppTextField(
-            hintText: 'In App Name',
+            hintText: 'Username',
             onSaved: (p0) => authCubit.signUpModel.username = p0!,
+            suffixIcon: const Icon(FontAwesomeIcons.user),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          AppTextField(
+            hintText: 'In App Name',
+            onSaved: (p0) => authCubit.signUpModel.inAppName = p0!,
             suffixIcon: const Icon(FontAwesomeIcons.dumbbell),
           ),
           const SizedBox(
@@ -66,9 +74,6 @@ class SignupView extends StatelessWidget {
           ),
           const LoginButtonsRow(
             authtype: AuthType.signup,
-          ),
-          const SizedBox(
-            height: 10,
           ),
         ],
       ),

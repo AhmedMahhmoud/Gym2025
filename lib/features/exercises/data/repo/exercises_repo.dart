@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:gym/core/error/failures.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/exercises/data/services/exercises_service.dart';
+import 'package:trackletics/core/error/failures.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/exercises/data/services/exercises_service.dart';
 
 class ExercisesRepository {
   ExercisesRepository({required this.exercisesService});
@@ -48,6 +48,27 @@ class ExercisesRepository {
     try {
       await exercisesService.deleteCustomExercise(exerciseId);
       return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, Exercise>> updateCustomExercise({
+    required String exerciseId,
+    required String title,
+    required String description,
+    required String primaryMuscle,
+    String? videoUrl,
+  }) async {
+    try {
+      final exercise = await exercisesService.updateCustomExercise(
+        exerciseId: exerciseId,
+        title: title,
+        description: description,
+        primaryMuscle: primaryMuscle,
+        videoUrl: videoUrl,
+      );
+      return Right(exercise);
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }

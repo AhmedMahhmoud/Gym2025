@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/Shared/ui/custom_snackbar.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/exercises/data/repo/exercises_repo.dart';
-import 'package:gym/features/exercises/view/widgets/exersises_display_listview.dart';
-import 'package:gym/features/exercises/view/widgets/exersises_search_field.dart';
-import 'package:gym/features/exercises/view/widgets/custom_exercise_form.dart';
-import 'package:gym/features/exercises/view/widgets/exercises_filter_bottomsheet.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:trackletics/Shared/ui/custom_snackbar.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
+import 'package:trackletics/features/exercises/view/widgets/exersises_display_listview.dart';
+import 'package:trackletics/features/exercises/view/widgets/exersises_search_field.dart';
+import 'package:trackletics/features/exercises/view/widgets/custom_exercise_form.dart';
+import 'package:trackletics/features/exercises/view/widgets/exercises_filter_bottomsheet.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:trackletics/core/showcase/showcase_keys.dart';
+import 'package:trackletics/features/exercises/view/widgets/exersises_search_field.dart';
 import '../cubit/exercises_cubit.dart';
 
 class ExercisesScreen extends StatefulWidget {
@@ -79,49 +82,64 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
                   children: [
-                    Expanded(child: ExerciseSearchField()),
+                    Expanded(
+                      child: Showcase(
+                        key: ShowcaseKeys.exerciseSearchField,
+                        description:
+                            'Search for exercises by name or description to quickly find what you need!',
+                        title: 'Exercise Search',
+                        child: ExerciseSearchField(),
+                      ),
+                    ),
                     const SizedBox(width: 12),
                     // Filter icon button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: state.selectedFilterType != FilterType.none
-                            ? AppColors.primary.withOpacity(0.2)
-                            : AppColors.background,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
+                    Showcase(
+                      key: ShowcaseKeys.exerciseFilterButton,
+                      description:
+                          'Filter exercises by muscle groups or categories to find specific workouts!',
+                      title: 'Exercise Filter',
+                      child: Container(
+                        decoration: BoxDecoration(
                           color: state.selectedFilterType != FilterType.none
-                              ? AppColors.primary
-                              : Colors.grey,
+                              ? AppColors.primary.withOpacity(0.2)
+                              : AppColors.background,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: state.selectedFilterType != FilterType.none
+                                ? AppColors.primary
+                                : Colors.grey,
+                          ),
                         ),
-                      ),
-                      child: IconButton(
-                        onPressed:
-                            _isCustomExercise ? null : _showFilterBottomSheet,
-                        icon: Stack(
-                          children: [
-                            Icon(
-                              Icons.filter_list,
-                              color: _isCustomExercise
-                                  ? Colors.grey.withOpacity(0.5)
-                                  : (state.selectedFilterType != FilterType.none
-                                      ? AppColors.primary
-                                      : Colors.grey),
-                            ),
-                            // Active filter indicator
-                            if (state.selectedFilterType != FilterType.none)
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    borderRadius: BorderRadius.circular(4),
+                        child: IconButton(
+                          onPressed:
+                              _isCustomExercise ? null : _showFilterBottomSheet,
+                          icon: Stack(
+                            children: [
+                              Icon(
+                                Icons.filter_list,
+                                color: _isCustomExercise
+                                    ? Colors.grey.withOpacity(0.5)
+                                    : (state.selectedFilterType !=
+                                            FilterType.none
+                                        ? AppColors.primary
+                                        : Colors.grey),
+                              ),
+                              // Active filter indicator
+                              if (state.selectedFilterType != FilterType.none)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -178,24 +196,30 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                 ),
               const SizedBox(height: 20),
               // Add TabBar
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 15),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
+              Showcase(
+                key: ShowcaseKeys.allExercisesTab,
+                description:
+                    'Switch between all exercises and your custom exercises! Tap "All Exercises" to browse the library.',
+                title: 'Exercise Tabs',
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 15),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
                     borderRadius: BorderRadius.circular(25),
-                    color: AppColors.primary,
                   ),
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: const [
-                    Tab(text: 'All Exercises'),
-                    Tab(text: 'Custom Exercises'),
-                  ],
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      color: AppColors.primary,
+                    ),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.grey,
+                    tabs: const [
+                      Tab(text: 'All Exercises'),
+                      Tab(text: 'Custom Exercises'),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -222,19 +246,25 @@ class _ExercisesScreenState extends State<ExercisesScreen>
             ],
           ),
           floatingActionButton: _isCustomExercise
-              ? FloatingActionButton(
-                  onPressed: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CustomExerciseForm(),
-                      ),
-                    );
-                  },
-                  backgroundColor: AppColors.primary,
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
+              ? Showcase(
+                  key: ShowcaseKeys.addCustomExerciseFAB,
+                  description:
+                      'Tap here to create your own custom exercise with personalized details!',
+                  title: 'Add Custom Exercise',
+                  child: FloatingActionButton(
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CustomExerciseForm(),
+                        ),
+                      );
+                    },
+                    backgroundColor: AppColors.primary,
+                    child: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
                   ),
                 )
               : null,

@@ -2,15 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/Shared/ui/custom_back_btn.dart';
-import 'package:gym/Shared/ui/custom_snackbar.dart';
-import 'package:gym/Shared/ui/custom_text_form_field.dart';
-import 'package:gym/Shared/ui/rounded_primary_btn.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/core/utils/validators/validations.dart';
-import 'package:gym/features/auth/data/repositories/otp_repository.dart';
-import 'package:gym/features/auth/view/cubit/otp_cubit.dart';
-import 'package:gym/routes/route_names.dart';
+import 'package:trackletics/Shared/ui/custom_back_btn.dart';
+import 'package:trackletics/Shared/ui/custom_snackbar.dart';
+import 'package:trackletics/Shared/ui/custom_text_form_field.dart';
+import 'package:trackletics/Shared/ui/rounded_primary_btn.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/core/utils/validators/validations.dart';
+import 'package:trackletics/features/auth/data/repositories/otp_repository.dart';
+import 'package:trackletics/features/auth/view/cubit/otp_cubit.dart';
+import 'package:trackletics/routes/route_names.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});

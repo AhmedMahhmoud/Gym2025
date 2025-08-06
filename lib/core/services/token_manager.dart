@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'package:gym/core/services/storage_service.dart';
+import 'package:trackletics/core/services/storage_service.dart';
 
 class TokenManager {
   static final TokenManager _instance = TokenManager._internal();

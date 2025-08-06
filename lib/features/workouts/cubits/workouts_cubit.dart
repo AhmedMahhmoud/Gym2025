@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym/features/workouts/cubits/workouts_state.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/workouts/data/models/plan_model.dart';
-import 'package:gym/features/workouts/data/models/plan_response.dart';
-import 'package:gym/features/workouts/data/models/set_model.dart';
-import 'package:gym/features/workouts/data/models/workout_model.dart';
-import 'package:gym/features/workouts/data/workouts_repository.dart';
+import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/workouts/data/models/plan_model.dart';
+import 'package:trackletics/features/workouts/data/models/plan_response.dart';
+import 'package:trackletics/features/workouts/data/models/set_model.dart';
+import 'package:trackletics/features/workouts/data/models/workout_model.dart';
+import 'package:trackletics/features/workouts/data/workouts_repository.dart';
 
 class WorkoutsCubit extends Cubit<WorkoutsState> {
   final WorkoutsRepository _repository;

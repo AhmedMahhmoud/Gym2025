@@ -5,22 +5,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:gym/core/network/connectivity.dart';
-import 'package:gym/core/network/dio_service.dart';
-import 'package:gym/core/services/auth_initialization_service.dart';
-import 'package:gym/core/services/storage_service.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/auth/view/screens/auth_screen.dart';
-import 'package:gym/features/exercises/data/repo/exercises_repo.dart';
-import 'package:gym/features/exercises/data/services/exercises_service.dart';
-import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
-import 'package:gym/features/home/view/screens/home.dart';
-import 'package:gym/features/onboarding/screens/onboarding_screen.dart';
-import 'package:gym/features/profile/cubit/profile_cubit.dart';
-import 'package:gym/shared/widgets/main_scaffold.dart';
+import 'package:trackletics/core/network/connectivity.dart';
+import 'package:trackletics/core/network/dio_service.dart';
+import 'package:trackletics/core/services/auth_initialization_service.dart';
+import 'package:trackletics/core/services/storage_service.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/auth/view/screens/auth_screen.dart';
+import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
+import 'package:trackletics/features/exercises/data/services/exercises_service.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:trackletics/features/home/view/screens/home.dart';
+import 'package:trackletics/features/onboarding/screens/onboarding_screen.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/shared/widgets/main_scaffold.dart';
 import 'core/theme/app_theme.dart';
-import 'package:gym/routes/app_routes.dart';
-import 'package:gym/features/workouts/data/units_service.dart';
+import 'package:trackletics/routes/app_routes.dart';
+import 'package:trackletics/features/workouts/data/units_service.dart';
+
+//create a global navigator key
+final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -161,6 +164,7 @@ class _MyAppState extends State<MyApp> {
                 )
               ],
               child: MaterialApp(
+                navigatorKey: navKey,
                 theme: AppTheme.darkTheme,
                 debugShowCheckedModeBanner: false,
                 onGenerateRoute: OnPageRoute.generateRoute,

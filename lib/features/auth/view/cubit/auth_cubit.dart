@@ -2,8 +2,8 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:gym/features/auth/data/models/sign_up_model.dart';
-import 'package:gym/features/auth/data/repositories/auth_repository.dart';
+import 'package:trackletics/features/auth/data/models/sign_up_model.dart';
+import 'package:trackletics/features/auth/data/repositories/auth_repository.dart';
 
 part 'auth_state.dart';
 
@@ -11,7 +11,8 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit({required this.authRepository}) : super(const AuthInitial());
   final AuthRepository authRepository;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  SignUpModel signUpModel = SignUpModel(username: '', mail: '', password: '');
+  SignUpModel signUpModel =
+      SignUpModel(username: '', inAppName: '', mail: '', password: '');
   Future<void> register() async {
     formKey.currentState!.save();
     if (!formKey.currentState!.validate()) return;

@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:gym/core/services/storage_service.dart';
-import 'package:gym/core/services/token_manager.dart';
-import 'package:gym/features/auth/data/models/sign_up_model.dart';
+import 'package:trackletics/core/services/storage_service.dart';
+import 'package:trackletics/core/services/token_manager.dart';
+import 'package:trackletics/features/auth/data/models/sign_up_model.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/dio_service.dart';
 import '../../../../core/network/error_handler.dart';
@@ -19,8 +19,8 @@ class AuthRepository {
         data: {
           'email': signModel.mail,
           'password': signModel.password,
-          'inappname': signModel.username,
-          'Username': signModel.username,
+          'inappname': signModel.inAppName,
+          'username': signModel.username,
           'roles': ['user'],
         },
       );

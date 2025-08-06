@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:gym/features/auth/data/repositories/otp_repository.dart';
+import 'package:trackletics/features/auth/data/repositories/otp_repository.dart';
 
 part 'otp_state.dart';
 

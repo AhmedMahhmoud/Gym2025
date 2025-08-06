@@ -1,5 +1,5 @@
-name: gym
-description: "A new Flutter project."
+name: trackletics
+description: "Trackletics - A comprehensive fitness tracking app."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -58,6 +58,7 @@ dependencies:
   shimmer: ^3.0.0
   dart_jsonwebtoken: ^2.12.2
   package_info_plus: ^8.3.0
+  showcaseview: ^3.0.0
 
 dev_dependencies:
   flutter_test:

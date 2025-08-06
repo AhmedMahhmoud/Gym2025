@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/features/exercises/view/screens/exercises_display_page.dart';
-import 'package:gym/features/home/view/widgets/signout.dart';
-import 'package:gym/features/profile/cubit/profile_cubit.dart';
-import 'package:gym/features/profile/cubit/profile_state.dart';
+import 'package:trackletics/features/exercises/view/screens/exercises_display_page.dart';
+import 'package:trackletics/features/home/view/widgets/signout.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/features/profile/cubit/profile_state.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});

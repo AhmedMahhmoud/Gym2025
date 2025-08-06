@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:gym/core/services/jwt_service.dart';
+import 'package:trackletics/core/services/jwt_service.dart';
 
 enum ProfileStatus {
   initial,

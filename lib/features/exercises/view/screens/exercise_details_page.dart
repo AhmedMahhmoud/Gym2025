@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:gym/Shared/ui/cached_network_img.dart';
-import 'package:gym/Shared/ui/custom_back_btn.dart';
-import 'package:gym/Shared/ui/youtube_player.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/exercises/view/screens/admin_exercise_edit_screen.dart';
-import 'package:gym/features/profile/cubit/profile_cubit.dart';
-import 'package:gym/features/profile/cubit/profile_state.dart';
+import 'package:trackletics/Shared/ui/cached_network_img.dart';
+import 'package:trackletics/Shared/ui/custom_back_btn.dart';
+import 'package:trackletics/Shared/ui/youtube_player.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/exercises/view/screens/admin_exercise_edit_screen.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/features/profile/cubit/profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 
 class ExerciseDetailsPage extends StatelessWidget {
   const ExerciseDetailsPage(

@@ -1,7 +1,7 @@
 import 'dart:developer';
-import 'package:gym/core/services/jwt_service.dart';
-import 'package:gym/core/services/storage_service.dart';
-import 'package:gym/core/services/token_manager.dart';
+import 'package:trackletics/core/services/jwt_service.dart';
+import 'package:trackletics/core/services/storage_service.dart';
+import 'package:trackletics/core/services/token_manager.dart';
 
 enum AuthInitStatus {
   checking,

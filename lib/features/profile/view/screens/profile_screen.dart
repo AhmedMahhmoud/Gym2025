@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/core/theme/app_colors.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gym/features/home/view/widgets/signout.dart';
-import 'package:gym/features/profile/cubit/profile_cubit.dart';
-import 'package:gym/features/profile/cubit/profile_state.dart';
+import 'package:trackletics/features/home/view/widgets/signout.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/features/profile/cubit/profile_state.dart';
+import 'package:trackletics/core/showcase/showcase_keys.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:trackletics/features/auth/view/cubit/otp_cubit.dart';
+import 'package:trackletics/features/auth/data/repositories/otp_repository.dart';
+import 'package:trackletics/Shared/ui/custom_snackbar.dart';
+import 'package:trackletics/routes/route_names.dart';
 import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
@@ -588,100 +594,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         // Profile Info Card
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.white.withOpacity(0.1),
-                                Colors.white.withOpacity(0.05),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    FontAwesomeIcons.user,
-                                    color: Colors.white70,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Text(
-                                    'Profile Information',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  IconButton(
-                                    onPressed: _showEditNameDialog,
-                                    icon: const Icon(
-                                      FontAwesomeIcons.squarePen,
-                                      color: Colors.white70,
-                                      size: 16,
-                                    ),
-                                  ),
+                        Showcase(
+                          key: ShowcaseKeys.profileInfo,
+                          description:
+                              'View and edit your profile information, including your display name and profile picture!',
+                          title: 'Profile Information',
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.1),
+                                  Colors.white.withOpacity(0.05),
                                 ],
                               ),
-                              const SizedBox(height: 20),
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
-                                  ),
-                                ),
-                                child: Row(
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
                                     const Icon(
-                                      FontAwesomeIcons.signature,
+                                      FontAwesomeIcons.user,
                                       color: Colors.white70,
-                                      size: 16,
+                                      size: 20,
                                     ),
                                     const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Display Name',
-                                            style: TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            state.displayName,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
+                                    const Text(
+                                      'Profile Information',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    IconButton(
+                                      onPressed: _showEditNameDialog,
+                                      icon: const Icon(
+                                        FontAwesomeIcons.squarePen,
+                                        color: Colors.white70,
+                                        size: 16,
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              if (state.email != null) ...[
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 20),
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
@@ -694,7 +659,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   child: Row(
                                     children: [
                                       const Icon(
-                                        FontAwesomeIcons.envelope,
+                                        FontAwesomeIcons.signature,
                                         color: Colors.white70,
                                         size: 16,
                                       ),
@@ -705,7 +670,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             const Text(
-                                              'Email',
+                                              'Display Name',
                                               style: TextStyle(
                                                 color: Colors.white70,
                                                 fontSize: 12,
@@ -713,7 +678,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              state.email!,
+                                              state.displayName,
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 16,
@@ -726,12 +691,166 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ],
                                   ),
                                 ),
+                                if (state.email != null) ...[
+                                  const SizedBox(height: 16),
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.05),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.1),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          FontAwesomeIcons.envelope,
+                                          color: Colors.white70,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Email',
+                                                style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                state.email!,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 24),
-                        const SignOutBtn()
+                        const SignOutBtn(),
+                        const SizedBox(height: 16),
+                        // Reset Password Card
+                        BlocProvider(
+                          create: (context) =>
+                              OtpCubit(otpRepository: OtpRepository()),
+                          child: BlocConsumer<OtpCubit, OtpState>(
+                            listener: (context, state) {
+                              if (state is VerifyResetPasswordError) {
+                                CustomSnackbar.show(
+                                    context, state.errorMessage!,
+                                    isError: true);
+                              } else if (state is VerifyResetPasswordLoaded) {
+                                CustomSnackbar.show(
+                                    context, state.successMsg ?? '',
+                                    isError: false);
+                                Navigator.pushNamed(
+                                    context, RouteNames.otp_screen_route,
+                                    arguments: [
+                                      context.read<ProfileCubit>().state.email,
+                                      true
+                                    ]);
+                              }
+                            },
+                            builder: (context, state) => GestureDetector(
+                              onTap: () =>
+                                  _showResetPasswordConfirmation(context),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Colors.blue.withOpacity(0.2),
+                                      Colors.blue.withOpacity(0.1),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.blue.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Colors.blue.withOpacity(0.4),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        FontAwesomeIcons.key,
+                                        color: Colors.blue,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Reset Password',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Change your account password',
+                                            style: TextStyle(
+                                              color:
+                                                  Colors.white.withOpacity(0.7),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.chevron_right,
+                                      color: Colors.blue.withOpacity(0.6),
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                         // Stats Card
                         // Container(
                         //   width: double.infinity,
@@ -872,6 +991,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
         FontAwesomeIcons.user,
         size: 50,
         color: Colors.white,
+      ),
+    );
+  }
+
+  void _showResetPasswordConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                FontAwesomeIcons.key,
+                color: Colors.blue,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Reset Password',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'We will send a verification code to your email address to reset your password.',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white70),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Get user email from ProfileCubit and trigger reset password
+              final userEmail = context.read<ProfileCubit>().state.email;
+              if (userEmail != null && userEmail.isNotEmpty) {
+                context.read<OtpCubit>().verifyResetPassword(userEmail);
+              } else {
+                CustomSnackbar.show(context, 'Email not found', isError: true);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'Reset Password',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }

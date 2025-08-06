@@ -1,9 +1,9 @@
 // File: exercise_search_field.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
-import 'package:gym/features/exercises/view/widgets/exercises_filter_bottomsheet.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:trackletics/features/exercises/view/widgets/exercises_filter_bottomsheet.dart';
 
 class ExerciseSearchField extends StatelessWidget {
   const ExerciseSearchField({super.key});

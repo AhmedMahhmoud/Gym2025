@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/Shared/ui/custom_snackbar.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/core/widgets/dialogs/input_dialog_container.dart';
-import 'package:gym/features/workouts/data/units_service.dart';
+import 'package:trackletics/Shared/ui/custom_snackbar.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/core/widgets/dialogs/input_dialog_container.dart';
+import 'package:trackletics/features/workouts/data/units_service.dart';
 
 class AddSetDialog extends StatefulWidget {
   final Function({

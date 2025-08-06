@@ -1,5 +1,5 @@
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/workouts/data/models/set_model.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/workouts/data/models/set_model.dart';
 
 class WorkoutModel {
   final String id;

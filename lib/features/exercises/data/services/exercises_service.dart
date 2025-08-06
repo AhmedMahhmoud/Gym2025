@@ -1,5 +1,5 @@
-import 'package:gym/core/network/dio_service.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/core/network/dio_service.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
 
 class ExercisesService {
   ExercisesService({required this.dioService});
@@ -64,6 +64,38 @@ class ExercisesService {
 
   Future<void> deleteCustomExercise(String exerciseId) async {
     await dioService.delete('/api/customExercises/$exerciseId');
+  }
+
+  Future<Exercise> updateCustomExercise({
+    required String exerciseId,
+    required String title,
+    required String description,
+    required String primaryMuscle,
+    String? videoUrl,
+  }) async {
+    final res = await dioService.put(
+      '/api/customExercises/$exerciseId',
+      data: {
+        'title': title,
+        'description': description,
+        'videoUrl': videoUrl,
+        'primaryMuscle': primaryMuscle,
+      },
+    );
+    final exercise = Exercise.fromJson(res.data);
+    // Mark the updated exercise as custom
+    return Exercise(
+      id: exercise.id,
+      name: exercise.name,
+      categoryId: exercise.categoryId,
+      primaryMuscleId: exercise.primaryMuscleId,
+      description: exercise.description,
+      primaryMuscle: exercise.primaryMuscle,
+      category: exercise.category,
+      videoUrl: exercise.videoUrl,
+      imageUrl: exercise.imageUrl,
+      workoutId: exercise.workoutId,
+    );
   }
 
   Future<Exercise> updateExercise({

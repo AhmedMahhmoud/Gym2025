@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym/core/network/dio_service.dart';
-import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
-import 'package:gym/features/workouts/data/workouts_repository.dart';
-import 'package:gym/features/workouts/views/screens/plans_screen.dart';
+import 'package:trackletics/core/network/dio_service.dart';
+import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
+import 'package:trackletics/features/workouts/data/workouts_repository.dart';
+import 'package:trackletics/features/workouts/views/screens/plans_screen.dart';
 
 class WorkoutsFeature extends StatelessWidget {
   const WorkoutsFeature({Key? key}) : super(key: key);

@@ -1,6 +1,6 @@
 import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:gym/core/theme/app_colors.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
 
 class CustomSnackbar {
   static void show(BuildContext context, String message,

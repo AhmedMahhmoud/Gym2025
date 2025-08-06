@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/Shared/ui/custom_snackbar.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/profile/cubit/profile_state.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/Shared/ui/custom_snackbar.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/profile/cubit/profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym/features/profile/cubit/profile_cubit.dart';
-import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 
 class AdminExerciseEditScreen extends StatefulWidget {
   final Exercise exercise;

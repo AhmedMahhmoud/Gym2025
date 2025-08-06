@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:gym/core/theme/app_theme.dart';
-import 'package:gym/routes/route_names.dart';
+import 'package:trackletics/core/theme/app_theme.dart';
+import 'package:trackletics/routes/route_names.dart';
 import '../models/onboarding_item.dart';
 import '../../../core/theme/app_colors.dart';
-import 'package:gym/core/services/storage_service.dart';
+import 'package:trackletics/core/services/storage_service.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

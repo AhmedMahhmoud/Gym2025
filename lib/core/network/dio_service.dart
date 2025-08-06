@@ -2,9 +2,9 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:gym/core/constants/constants.dart';
-import 'package:gym/core/services/storage_service.dart';
-import 'package:gym/core/services/token_manager.dart';
+import 'package:trackletics/core/constants/constants.dart';
+import 'package:trackletics/core/services/storage_service.dart';
+import 'package:trackletics/core/services/token_manager.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class DioService {

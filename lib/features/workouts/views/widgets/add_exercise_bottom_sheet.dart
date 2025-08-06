@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/core/utils/shared_utils.dart';
-import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
-import 'package:gym/features/exercises/view/widgets/custom_exercise_form.dart';
-import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
-import 'package:gym/Shared/ui/custom_snackbar.dart';
-import 'package:gym/routes/route_names.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/core/utils/shared_utils.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:trackletics/features/exercises/view/widgets/custom_exercise_form.dart';
+import 'package:trackletics/features/exercises/view/widgets/update_custom_exercise_form.dart';
+import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
+import 'package:trackletics/Shared/ui/custom_snackbar.dart';
+import 'package:trackletics/routes/route_names.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
 
 class AddExerciseBottomSheet extends StatefulWidget {
   const AddExerciseBottomSheet({super.key});
@@ -216,8 +217,18 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                         ),
                         labelColor: Colors.white,
                         unselectedLabelColor: Colors.grey,
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                        ),
                         tabs: const [
-                          Tab(text: 'All Exercises'),
+                          Tab(
+                            text: 'All Exercises',
+                          ),
                           Tab(text: 'Custom Exercises'),
                         ],
                       ),
@@ -530,22 +541,38 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                 Colors.white70.withOpacity(isAdded ? 0.7 : 1.0),
                           ),
                         ),
-                        leading: IconButton(
-                          icon: Icon(
-                            FontAwesomeIcons.circleInfo,
-                            color:
-                                Colors.white70.withOpacity(isAdded ? 0.7 : 1.0),
-                          ),
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              RouteNames.exercise_details_route,
-                              arguments: [
-                                exercise,
-                                SharedUtils.extractThumbnail(exercise.videoUrl)
-                              ],
-                            );
-                          },
+                        leading: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                FontAwesomeIcons.circleInfo,
+                                color: Colors.white70
+                                    .withOpacity(isAdded ? 0.7 : 1.0),
+                              ),
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  RouteNames.exercise_details_route,
+                                  arguments: [
+                                    exercise,
+                                    SharedUtils.extractThumbnail(
+                                        exercise.videoUrl)
+                                  ],
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                color: Colors.orange
+                                    .withOpacity(isAdded ? 0.7 : 1.0),
+                                size: 20,
+                              ),
+                              onPressed: () =>
+                                  _editCustomExercise(context, exercise),
+                            ),
+                          ],
                         ),
                         trailing: IconButton(
                           icon: Icon(
@@ -563,6 +590,24 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         ),
       ],
     );
+  }
+
+  // Navigate to update custom exercise form and handle the result
+  Future<void> _editCustomExercise(
+      BuildContext context, Exercise exercise) async {
+    // Navigate to update custom exercise form and wait for result
+    final Exercise? updatedExercise = await Navigator.push<Exercise>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UpdateCustomExerciseForm(exercise: exercise),
+      ),
+    );
+
+    // If an exercise was updated, refresh the custom exercises list
+    if (mounted && updatedExercise != null) {
+      // Refresh the custom exercises to get the updated data
+      await context.read<ExercisesCubit>().loadCustomExercises();
+    }
   }
 
   // Navigate to custom exercise form and handle the result

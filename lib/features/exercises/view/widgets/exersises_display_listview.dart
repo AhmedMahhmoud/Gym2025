@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym/core/utils/shared_utils.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/exercises/view/widgets/exercise_pop_widget.dart';
-import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
-import 'package:gym/routes/route_names.dart';
+import 'package:trackletics/core/utils/shared_utils.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/exercises/view/widgets/exercise_pop_widget.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:trackletics/features/exercises/view/widgets/update_custom_exercise_form.dart';
+import 'package:trackletics/routes/route_names.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:gym/core/theme/app_colors.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
 
 class ExerciseListView extends StatelessWidget {
   final List<Exercise> exercises;
@@ -60,6 +61,10 @@ class ExerciseListView extends StatelessWidget {
                             ? () => _showDeleteConfirmation(context, exercise)
                             : null,
                         isDeleteLoading: state.status == ExerciseStatus.loading,
+                        showEdit: isCustomTab,
+                        onEdit: isCustomTab
+                            ? () => _editCustomExercise(context, exercise)
+                            : null,
                       );
                     }),
               ),
@@ -68,6 +73,23 @@ class ExerciseListView extends StatelessWidget {
         );
       },
     );
+  }
+
+  // Navigate to update custom exercise form and handle the result
+  Future<void> _editCustomExercise(BuildContext context, Exercise exercise) async {
+    // Navigate to update custom exercise form and wait for result
+    final Exercise? updatedExercise = await Navigator.push<Exercise>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UpdateCustomExerciseForm(exercise: exercise),
+      ),
+    );
+
+    // If an exercise was updated, refresh the custom exercises list
+    if (updatedExercise != null) {
+      // Refresh the custom exercises to get the updated data
+      await context.read<ExercisesCubit>().loadCustomExercises();
+    }
   }
 
   // Show delete confirmation dialog

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym/Shared/ui/custom_snackbar.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/workouts/cubits/workouts_cubit.dart';
-import 'package:gym/features/workouts/cubits/workouts_state.dart';
-import 'package:gym/features/workouts/data/models/set_model.dart';
-import 'package:gym/features/workouts/data/units_service.dart';
-import 'package:gym/features/workouts/views/widgets/error_message.dart';
-import 'package:gym/features/workouts/views/widgets/loading_indicator.dart';
-import 'package:gym/features/workouts/views/widgets/set_card.dart';
-import 'package:gym/features/workouts/views/widgets/add_set_dialog.dart';
-import 'package:gym/core/widgets/dialogs/input_dialog_container.dart';
-import 'package:gym/Shared/ui/sticky_add_button.dart';
+import 'package:trackletics/Shared/ui/custom_snackbar.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
+import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
+import 'package:trackletics/features/workouts/data/models/set_model.dart';
+import 'package:trackletics/features/workouts/data/units_service.dart';
+import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
+import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
+import 'package:trackletics/features/workouts/views/widgets/set_card.dart';
+import 'package:trackletics/features/workouts/views/widgets/add_set_dialog.dart';
+import 'package:trackletics/core/widgets/dialogs/input_dialog_container.dart';
+import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 
 class ExerciseSetsScreen extends StatefulWidget {
   const ExerciseSetsScreen({Key? key}) : super(key: key);

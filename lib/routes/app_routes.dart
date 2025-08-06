@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:gym/features/auth/view/screens/auth_screen.dart';
-import 'package:gym/features/auth/view/screens/forgot_password.dart';
-import 'package:gym/features/auth/view/screens/otp_screen.dart';
-import 'package:gym/features/exercises/view/screens/exercise_details_page.dart';
-import 'package:gym/features/home/view/screens/home.dart';
-import 'package:gym/routes/route_names.dart';
-import 'package:gym/shared/widgets/main_scaffold.dart';
+import 'package:trackletics/features/auth/view/screens/auth_screen.dart';
+import 'package:trackletics/features/auth/view/screens/forgot_password.dart';
+import 'package:trackletics/features/auth/view/screens/otp_screen.dart';
+import 'package:trackletics/features/exercises/view/screens/exercise_details_page.dart';
+import 'package:trackletics/features/home/view/screens/home.dart';
+import 'package:trackletics/routes/route_names.dart';
+import 'package:trackletics/shared/widgets/main_scaffold.dart';
 
 class OnPageRoute {
   static Route<dynamic> generateRoute(RouteSettings settings) {

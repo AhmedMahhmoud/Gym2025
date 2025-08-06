@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/exercises/data/repo/exercises_repo.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
 
 part 'exercises_state.dart';
 
@@ -143,6 +143,59 @@ class ExercisesCubit extends Cubit<ExercisesState> {
           final updatedCustomExercises = state.customExercises
               .where((exercise) => exercise.id != exerciseId)
               .toList();
+
+          emit(
+            state.copyWith(
+              status: ExerciseStatus.success,
+              customExercises: updatedCustomExercises,
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: ExerciseStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> updateCustomExercise({
+    required String exerciseId,
+    required String title,
+    required String description,
+    required String primaryMuscle,
+    String? videoUrl,
+  }) async {
+    emit(state.copyWith(status: ExerciseStatus.loading));
+    try {
+      final result = await exerciseRepository.updateCustomExercise(
+        exerciseId: exerciseId,
+        title: title,
+        description: description,
+        primaryMuscle: primaryMuscle,
+        videoUrl: videoUrl,
+      );
+
+      result.fold(
+        (failure) {
+          emit(
+            state.copyWith(
+              status: ExerciseStatus.error,
+              errorMessage: failure.message,
+            ),
+          );
+        },
+        (updatedExercise) {
+          // Update the exercise in the customExercises list
+          final updatedCustomExercises = state.customExercises.map((exercise) {
+            if (exercise.id == exerciseId) {
+              return updatedExercise;
+            }
+            return exercise;
+          }).toList();
 
           emit(
             state.copyWith(

@@ -1,12 +1,12 @@
 import 'package:dartz/dartz.dart';
-import 'package:gym/core/error/failures.dart';
-import 'package:gym/core/network/dio_service.dart';
-import 'package:gym/core/network/error_handler.dart';
-import 'package:gym/features/workouts/data/models/plan_response.dart';
-import 'package:gym/features/workouts/data/models/set_model.dart';
-import 'package:gym/features/workouts/data/static_data_provider.dart';
-import 'package:gym/features/exercises/data/models/exercises.dart';
-import 'package:gym/features/workouts/data/models/workout_model.dart';
+import 'package:trackletics/core/error/failures.dart';
+import 'package:trackletics/core/network/dio_service.dart';
+import 'package:trackletics/core/network/error_handler.dart';
+import 'package:trackletics/features/workouts/data/models/plan_response.dart';
+import 'package:trackletics/features/workouts/data/models/set_model.dart';
+import 'package:trackletics/features/workouts/data/static_data_provider.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/workouts/data/models/workout_model.dart';
 import 'package:dio/dio.dart';
 
 class WorkoutsRepository {

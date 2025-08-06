@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/core/services/storage_service.dart';
-import 'package:gym/core/services/token_manager.dart';
-import 'package:gym/features/profile/cubit/profile_cubit.dart';
-import 'package:gym/routes/route_names.dart';
+import 'package:trackletics/core/services/storage_service.dart';
+import 'package:trackletics/core/services/token_manager.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/routes/route_names.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/core/network/dio_service.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/core/network/dio_service.dart';
 
 class SignOutBtn extends StatelessWidget {
   const SignOutBtn({
@@ -294,42 +294,42 @@ class SignOutBtn extends StatelessWidget {
   }
 
   Future<void> _performSignOut(BuildContext context) async {
-    try {
-      // Clear TokenManager cache first
-      final tokenManager = TokenManager();
-      await tokenManager.clearToken();
+        try {
+          // Clear TokenManager cache first
+          final tokenManager = TokenManager();
+          await tokenManager.clearToken();
 
-      // Clear all storage types
-      final storage = StorageService();
-      await storage.clearAllData();
+          // Clear all storage types
+          final storage = StorageService();
+          await storage.clearAllData();
 
-      // Reset ProfileCubit state and clear hydrated storage
-      if (context.mounted) {
-        await context.read<ProfileCubit>().clearAllData();
-      }
+          // Reset ProfileCubit state and clear hydrated storage
+          if (context.mounted) {
+            await context.read<ProfileCubit>().clearAllData();
+          }
 
-      // Clear cached network images
-      final cacheManager = DefaultCacheManager();
-      await cacheManager.emptyCache();
+          // Clear cached network images
+          final cacheManager = DefaultCacheManager();
+          await cacheManager.emptyCache();
 
-      // Navigate to auth screen
-      if (context.mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          RouteNames.auth_screen_route,
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      // If any error occurs, still try to navigate to auth screen
-      if (context.mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          RouteNames.auth_screen_route,
-          (route) => false,
-        );
-      }
-    }
+          // Navigate to auth screen
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RouteNames.auth_screen_route,
+              (route) => false,
+            );
+          }
+        } catch (e) {
+          // If any error occurs, still try to navigate to auth screen
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RouteNames.auth_screen_route,
+              (route) => false,
+            );
+          }
+        }
   }
 
   Future<void> _performDeleteUser(BuildContext context) async {
@@ -364,8 +364,8 @@ class SignOutBtn extends StatelessWidget {
           SnackBar(
             content: Text('Failed to delete account: ${e.toString()}'),
             backgroundColor: Colors.red,
-          ),
-        );
+      ),
+    );
       }
     }
   }

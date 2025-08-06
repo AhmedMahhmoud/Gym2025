@@ -4,15 +4,22 @@ import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
+import 'package:trackletics/features/exercises/data/models/exercises.dart';
 
-class CustomExerciseForm extends StatefulWidget {
-  const CustomExerciseForm({super.key});
+class UpdateCustomExerciseForm extends StatefulWidget {
+  final Exercise exercise;
+
+  const UpdateCustomExerciseForm({
+    super.key,
+    required this.exercise,
+  });
 
   @override
-  State<CustomExerciseForm> createState() => _CustomExerciseFormState();
+  State<UpdateCustomExerciseForm> createState() =>
+      _UpdateCustomExerciseFormState();
 }
 
-class _CustomExerciseFormState extends State<CustomExerciseForm>
+class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
     with SingleTickerProviderStateMixin {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -24,6 +31,13 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
   @override
   void initState() {
     super.initState();
+
+    // Pre-fill the form with existing exercise data
+    _titleController.text = widget.exercise.name;
+    _descriptionController.text = widget.exercise.description ?? '';
+    _videoUrlController.text = widget.exercise.videoUrl ?? '';
+    _categoryController.text = widget.exercise.primaryMuscle ?? '';
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -87,7 +101,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
     }
 
     final exercisesCubit = context.read<ExercisesCubit>();
-    await exercisesCubit.createCustomExercise(
+    await exercisesCubit.updateCustomExercise(
+      exerciseId: widget.exercise.id,
       title: _titleController.text,
       description: _descriptionController.text,
       primaryMuscle: _categoryController.text,
@@ -103,26 +118,27 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
         if (state.status == ExerciseStatus.error) {
           CustomSnackbar.show(
             context,
-            state.errorMessage ?? 'Failed to create custom exercise',
+            state.errorMessage ?? 'Failed to update custom exercise',
             isError: true,
           );
         } else if (state.status == ExerciseStatus.success) {
           // First show the success message
           CustomSnackbar.show(
             context,
-            'Custom exercise added successfully',
+            'Custom exercise updated successfully',
             isError: false,
           );
-          // Return the newly created exercise (last one in the list)
-          final newExercise = state.customExercises.isNotEmpty
-              ? state.customExercises.last
-              : null;
-          Navigator.pop(context, newExercise);
+          // Return the updated exercise
+          final updatedExercise = state.customExercises.firstWhere(
+            (e) => e.id == widget.exercise.id,
+            orElse: () => widget.exercise,
+          );
+          Navigator.pop(context, updatedExercise);
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Add Custom Exercise'),
+          title: const Text('Update Custom Exercise'),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -292,8 +308,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                         ),
                         child: Text(
                           state.status == ExerciseStatus.loading
-                              ? 'Adding Exercise...'
-                              : 'Add Custom Exercise',
+                              ? 'Updating Exercise...'
+                              : 'Update Custom Exercise',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),

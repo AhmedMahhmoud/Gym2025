@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:gym/core/network/dio_service.dart';
-import 'package:gym/core/services/token_manager.dart';
+import 'package:trackletics/core/network/dio_service.dart';
+import 'package:trackletics/core/services/token_manager.dart';
 
 class ProfileRepository {
   final DioService _dioService = DioService();

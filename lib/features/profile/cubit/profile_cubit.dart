@@ -1,10 +1,10 @@
 import 'dart:developer';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:gym/core/constants/constants.dart';
-import 'package:gym/core/services/jwt_service.dart';
-import 'package:gym/core/services/token_manager.dart';
-import 'package:gym/features/profile/cubit/profile_state.dart';
-import 'package:gym/features/profile/data/repositories/profile_repository.dart';
+import 'package:trackletics/core/constants/constants.dart';
+import 'package:trackletics/core/services/jwt_service.dart';
+import 'package:trackletics/core/services/token_manager.dart';
+import 'package:trackletics/features/profile/cubit/profile_state.dart';
+import 'package:trackletics/features/profile/data/repositories/profile_repository.dart';
 
 class ProfileCubit extends HydratedCubit<ProfileState> {
   final ProfileRepository _repository = ProfileRepository();

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/core/theme/app_colors.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
 
 class CustomBackBtn extends StatelessWidget {
   const CustomBackBtn({

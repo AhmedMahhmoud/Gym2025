@@ -1,4 +1,4 @@
-import 'package:gym/features/workouts/data/models/workout_model.dart';
+import 'package:trackletics/features/workouts/data/models/workout_model.dart';
 
 class PlanResponse {
   final String id;

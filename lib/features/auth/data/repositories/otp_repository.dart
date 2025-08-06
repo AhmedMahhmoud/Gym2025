@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:gym/core/error/failures.dart';
-import 'package:gym/core/network/dio_service.dart';
-import 'package:gym/core/network/error_handler.dart';
+import 'package:trackletics/core/error/failures.dart';
+import 'package:trackletics/core/network/dio_service.dart';
+import 'package:trackletics/core/network/error_handler.dart';
 
 class OtpRepository {
   final DioService _dioService = DioService();

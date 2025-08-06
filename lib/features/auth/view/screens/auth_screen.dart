@@ -1,12 +1,12 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/auth/data/repositories/auth_repository.dart';
-import 'package:gym/features/auth/view/cubit/auth_cubit.dart';
-import 'package:gym/features/auth/view/widgets/auth_toggle_btns.dart';
-import 'package:gym/features/auth/view/widgets/sign_in_view.dart';
-import 'package:gym/features/auth/view/widgets/sign_up_view.dart';
-import 'package:gym/features/onboarding/screens/onboarding_screen.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/auth/data/repositories/auth_repository.dart';
+import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
+import 'package:trackletics/features/auth/view/widgets/auth_toggle_btns.dart';
+import 'package:trackletics/features/auth/view/widgets/sign_in_view.dart';
+import 'package:trackletics/features/auth/view/widgets/sign_up_view.dart';
+import 'package:trackletics/features/onboarding/screens/onboarding_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AuthScreen extends StatefulWidget {

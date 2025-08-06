@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gym/core/theme/app_colors.dart';
-import 'package:gym/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 
 class ExerciseFilterBottomSheet extends StatefulWidget {
   const ExerciseFilterBottomSheet({super.key});

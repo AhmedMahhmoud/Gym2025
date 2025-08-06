@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:gym/core/animations/app_animations.dart';
-import 'package:gym/core/theme/app_colors.dart';
+import 'package:trackletics/core/animations/app_animations.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
 
 class EnhancedButton extends StatefulWidget {
   final String text;

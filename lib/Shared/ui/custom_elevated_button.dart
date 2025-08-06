@@ -1,6 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:gym/core/theme/app_colors.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
 
 class CustomElevatedButton extends StatelessWidget {
   final VoidCallback onPressed;
