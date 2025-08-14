@@ -8,7 +8,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:trackletics/core/network/connectivity.dart';
 import 'package:trackletics/core/network/dio_service.dart';
 import 'package:trackletics/core/services/auth_initialization_service.dart';
+import 'package:trackletics/core/services/jwt_service.dart';
 import 'package:trackletics/core/services/storage_service.dart';
+import 'package:trackletics/core/services/token_manager.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/auth/view/screens/auth_screen.dart';
 import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
@@ -17,6 +19,7 @@ import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/features/home/view/screens/home.dart';
 import 'package:trackletics/features/onboarding/screens/onboarding_screen.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/features/profile/data/repositories/profile_repository.dart';
 import 'package:trackletics/shared/widgets/main_scaffold.dart';
 import 'core/theme/app_theme.dart';
 import 'package:trackletics/routes/app_routes.dart';
@@ -153,14 +156,18 @@ class _MyAppState extends State<MyApp> {
             MultiBlocProvider(
               providers: [
                 BlocProvider(
-                  create: (context) => ProfileCubit(),
+                  create: (context) => ProfileCubit(
+                    repository: ProfileRepository(),
+                    jwtService: JwtService(),
+                    tokenManager: TokenManager(),
+                  ),
                 ),
                 BlocProvider(
                   create: (context) => ExercisesCubit(
                     exerciseRepository: ExercisesRepository(
                         exercisesService:
                             ExercisesService(dioService: DioService())),
-                  )..loadExercises(),
+                  )..loadExercises(context),
                 )
               ],
               child: MaterialApp(

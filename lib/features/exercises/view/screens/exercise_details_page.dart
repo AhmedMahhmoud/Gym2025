@@ -17,19 +17,23 @@ class ExerciseDetailsPage extends StatelessWidget {
   final String videoThumbnail;
 
   /// Parses description text and formats numbered instructions
-  Widget _buildFormattedDescription(String description) {
+  /// Returns a tuple of (formatted widget, isSteps)
+  (Widget, bool) _buildFormattedDescription(String description) {
     // Check if description contains numbered instructions (e.g., "1.", "2.", etc.)
     final hasNumberedInstructions = RegExp(r'\d+\.').hasMatch(description);
 
     if (!hasNumberedInstructions) {
       // Regular description - display as single paragraph
-      return Text(
-        description,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
+      return (
+        Text(
+          description,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
         ),
+        false, // Not steps
       );
     }
 
@@ -45,9 +49,11 @@ class ExerciseDetailsPage extends StatelessWidget {
       if (stepText.isNotEmpty) {
         formattedSteps.add(
           Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
+            padding: const EdgeInsets.only(
+              bottom: 14.0,
+            ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
                   width: 24,
@@ -85,9 +91,12 @@ class ExerciseDetailsPage extends StatelessWidget {
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: formattedSteps,
+    return (
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: formattedSteps,
+      ),
+      true, // Is steps
     );
   }
 
@@ -126,12 +135,12 @@ class ExerciseDetailsPage extends StatelessWidget {
                     Center(
                         child: Text(
                       updatedExercise.name,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 20,
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600),
                     )),
-                    Divider(),
+                    const Divider(),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Row(
@@ -187,24 +196,37 @@ class ExerciseDetailsPage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Divider(),
+                    const Divider(),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Description",
-                            style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
+                          Builder(
+                            builder: (context) {
+                              final formattedResult =
+                                  _buildFormattedDescription(
+                                      updatedExercise.description);
+                              return Text(
+                                formattedResult.$2 ? 'Steps' : 'Description',
+                                style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold),
+                              );
+                            },
                           ),
-                          SizedBox(
-                            height: 5,
+                          const SizedBox(
+                            height: 15,
                           ),
-                          _buildFormattedDescription(
-                              updatedExercise.description),
+                          Builder(
+                            builder: (context) {
+                              final formattedResult =
+                                  _buildFormattedDescription(
+                                      updatedExercise.description);
+                              return formattedResult.$1;
+                            },
+                          ),
                         ],
                       ),
                     )
@@ -224,7 +246,9 @@ class ExerciseDetailsPage extends StatelessWidget {
                           );
                           // Refresh exercises data after edit
                           if (result == true) {
-                            context.read<ExercisesCubit>().loadExercises();
+                            context
+                                .read<ExercisesCubit>()
+                                .loadExercises(context);
                           }
                         },
                         backgroundColor: AppColors.primary,

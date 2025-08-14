@@ -89,15 +89,13 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                   Container(
                     width: (MediaQuery.of(context).size.width - 48) * 0.55,
                     decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        bottomLeft: Radius.circular(16),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(16),
                       ),
                     ),
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        bottomLeft: Radius.circular(16),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(16),
                       ),
                       child: CachedImage(
                         imageUrl: widget.imageUrl,

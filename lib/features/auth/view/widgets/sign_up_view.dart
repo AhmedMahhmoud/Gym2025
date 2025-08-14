@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackletics/Shared/ui/custom_text_form_field.dart';
+import 'package:trackletics/Shared/ui/custom_dropdown.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/core/utils/validators/validations.dart';
 import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
 import 'package:trackletics/features/auth/view/widgets/auth_toggle_btns.dart';
@@ -43,6 +45,33 @@ class SignupView extends StatelessWidget {
             hintText: 'In App Name',
             onSaved: (p0) => authCubit.signUpModel.inAppName = p0!,
             suffixIcon: const Icon(FontAwesomeIcons.dumbbell),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          AppDropdown<String>(
+            hintText: 'Select Gender',
+            value: authCubit.signUpModel.gender,
+            onChanged: (value) {
+              authCubit.signUpModel.gender = value;
+            },
+            onSaved: (value) {
+              authCubit.signUpModel.gender = value;
+            },
+            prefixIcon: Icon(
+              FontAwesomeIcons.venusMars,
+              color: AppColors.textSecondary.withOpacity(0.6),
+            ),
+            items: const [
+              DropdownMenuItem<String>(
+                value: 'male',
+                child: Text('Male'),
+              ),
+              DropdownMenuItem<String>(
+                value: 'female',
+                child: Text('Female'),
+              ),
+            ],
           ),
           const SizedBox(
             height: 10,

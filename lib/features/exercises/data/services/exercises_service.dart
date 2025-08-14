@@ -5,8 +5,24 @@ class ExercisesService {
   ExercisesService({required this.dioService});
   final DioService dioService;
 
-  Future<List<Exercise>> fetchExercises() async {
-    final res = await dioService.get('/api/Exercises/GetAllExercises');
+  Future<List<Exercise>> fetchExercises({
+    String? role,
+    String? gender,
+    String? filterOn,
+    String? filterQuery,
+  }) async {
+    final query = <String, dynamic>{};
+    if (role != null && role.isNotEmpty) query['role'] = role;
+    if (gender != null && gender.isNotEmpty) query['gender'] = gender;
+    if (filterOn != null && filterOn.isNotEmpty) query['filterOn'] = filterOn;
+    if (filterQuery != null && filterQuery.isNotEmpty) {
+      query['filterQuery'] = filterQuery;
+    }
+
+    final res = await dioService.get(
+      '/api/Exercises/GetAllExercises',
+      queryParameters: query.isEmpty ? null : query,
+    );
     return Exercise.parseExercises(res.data);
   }
 

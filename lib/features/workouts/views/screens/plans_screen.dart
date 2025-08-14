@@ -4,7 +4,6 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
@@ -15,7 +14,6 @@ import 'package:trackletics/features/workouts/views/screens/workouts_screen.dart
 import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
-import 'package:trackletics/core/showcase/showcase_keys.dart';
 
 class PlansScreen extends StatefulWidget {
   const PlansScreen({Key? key}) : super(key: key);
@@ -451,63 +449,56 @@ class _PlansScreenState extends State<PlansScreen> {
                               const SizedBox(height: 20),
                               SlideInUp(
                                 duration: const Duration(milliseconds: 1000),
-                                child: Showcase(
-                                  key: ShowcaseKeys.addPlanButton,
-                                  description:
-                                      'Tap here to create your first workout plan! Organize your exercises into structured routines.',
-                                  title: 'Create Workout Plan',
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isAddingPlan = true;
-                                      });
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 40,
-                                        vertical: 15,
-                                      ),
-                                      backgroundColor: Colors.transparent,
-                                      shadowColor: Colors.transparent,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
-                                    ).copyWith(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                        Colors.transparent,
-                                      ),
-                                      overlayColor: MaterialStateProperty.all(
-                                        Colors.white.withOpacity(0.1),
-                                      ),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _isAddingPlan = true;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 40,
+                                      vertical: 15,
                                     ),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            AppColors.textSecondary,
-                                            AppColors.backgroundSurface
-                                                .withOpacity(0.7),
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.buttonText
-                                                .withOpacity(0.5),
-                                            blurRadius: 2,
-                                            spreadRadius: 2,
-                                          ),
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ).copyWith(
+                                    backgroundColor: MaterialStateProperty.all(
+                                      Colors.transparent,
+                                    ),
+                                    overlayColor: MaterialStateProperty.all(
+                                      Colors.white.withOpacity(0.1),
+                                    ),
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.textSecondary,
+                                          AppColors.backgroundSurface
+                                              .withOpacity(0.7),
                                         ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
                                       ),
-                                      padding: const EdgeInsets.all(15),
-                                      child: const Icon(
-                                        Icons.add,
-                                        color: Colors.white,
-                                        size: 30,
-                                      ),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.buttonText
+                                              .withOpacity(0.5),
+                                          blurRadius: 2,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    padding: const EdgeInsets.all(15),
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 30,
                                     ),
                                   ),
                                 ),
@@ -548,21 +539,15 @@ class _PlansScreenState extends State<PlansScreen> {
                 ),
                 BlocBuilder<WorkoutsCubit, WorkoutsState>(
                   builder: (context, state) {
-                    return Showcase(
-                      key: ShowcaseKeys.stickyAddPlanButton,
-                      description:
-                          'Quick access to add more workout plans. Build multiple routines for different goals!',
-                      title: 'Add More Plans',
-                      child: StickyAddButton(
-                        onPressed: () {
-                          setState(() {
-                            _isAddingPlan = true;
-                          });
-                        },
-                        text: 'Add Plan',
-                        icon: Icons.add,
-                        isVisible: !_isAddingPlan && state.plans.isNotEmpty,
-                      ),
+                    return StickyAddButton(
+                      onPressed: () {
+                        setState(() {
+                          _isAddingPlan = true;
+                        });
+                      },
+                      text: 'Add Plan',
+                      icon: Icons.add,
+                      isVisible: !_isAddingPlan && state.plans.isNotEmpty,
                     );
                   },
                 ),
@@ -570,7 +555,6 @@ class _PlansScreenState extends State<PlansScreen> {
             );
           },
         ),
-        // Sticky Add Button
       ),
     );
   }

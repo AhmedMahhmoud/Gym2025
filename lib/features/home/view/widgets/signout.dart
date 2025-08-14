@@ -294,42 +294,42 @@ class SignOutBtn extends StatelessWidget {
   }
 
   Future<void> _performSignOut(BuildContext context) async {
-        try {
-          // Clear TokenManager cache first
-          final tokenManager = TokenManager();
-          await tokenManager.clearToken();
+    try {
+      // Clear TokenManager cache first
+      final tokenManager = TokenManager();
+      await tokenManager.clearToken();
 
-          // Clear all storage types
-          final storage = StorageService();
-          await storage.clearAllData();
+      // Clear only user data, preserve app settings like onboarding status
+      final storage = StorageService();
+      await storage.clearUserDataOnly();
 
-          // Reset ProfileCubit state and clear hydrated storage
-          if (context.mounted) {
-            await context.read<ProfileCubit>().clearAllData();
-          }
+      // Reset ProfileCubit state and clear hydrated storage
+      if (context.mounted) {
+        await context.read<ProfileCubit>().clearAllData();
+      }
 
-          // Clear cached network images
-          final cacheManager = DefaultCacheManager();
-          await cacheManager.emptyCache();
+      // Clear cached network images
+      final cacheManager = DefaultCacheManager();
+      await cacheManager.emptyCache();
 
-          // Navigate to auth screen
-          if (context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              RouteNames.auth_screen_route,
-              (route) => false,
-            );
-          }
-        } catch (e) {
-          // If any error occurs, still try to navigate to auth screen
-          if (context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              RouteNames.auth_screen_route,
-              (route) => false,
-            );
-          }
-        }
+      // Navigate to auth screen
+      if (context.mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          RouteNames.auth_screen_route,
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      // If any error occurs, still try to navigate to auth screen
+      if (context.mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          RouteNames.auth_screen_route,
+          (route) => false,
+        );
+      }
+    }
   }
 
   Future<void> _performDeleteUser(BuildContext context) async {
@@ -364,8 +364,8 @@ class SignOutBtn extends StatelessWidget {
           SnackBar(
             content: Text('Failed to delete account: ${e.toString()}'),
             backgroundColor: Colors.red,
-      ),
-    );
+          ),
+        );
       }
     }
   }

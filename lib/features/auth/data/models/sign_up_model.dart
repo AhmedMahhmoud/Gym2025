@@ -4,9 +4,11 @@ class SignUpModel {
     required this.inAppName,
     required this.mail,
     required this.password,
+    this.gender,
   });
   String username;
   String inAppName;
   String mail;
   String password;
+  String? gender;
 }

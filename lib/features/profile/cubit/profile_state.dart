@@ -40,6 +40,9 @@ class ProfileState extends Equatable {
   /// Get all user roles
   List<String> get roles => userData?.roles ?? [];
 
+  /// Derived gender from token data (e.g., 'Male' / 'Female')
+  String? get gender => userData?.gender;
+
   ProfileState copyWith({
     ProfileStatus? status,
     String? displayName,

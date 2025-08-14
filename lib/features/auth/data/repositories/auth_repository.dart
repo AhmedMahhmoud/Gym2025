@@ -21,6 +21,7 @@ class AuthRepository {
           'password': signModel.password,
           'inappname': signModel.inAppName,
           'username': signModel.username,
+          'gender': signModel.gender,
           'roles': ['user'],
         },
       );

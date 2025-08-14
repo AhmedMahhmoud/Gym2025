@@ -39,7 +39,6 @@ class SignInView extends StatelessWidget {
             autovalidateMode: AutovalidateMode.disabled,
             onSaved: (p0) => authCubit.signUpModel.password = p0!,
             isPassword: true,
-            validator: (p0) => AppValidator.validatePassword(p0!),
           ),
           const SizedBox(
             height: 10,

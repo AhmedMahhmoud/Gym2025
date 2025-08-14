@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trackletics/features/home/view/widgets/signout.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/cubit/profile_state.dart';
-import 'package:trackletics/core/showcase/showcase_keys.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
@@ -197,6 +195,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 style: const TextStyle(color: Colors.white),
                 autofocus: true,
+                onChanged: (value) {
+                  // Trigger rebuild to update button state
+                  (context as Element).markNeedsBuild();
+                },
+              ),
+              const SizedBox(height: 8),
+              // Validation message
+              Builder(
+                builder: (context) {
+                  final name = _nameController.text.trim();
+                  final isValid = _isValidDisplayName(name);
+                  final errorMessage = _getValidationMessage(name);
+
+                  return Column(
+                    children: [
+                      if (name.isNotEmpty && !isValid)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.red.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Text(
+                            errorMessage,
+                            style: TextStyle(
+                              color: Colors.red.withOpacity(0.8),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 24),
               Row(
@@ -210,27 +248,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_nameController.text.trim().isNotEmpty) {
-                        await context.read<ProfileCubit>().updateDisplayName(
-                              _nameController.text.trim(),
-                            );
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
-                      }
+                  Builder(
+                    builder: (context) {
+                      final name = _nameController.text.trim();
+                      final isValid = _isValidDisplayName(name);
+
+                      return ElevatedButton(
+                        onPressed: isValid
+                            ? () async {
+                                if (_nameController.text.trim().isNotEmpty) {
+                                  await context
+                                      .read<ProfileCubit>()
+                                      .updateDisplayName(
+                                        _nameController.text.trim(),
+                                      );
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                }
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isValid
+                              ? AppColors.primary
+                              : AppColors.primary.withOpacity(0.3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        child: Text(
+                          'Save',
+                          style: TextStyle(
+                            color: isValid
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(color: Colors.white),
-                    ),
                   ),
                 ],
               ),
@@ -239,6 +294,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  bool _isValidDisplayName(String name) {
+    if (name.length < 2) return false;
+
+    // Check if the name contains at least one alphanumeric character
+    final hasAlphanumeric = RegExp(r'[a-zA-Z0-9]').hasMatch(name);
+    if (!hasAlphanumeric) return false;
+
+    return true;
+  }
+
+  String _getValidationMessage(String name) {
+    if (name.length < 2) {
+      return 'Display name must be at least 2 characters long';
+    }
+
+    if (!RegExp(r'[a-zA-Z0-9]').hasMatch(name)) {
+      return 'Display name must contain at least one letter or number';
+    }
+
+    return '';
   }
 
   @override
@@ -594,59 +671,100 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         // Profile Info Card
-                        Showcase(
-                          key: ShowcaseKeys.profileInfo,
-                          description:
-                              'View and edit your profile information, including your display name and profile picture!',
-                          title: 'Profile Information',
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Colors.white.withOpacity(0.1),
-                                  Colors.white.withOpacity(0.05),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withOpacity(0.1),
+                                Colors.white.withOpacity(0.05),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    FontAwesomeIcons.user,
+                                    color: Colors.white70,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'Profile Information',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  IconButton(
+                                    onPressed: _showEditNameDialog,
+                                    icon: const Icon(
+                                      FontAwesomeIcons.squarePen,
+                                      color: Colors.white70,
+                                      size: 16,
+                                    ),
+                                  ),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.1),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+                              const SizedBox(height: 20),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.1),
+                                  ),
+                                ),
+                                child: Row(
                                   children: [
                                     const Icon(
-                                      FontAwesomeIcons.user,
+                                      FontAwesomeIcons.signature,
                                       color: Colors.white70,
-                                      size: 20,
+                                      size: 16,
                                     ),
                                     const SizedBox(width: 12),
-                                    const Text(
-                                      'Profile Information',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    IconButton(
-                                      onPressed: _showEditNameDialog,
-                                      icon: const Icon(
-                                        FontAwesomeIcons.squarePen,
-                                        color: Colors.white70,
-                                        size: 16,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Display Name',
+                                            style: TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            state.displayName,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 20),
+                              ),
+                              if (state.email != null) ...[
+                                const SizedBox(height: 16),
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
@@ -659,7 +777,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   child: Row(
                                     children: [
                                       const Icon(
-                                        FontAwesomeIcons.signature,
+                                        FontAwesomeIcons.envelope,
                                         color: Colors.white70,
                                         size: 16,
                                       ),
@@ -670,7 +788,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             const Text(
-                                              'Display Name',
+                                              'Email',
                                               style: TextStyle(
                                                 color: Colors.white70,
                                                 fontSize: 12,
@@ -678,7 +796,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              state.displayName,
+                                              state.email!,
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 16,
@@ -691,55 +809,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ],
                                   ),
                                 ),
-                                if (state.email != null) ...[
-                                  const SizedBox(height: 16),
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.05),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.1),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          FontAwesomeIcons.envelope,
-                                          color: Colors.white70,
-                                          size: 16,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Email',
-                                                style: TextStyle(
-                                                  color: Colors.white70,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                state.email!,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
                               ],
-                            ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -807,7 +878,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           width: 1,
                                         ),
                                       ),
-                                      child: Icon(
+                                      child: const Icon(
                                         FontAwesomeIcons.key,
                                         color: Colors.blue,
                                         size: 20,

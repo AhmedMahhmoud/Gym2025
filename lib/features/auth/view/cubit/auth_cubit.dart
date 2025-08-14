@@ -11,8 +11,8 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit({required this.authRepository}) : super(const AuthInitial());
   final AuthRepository authRepository;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  SignUpModel signUpModel =
-      SignUpModel(username: '', inAppName: '', mail: '', password: '');
+  SignUpModel signUpModel = SignUpModel(
+      username: '', inAppName: '', mail: '', password: '', gender: null);
   Future<void> register() async {
     formKey.currentState!.save();
     if (!formKey.currentState!.validate()) return;

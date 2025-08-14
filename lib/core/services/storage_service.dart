@@ -211,4 +211,32 @@ class StorageService {
     await clearAll(type: StorageType.secure);
     await clearAll(type: StorageType.nonSecure);
   }
+
+  // Clear only user-related data while preserving app settings
+  Future<void> clearUserDataOnly() async {
+    // Clear secure storage (tokens, user data)
+    await clearAll(type: StorageType.secure);
+
+    // Clear only user-related data from non-secure storage
+    // Preserve onboarding status, theme, language, etc.
+    if (_prefs == null) await init();
+
+    // List of keys to preserve (app settings)
+    final keysToPreserve = [
+      _hasSeenOnboardingKey,
+      _themeModeKey,
+      _languageKey,
+      'app_version', // Preserve app version
+    ];
+
+    // Get all keys
+    final allKeys = _prefs!.getKeys();
+
+    // Remove only user-related keys, preserve app settings
+    for (final key in allKeys) {
+      if (!keysToPreserve.contains(key)) {
+        await _prefs!.remove(key);
+      }
+    }
+  }
 }

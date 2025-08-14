@@ -34,18 +34,7 @@ class ExercisesState {
   List<Exercise> get filteredExercises {
     var exercises = allExercises;
 
-    // Apply search filter
-    if (searchQuery.isNotEmpty) {
-      exercises = exercises
-          .where((exercise) =>
-              exercise.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-              exercise.description
-                  .toLowerCase()
-                  .contains(searchQuery.toLowerCase()))
-          .toList();
-    }
-
-    // Apply category/muscle filter
+    // Apply category/muscle filter FIRST (if it's from API filtering)
     if (selectedFilterType != FilterType.none && selectedChip != null) {
       switch (selectedFilterType) {
         case FilterType.muscle:
@@ -59,6 +48,46 @@ class ExercisesState {
       }
     }
 
+    // Apply search filter AFTER category/muscle filter
+    if (searchQuery.isNotEmpty) {
+      final query = searchQuery.trim().toLowerCase();
+      final queryWords =
+          query.split(' ').where((word) => word.isNotEmpty).toList();
+
+      exercises = exercises.where((exercise) {
+        // Search in multiple fields
+        final searchableText = [
+          exercise.name,
+          exercise.description,
+          exercise.primaryMuscle,
+          exercise.category,
+        ].join(' ').toLowerCase();
+
+        // If single word query, check for word boundaries or exact matches
+        if (queryWords.length == 1) {
+          final singleQuery = queryWords.first;
+
+          // Check for exact word match (word boundaries)
+          final wordBoundaryPattern = RegExp(
+              r'\b' + RegExp.escape(singleQuery) + r'\b',
+              caseSensitive: false);
+          if (wordBoundaryPattern.hasMatch(searchableText)) {
+            return true;
+          }
+
+          // Check for starts with (for partial matches)
+          if (searchableText.contains(singleQuery)) {
+            return true;
+          }
+        } else {
+          // Multiple word query - all words must be found
+          return queryWords.every((word) => searchableText.contains(word));
+        }
+
+        return false;
+      }).toList();
+    }
+
     return exercises;
   }
 
@@ -67,13 +96,42 @@ class ExercisesState {
 
     // Apply search filter
     if (searchQuery.isNotEmpty) {
-      exercises = exercises
-          .where((exercise) =>
-              exercise.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-              exercise.description
-                  .toLowerCase()
-                  .contains(searchQuery.toLowerCase()))
-          .toList();
+      final query = searchQuery.trim().toLowerCase();
+      final queryWords =
+          query.split(' ').where((word) => word.isNotEmpty).toList();
+
+      exercises = exercises.where((exercise) {
+        // Search in multiple fields
+        final searchableText = [
+          exercise.name,
+          exercise.description,
+          exercise.primaryMuscle,
+          exercise.category,
+        ].join(' ').toLowerCase();
+
+        // If single word query, check for word boundaries or exact matches
+        if (queryWords.length == 1) {
+          final singleQuery = queryWords.first;
+
+          // Check for exact word match (word boundaries)
+          final wordBoundaryPattern = RegExp(
+              r'\b' + RegExp.escape(singleQuery) + r'\b',
+              caseSensitive: false);
+          if (wordBoundaryPattern.hasMatch(searchableText)) {
+            return true;
+          }
+
+          // Check for starts with (for partial matches)
+          if (searchableText.contains(singleQuery)) {
+            return true;
+          }
+        } else {
+          // Multiple word query - all words must be found
+          return queryWords.every((word) => searchableText.contains(word));
+        }
+
+        return false;
+      }).toList();
     }
 
     return exercises;

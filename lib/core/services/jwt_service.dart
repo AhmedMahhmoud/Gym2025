@@ -81,6 +81,7 @@ class UserTokenData {
   final String issuer;
   final String audience;
   final List<String> roles;
+  final String? gender;
 
   UserTokenData({
     required this.userId,
@@ -90,6 +91,7 @@ class UserTokenData {
     required this.issuer,
     required this.audience,
     required this.roles,
+    this.gender,
   });
 
   factory UserTokenData.fromJson(Map<String, dynamic> json) {
@@ -106,6 +108,9 @@ class UserTokenData {
       }
     }
 
+    // Gender claim is expected as 'Gender'
+    final String? gender = json['Gender']?.toString();
+
     return UserTokenData(
       userId: json['UserId'] ?? '',
       email: json[
@@ -116,6 +121,7 @@ class UserTokenData {
       issuer: json['iss'] ?? '',
       audience: json['aud'] ?? '',
       roles: roles,
+      gender: gender,
     );
   }
 
@@ -129,6 +135,7 @@ class UserTokenData {
       'iss': issuer,
       'aud': audience,
       'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': roles,
+      if (gender != null) 'Gender': gender,
     };
   }
 

@@ -7,13 +7,23 @@ import 'package:trackletics/features/profile/cubit/profile_state.dart';
 import 'package:trackletics/features/profile/data/repositories/profile_repository.dart';
 
 class ProfileCubit extends HydratedCubit<ProfileState> {
-  final ProfileRepository _repository = ProfileRepository();
-  final JwtService _jwtService = JwtService();
-  final TokenManager _tokenManager = TokenManager();
-
-  ProfileCubit() : super(const ProfileState()) {
+  ProfileCubit({
+    required ProfileRepository repository,
+    required JwtService jwtService,
+    required TokenManager tokenManager,
+  })  : _repository = repository,
+        _jwtService = jwtService,
+        _tokenManager = tokenManager,
+        super(const ProfileState()) {
     _initializeProfile();
   }
+
+  final ProfileRepository _repository;
+  final JwtService _jwtService;
+  final TokenManager _tokenManager;
+
+  // Guard to prevent multiple simultaneous profile image updates
+  bool _isUpdatingProfileImage = false;
 
   /// Initialize profile data only if user is authenticated
   Future<void> _initializeProfile() async {
@@ -167,27 +177,41 @@ class ProfileCubit extends HydratedCubit<ProfileState> {
 
   /// Update profile image using the new API
   Future<void> updateProfileImage(String imagePath) async {
+    // Prevent multiple simultaneous calls
+    if (_isUpdatingProfileImage) {
+      log('ProfileCubit: updateProfileImage already in progress, skipping');
+      return;
+    }
+
+    _isUpdatingProfileImage = true;
+    log('ProfileCubit: Starting updateProfileImage for path: $imagePath');
+
     emit(state.copyWith(
       status: ProfileStatus.uploading,
       clearError: true,
     ));
 
     try {
+      log('ProfileCubit: Calling repository.uploadProfile');
       await _repository.uploadProfile(imagePath: imagePath);
-
-      // Reload user data from the updated token
-      await loadUserDataFromToken();
+      log('ProfileCubit: Repository.uploadProfile completed successfully');
 
       // Keep the local image path for immediate UI update
+      // The API response already contains the updated token, so no need to reload
       emit(state.copyWith(
         status: ProfileStatus.success,
         profileImage: imagePath,
       ));
+      log('ProfileCubit: Profile image update completed successfully');
     } catch (e) {
+      log('ProfileCubit: Error updating profile image: $e');
       emit(state.copyWith(
         status: ProfileStatus.error,
         errorMessage: e.toString(),
       ));
+    } finally {
+      _isUpdatingProfileImage = false;
+      log('ProfileCubit: updateProfileImage guard released');
     }
   }
 

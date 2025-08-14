@@ -349,7 +349,7 @@ class WorkoutsRepository {
   }) async {
     try {
       final response = await _dioService.put(
-        '/api/Plans/$planId',
+        '/api/Plans/UpdatePlanInfo/$planId',
         data: {
           if (title != null) 'title': title,
           if (notes != null) 'notes': notes,

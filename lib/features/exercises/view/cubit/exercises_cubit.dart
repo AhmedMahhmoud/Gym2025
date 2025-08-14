@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:developer';
 
-import 'package:bloc/bloc.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:trackletics/core/services/token_manager.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 
 part 'exercises_state.dart';
 
@@ -11,10 +15,69 @@ class ExercisesCubit extends Cubit<ExercisesState> {
       : super(const ExercisesState());
   final ExercisesRepository exerciseRepository;
 
-  Future<void> loadExercises() async {
+  // Single-flight guards (shared across all instances)
+  static Future<void>? _inflightLoad;
+  static bool _hasFetchedOnce = false;
+
+  Future<void> loadExercises([
+    BuildContext? context,
+    bool force = false,
+    bool waitForProfile = false,
+  ]) async {
+    if (!force && _hasFetchedOnce) return;
+    if (!force && _inflightLoad != null) {
+      await _inflightLoad; // Wait for the in-flight call to finish
+      return;
+    }
+
+    final completer = Completer<void>();
+    _inflightLoad = completer.future;
+
     emit(state.copyWith(status: ExerciseStatus.loading));
     try {
-      final data = await exerciseRepository.fetchExercises();
+      // Optionally wait for ProfileCubit to provide roles/gender
+      if (waitForProfile && context != null) {
+        try {
+          final profileCubit = context.read<ProfileCubit>();
+          final current = profileCubit.state;
+          bool ready = (current.roles.isNotEmpty) || (current.gender != null);
+          if (!ready) {
+            await profileCubit.stream.firstWhere((s) {
+              try {
+                return s.roles.isNotEmpty ||
+                    (s.gender != null && s.gender!.isNotEmpty);
+              } catch (_) {
+                return false;
+              }
+            });
+          }
+        } catch (_) {}
+      }
+
+      // Always read claims from TokenManager to avoid timing/race
+      final tokenManager = TokenManager();
+      String role = 'user';
+      final roles = await tokenManager.getRoles();
+      if (roles.isNotEmpty) role = roles.first;
+      final String? gender = await tokenManager.getGender();
+
+      String? filterOn;
+      String? filterQuery;
+      if (state.selectedFilterType != FilterType.none &&
+          state.selectedChip != null &&
+          state.selectedChip!.isNotEmpty) {
+        filterOn = state.selectedFilterType == FilterType.muscle
+            ? 'muscle'
+            : 'category';
+        filterQuery = state.selectedChip;
+      }
+
+      final data = await exerciseRepository.fetchExercises(
+        role: role,
+        gender: gender,
+        filterOn: filterOn,
+        filterQuery: filterQuery,
+      );
       data.fold(
         (failure) {
           emit(
@@ -27,15 +90,13 @@ class ExercisesCubit extends Cubit<ExercisesState> {
           final byCategory = <String, List<Exercise>>{};
 
           for (final exercise in exercises) {
-            // Group by muscle
             byMuscle
                 .putIfAbsent(exercise.primaryMuscle, () => [])
                 .add(exercise);
-
-            // Group by category
             byCategory.putIfAbsent(exercise.category, () => []).add(exercise);
           }
-          log(exercises.toString());
+
+          _hasFetchedOnce = true;
           emit(
             state.copyWith(
               status: ExerciseStatus.success,
@@ -49,6 +110,9 @@ class ExercisesCubit extends Cubit<ExercisesState> {
     } catch (e) {
       emit(state.copyWith(
           status: ExerciseStatus.error, errorMessage: e.toString()));
+    } finally {
+      completer.complete();
+      _inflightLoad = null;
     }
   }
 
@@ -103,7 +167,6 @@ class ExercisesCubit extends Cubit<ExercisesState> {
           );
         },
         (exercise) {
-          // Add the new exercise to custom exercises list
           final updatedCustomExercises = [...state.customExercises, exercise];
 
           emit(
@@ -139,7 +202,6 @@ class ExercisesCubit extends Cubit<ExercisesState> {
           );
         },
         (_) {
-          // Remove the exercise from custom exercises list
           final updatedCustomExercises = state.customExercises
               .where((exercise) => exercise.id != exerciseId)
               .toList();
@@ -189,7 +251,6 @@ class ExercisesCubit extends Cubit<ExercisesState> {
           );
         },
         (updatedExercise) {
-          // Update the exercise in the customExercises list
           final updatedCustomExercises = state.customExercises.map((exercise) {
             if (exercise.id == exerciseId) {
               return updatedExercise;
@@ -223,6 +284,8 @@ class ExercisesCubit extends Cubit<ExercisesState> {
       selectedFilterType: type,
       selectedChip: chipValue,
     ));
+    // Refetch from server with filter
+    loadExercises(null, true);
   }
 
   void setSearchQuery(String query) {
@@ -245,6 +308,9 @@ class ExercisesCubit extends Cubit<ExercisesState> {
       selectedFilterType: FilterType.none,
       selectedChip: null,
     ));
+    // Refetch all from server without filter
+    _hasFetchedOnce = false;
+    loadExercises(null, true);
   }
 
   Future<void> updateExercise({
@@ -278,7 +344,6 @@ class ExercisesCubit extends Cubit<ExercisesState> {
           );
         },
         (updatedExercise) {
-          // Update the exercise in the allExercises list
           final updatedAllExercises = state.allExercises.map((exercise) {
             if (exercise.name == exerciseName) {
               return updatedExercise;
@@ -286,17 +351,13 @@ class ExercisesCubit extends Cubit<ExercisesState> {
             return exercise;
           }).toList();
 
-          // Rebuild the grouped data
           final byMuscle = <String, List<Exercise>>{};
           final byCategory = <String, List<Exercise>>{};
 
           for (final exercise in updatedAllExercises) {
-            // Group by muscle
             byMuscle
                 .putIfAbsent(exercise.primaryMuscle, () => [])
                 .add(exercise);
-
-            // Group by category
             byCategory.putIfAbsent(exercise.category, () => []).add(exercise);
           }
 

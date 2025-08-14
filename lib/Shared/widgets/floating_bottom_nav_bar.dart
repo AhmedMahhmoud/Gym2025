@@ -1,6 +1,5 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 
 class FloatingBottomNavBar extends StatefulWidget {
@@ -160,7 +159,7 @@ class FloatingNavBarItem {
     required this.icon,
     required this.label,
   });
-  
+
   final IconData icon;
   final String label;
 }

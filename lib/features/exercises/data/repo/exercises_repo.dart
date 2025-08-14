@@ -7,9 +7,19 @@ class ExercisesRepository {
   ExercisesRepository({required this.exercisesService});
   final ExercisesService exercisesService;
 
-  Future<Either<Failure, List<Exercise>>> fetchExercises() async {
+  Future<Either<Failure, List<Exercise>>> fetchExercises({
+    String? role,
+    String? gender,
+    String? filterOn,
+    String? filterQuery,
+  }) async {
     try {
-      final exercises = await exercisesService.fetchExercises();
+      final exercises = await exercisesService.fetchExercises(
+        role: role,
+        gender: gender,
+        filterOn: filterOn,
+        filterQuery: filterQuery,
+      );
       return Right(exercises);
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
