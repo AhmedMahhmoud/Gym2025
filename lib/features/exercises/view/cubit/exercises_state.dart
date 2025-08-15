@@ -55,36 +55,21 @@ class ExercisesState {
           query.split(' ').where((word) => word.isNotEmpty).toList();
 
       exercises = exercises.where((exercise) {
-        // Search in multiple fields
-        final searchableText = [
-          exercise.name,
-          exercise.description,
-          exercise.primaryMuscle,
-          exercise.category,
-        ].join(' ').toLowerCase();
+        // Search only in exercise name/title
+        final exerciseName = exercise.name.toLowerCase();
+        final exerciseWords =
+            exerciseName.split(' ').where((word) => word.isNotEmpty).toList();
 
-        // If single word query, check for word boundaries or exact matches
+        // If single word query, check if any word in exercise name starts with the query
         if (queryWords.length == 1) {
           final singleQuery = queryWords.first;
-
-          // Check for exact word match (word boundaries)
-          final wordBoundaryPattern = RegExp(
-              r'\b' + RegExp.escape(singleQuery) + r'\b',
-              caseSensitive: false);
-          if (wordBoundaryPattern.hasMatch(searchableText)) {
-            return true;
-          }
-
-          // Check for starts with (for partial matches)
-          if (searchableText.contains(singleQuery)) {
-            return true;
-          }
+          return exerciseWords.any((word) => word.startsWith(singleQuery));
         } else {
-          // Multiple word query - all words must be found
-          return queryWords.every((word) => searchableText.contains(word));
+          // Multiple word query - check if all query words match words in exercise name
+          // Each query word must start with a word in the exercise name
+          return queryWords.every((queryWord) => exerciseWords
+              .any((exerciseWord) => exerciseWord.startsWith(queryWord)));
         }
-
-        return false;
       }).toList();
     }
 
@@ -101,36 +86,21 @@ class ExercisesState {
           query.split(' ').where((word) => word.isNotEmpty).toList();
 
       exercises = exercises.where((exercise) {
-        // Search in multiple fields
-        final searchableText = [
-          exercise.name,
-          exercise.description,
-          exercise.primaryMuscle,
-          exercise.category,
-        ].join(' ').toLowerCase();
+        // Search only in exercise name/title
+        final exerciseName = exercise.name.toLowerCase();
+        final exerciseWords =
+            exerciseName.split(' ').where((word) => word.isNotEmpty).toList();
 
-        // If single word query, check for word boundaries or exact matches
+        // If single word query, check if any word in exercise name starts with the query
         if (queryWords.length == 1) {
           final singleQuery = queryWords.first;
-
-          // Check for exact word match (word boundaries)
-          final wordBoundaryPattern = RegExp(
-              r'\b' + RegExp.escape(singleQuery) + r'\b',
-              caseSensitive: false);
-          if (wordBoundaryPattern.hasMatch(searchableText)) {
-            return true;
-          }
-
-          // Check for starts with (for partial matches)
-          if (searchableText.contains(singleQuery)) {
-            return true;
-          }
+          return exerciseWords.any((word) => word.startsWith(singleQuery));
         } else {
-          // Multiple word query - all words must be found
-          return queryWords.every((word) => searchableText.contains(word));
+          // Multiple word query - check if all query words match words in exercise name
+          // Each query word must start with a word in the exercise name
+          return queryWords.every((queryWord) => exerciseWords
+              .any((exerciseWord) => exerciseWord.startsWith(queryWord)));
         }
-
-        return false;
       }).toList();
     }
 

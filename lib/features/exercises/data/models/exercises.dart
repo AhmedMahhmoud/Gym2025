@@ -1,12 +1,18 @@
 class Exercise {
   factory Exercise.fromJson(Map<String, dynamic> json,
-          {String? workoutExerciseID}) =>
+          {String? workoutExerciseID, String? gender, bool isCustom = false}) =>
       Exercise(
         id: json['id'] ?? '',
         workoutExerciseID: workoutExerciseID,
         name: json['title'] ?? json['name'] ?? '',
         description: json['description'] ?? '',
-        videoUrl: json['videoUrl'] ?? '',
+        videoUrl: isCustom
+            ? json['videoUrl']
+            : gender == 'male'
+                ? json['videoUrl'] ?? ''
+                : json['femaleVideoUrl'] ?? '',
+        maleVideoUrl: json['videoUrl'] ?? '',
+        femaleVideoUrl: json['femaleVideoUrl'] ?? '',
         primaryMuscle: json['primaryMuscle'] ?? json['muscleGroup'] ?? '',
         primaryMuscleId: json['primaryMuscleId'] ?? '',
         category: json['category'] ?? '',
@@ -25,6 +31,8 @@ class Exercise {
       'title': name,
       'description': description,
       'videoUrl': videoUrl,
+      'maleVideoUrl': maleVideoUrl,
+      'femaleVideoUrl': femaleVideoUrl,
       'primaryMuscle': primaryMuscle,
       'primaryMuscleId': primaryMuscleId,
       'muscleGroup': primaryMuscle,
@@ -42,6 +50,8 @@ class Exercise {
       name: 'Loading...',
       description: 'Loading...',
       videoUrl: '', // Avoid loading actual images
+      maleVideoUrl: '',
+      femaleVideoUrl: '',
       primaryMuscle: '',
       primaryMuscleId: '',
       category: '',
@@ -55,6 +65,8 @@ class Exercise {
       required this.name,
       required this.description,
       required this.videoUrl,
+      this.maleVideoUrl = '',
+      this.femaleVideoUrl = '',
       required this.primaryMuscle,
       required this.primaryMuscleId,
       required this.category,
@@ -70,6 +82,8 @@ class Exercise {
   final String description;
   final String? workoutExerciseID;
   final String videoUrl;
+  final String maleVideoUrl;
+  final String femaleVideoUrl;
   final String primaryMuscle;
   final String primaryMuscleId;
   final String category;
@@ -79,9 +93,26 @@ class Exercise {
   final String? imageUrl;
   final String workoutId;
 
-  static List<Exercise> parseExercises(json) {
+  // Get video URL based on gender (for admin mode)
+  String getVideoUrlByGender(String gender) {
+    return gender == 'male' ? maleVideoUrl : femaleVideoUrl;
+  }
+
+  // Check if exercise has both male and female videos
+  bool get hasBothVideos =>
+      maleVideoUrl.isNotEmpty && femaleVideoUrl.isNotEmpty;
+
+  // Check if exercise has male video
+  bool get hasMaleVideo => maleVideoUrl.isNotEmpty;
+
+  // Check if exercise has female video
+  bool get hasFemaleVideo => femaleVideoUrl.isNotEmpty;
+
+  static List<Exercise> parseExercises(json, String? gender, bool isCustom) {
     final list = json as List;
-    return list.map((e) => Exercise.fromJson(e)).toList();
+    return list
+        .map((e) => Exercise.fromJson(e, gender: gender, isCustom: isCustom))
+        .toList();
   }
 
   Exercise copyWith({
@@ -89,6 +120,8 @@ class Exercise {
     String? name,
     String? description,
     String? videoUrl,
+    String? maleVideoUrl,
+    String? femaleVideoUrl,
     String? primaryMuscle,
     String? primaryMuscleId,
     String? category,
@@ -104,6 +137,8 @@ class Exercise {
       name: name ?? this.name,
       description: description ?? this.description,
       videoUrl: videoUrl ?? this.videoUrl,
+      maleVideoUrl: maleVideoUrl ?? this.maleVideoUrl,
+      femaleVideoUrl: femaleVideoUrl ?? this.femaleVideoUrl,
       primaryMuscle: primaryMuscle ?? this.primaryMuscle,
       primaryMuscleId: primaryMuscleId ?? this.primaryMuscleId,
       category: category ?? this.category,

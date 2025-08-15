@@ -85,20 +85,24 @@ class ExercisesRepository {
   }
 
   Future<Either<Failure, Exercise>> updateExercise({
-    required String exerciseName,
+    required String exerciseId,
     required String title,
     required String description,
     String? videoUrl,
+    String? maleVideoUrl,
+    String? femaleVideoUrl,
     String? picturePath,
     String? primaryMuscleId,
     String? categoryId,
   }) async {
     try {
       final exercise = await exercisesService.updateExercise(
-        exerciseName: exerciseName,
+        exerciseId: exerciseId,
         title: title,
         description: description,
         videoUrl: videoUrl,
+        maleVideoUrl: maleVideoUrl,
+        femaleVideoUrl: femaleVideoUrl,
         picturePath: picturePath,
         primaryMuscleId: primaryMuscleId,
         categoryId: categoryId,

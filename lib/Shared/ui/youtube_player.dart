@@ -22,6 +22,16 @@ class _YoutubeIframeWidgetState extends State<YoutubeIframeWidget>
     _initializeController();
   }
 
+  @override
+  void didUpdateWidget(YoutubeIframeWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If video ID changed, reinitialize the controller
+    if (oldWidget.videoId != widget.videoId) {
+      _controller?.dispose();
+      _initializeController();
+    }
+  }
+
   void _initializeController() {
     // Check if videoId is empty or null
     if (widget.videoId.isEmpty) {

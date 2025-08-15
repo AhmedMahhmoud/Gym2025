@@ -177,6 +177,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         name: workoutExercise.exercise!.name,
         description: workoutExercise.exercise!.description,
         videoUrl: workoutExercise.exercise!.videoUrl,
+        maleVideoUrl: workoutExercise.exercise!.maleVideoUrl,
+        femaleVideoUrl: workoutExercise.exercise!.femaleVideoUrl,
         primaryMuscle: workoutExercise.exercise!.primaryMuscle,
         category: workoutExercise.exercise!.category,
       );
@@ -191,6 +193,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         categoryId: workoutExercise.customExercise!.categoryId,
         description: workoutExercise.customExercise!.description,
         videoUrl: workoutExercise.customExercise!.videoUrl,
+        maleVideoUrl: workoutExercise.customExercise!.maleVideoUrl,
+        femaleVideoUrl: workoutExercise.customExercise!.femaleVideoUrl,
         primaryMuscle: workoutExercise.customExercise!.primaryMuscle,
         category: 'Custom', // Custom exercises don't have a category
       );
@@ -204,6 +208,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         categoryId: '',
         description: '',
         videoUrl: '',
+        maleVideoUrl: '',
+        femaleVideoUrl: '',
         primaryMuscle: '',
         category: '',
       );

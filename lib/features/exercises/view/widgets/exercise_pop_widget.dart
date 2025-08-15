@@ -7,22 +7,12 @@ class PopAnimatedCard extends StatefulWidget {
   final Exercise exercise;
   final String imageUrl;
   final VoidCallback onTap;
-  final bool showDelete;
-  final VoidCallback? onDelete;
-  final bool isDeleteLoading;
-  final bool showEdit;
-  final VoidCallback? onEdit;
 
   const PopAnimatedCard({
     super.key,
     required this.exercise,
     required this.imageUrl,
     required this.onTap,
-    this.showDelete = false,
-    this.onDelete,
-    this.isDeleteLoading = false,
-    this.showEdit = false,
-    this.onEdit,
   });
 
   @override
@@ -51,11 +41,9 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
   }
 
   void _handleTap() async {
-    if (!widget.isDeleteLoading) {
-      await _controller.forward();
-      await _controller.reverse();
-      widget.onTap();
-    }
+    await _controller.forward();
+    await _controller.reverse();
+    widget.onTap();
   }
 
   @override
@@ -80,224 +68,159 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
               ),
             ],
           ),
-          child: Stack(
+          child: Row(
             children: [
-              // Main content row
-              Row(
-                children: [
-                  // Thumbnail section (50% width)
-                  Container(
-                    width: (MediaQuery.of(context).size.width - 48) * 0.55,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(16),
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(16),
-                      ),
-                      child: CachedImage(
-                        imageUrl: widget.imageUrl,
-                        borderRadius: 0,
-                        width: double.infinity,
-                        height: 120,
-                        fit: BoxFit
-                            .cover, // This will crop the image to fill the container
-                      ),
-                    ),
+              // Thumbnail section (50% width)
+              Container(
+                width: (MediaQuery.of(context).size.width - 48) * 0.55,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(16),
                   ),
-                  // Exercise info section (60% width)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(16),
+                  ),
+                  child: CachedImage(
+                    imageUrl: widget.imageUrl,
+                    borderRadius: 0,
+                    width: double.infinity,
+                    height: 120,
+                    fit: BoxFit
+                        .cover, // This will crop the image to fill the container
+                  ),
+                ),
+              ),
+              // Exercise info section (60% width)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      // Exercise name
+                      Text(
+                        widget.exercise.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      // Muscle group and category with modern UI
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 20),
-                          // Exercise name
-                          Text(
-                            widget.exercise.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                            ),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          // Muscle group and category with modern UI
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Muscle group
-                              if (widget.exercise.primaryMuscle.isNotEmpty)
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
+                          // Muscle group
+                          if (widget.exercise.primaryMuscle.isNotEmpty)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppColors.primary.withOpacity(0.3),
+                                    AppColors.primary.withOpacity(0.1),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.4),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.fitness_center,
+                                    color: AppColors.primary,
+                                    size: 14,
                                   ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        AppColors.primary.withOpacity(0.3),
-                                        AppColors.primary.withOpacity(0.1),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: AppColors.primary.withOpacity(0.4),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.fitness_center,
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      widget.exercise.primaryMuscle,
+                                      style: const TextStyle(
                                         color: AppColors.primary,
-                                        size: 14,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          widget.exercise.primaryMuscle,
-                                          style: const TextStyle(
-                                            color: AppColors.primary,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
+                                ],
+                              ),
+                            ),
+                          // Spacing between chips
+                          if (widget.exercise.primaryMuscle.isNotEmpty &&
+                              widget.exercise.category.isNotEmpty)
+                            const SizedBox(height: 6),
+                          // Category (if available)
+                          if (widget.exercise.category.isNotEmpty)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.grey.withOpacity(0.3),
+                                    Colors.grey.withOpacity(0.1),
+                                  ],
                                 ),
-                              // Spacing between chips
-                              if (widget.exercise.primaryMuscle.isNotEmpty &&
-                                  widget.exercise.category.isNotEmpty)
-                                const SizedBox(height: 6),
-                              // Category (if available)
-                              if (widget.exercise.category.isNotEmpty)
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.grey.withOpacity(0.4),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.category,
+                                    color: Colors.grey,
+                                    size: 14,
                                   ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Colors.grey.withOpacity(0.3),
-                                        Colors.grey.withOpacity(0.1),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.grey.withOpacity(0.4),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.category,
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      widget.exercise.category,
+                                      style: const TextStyle(
                                         color: Colors.grey,
-                                        size: 14,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          widget.exercise.category,
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                            ],
-                          ),
+                                ],
+                              ),
+                            ),
                         ],
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              // Action buttons for custom exercises
-              if (widget.showDelete || widget.showEdit)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Edit button
-                      if (widget.showEdit && widget.onEdit != null)
-                        GestureDetector(
-                          onTap: widget.onEdit,
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withOpacity(0.7),
-                              border: Border.all(
-                                color: Colors.orange.withOpacity(0.8),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.edit,
-                              color: Colors.orange,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      // Delete button
-                      if (widget.showDelete && widget.onDelete != null)
-                        GestureDetector(
-                          onTap:
-                              widget.isDeleteLoading ? null : widget.onDelete,
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withOpacity(0.7),
-                              border: Border.all(
-                                color: Colors.red.withOpacity(0.8),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.delete_outline,
-                              color: widget.isDeleteLoading
-                                  ? Colors.grey
-                                  : Colors.red,
-                              size: 16,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
-              // Chevron indicator
+              ),
             ],
           ),
         ),

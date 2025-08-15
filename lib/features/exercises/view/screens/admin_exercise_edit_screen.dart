@@ -23,9 +23,8 @@ class AdminExerciseEditScreen extends StatefulWidget {
 class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _videoUrlController = TextEditingController();
-  final _primaryMuscleController = TextEditingController();
-  final _categoryController = TextEditingController();
+  final _maleVideoUrlController = TextEditingController();
+  final _femaleVideoUrlController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -34,18 +33,16 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
     // Initialize controllers with current exercise data
     _nameController.text = widget.exercise.name;
     _descriptionController.text = widget.exercise.description;
-    _videoUrlController.text = widget.exercise.videoUrl;
-    _primaryMuscleController.text = widget.exercise.primaryMuscle;
-    _categoryController.text = widget.exercise.category;
+    _maleVideoUrlController.text = widget.exercise.maleVideoUrl;
+    _femaleVideoUrlController.text = widget.exercise.femaleVideoUrl;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _videoUrlController.dispose();
-    _primaryMuscleController.dispose();
-    _categoryController.dispose();
+    _maleVideoUrlController.dispose();
+    _femaleVideoUrlController.dispose();
     super.dispose();
   }
 
@@ -61,11 +58,14 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
 
     final exercisesCubit = context.read<ExercisesCubit>();
     await exercisesCubit.updateExercise(
-      exerciseName: widget.exercise.name, // Use original name for API call
+      exerciseId: widget.exercise.id, // Use exercise ID for API call
       title: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      videoUrl: _videoUrlController.text.trim().isNotEmpty
-          ? _videoUrlController.text.trim()
+      maleVideoUrl: _maleVideoUrlController.text.trim().isNotEmpty
+          ? _maleVideoUrlController.text.trim()
+          : null,
+      femaleVideoUrl: _femaleVideoUrlController.text.trim().isNotEmpty
+          ? _femaleVideoUrlController.text.trim()
           : null,
       primaryMuscleId:
           widget.exercise.primaryMuscleId, // We don't have ID mapping yet
@@ -243,7 +243,8 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
 
                       // Primary Muscle
                       _buildTextField(
-                        controller: _primaryMuscleController,
+                        controller: TextEditingController(
+                            text: widget.exercise.primaryMuscle),
                         label: 'Primary Muscle (Read Only)',
                         hint: 'e.g., Chest, Back, Legs',
                         icon: Icons.fitness_center,
@@ -253,52 +254,31 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
 
                       // Category
                       _buildTextField(
-                        controller: _categoryController,
+                        controller: TextEditingController(
+                            text: widget.exercise.category),
                         label: 'Category (Read Only)',
                         hint: 'e.g., Strength, Cardio',
                         icon: Icons.category,
                         enabled: false,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
 
-                      // // Note about read-only fields
-                      // Container(
-                      //   padding: const EdgeInsets.all(12),
-                      //   decoration: BoxDecoration(
-                      //     color: Colors.orange.withOpacity(0.1),
-                      //     borderRadius: BorderRadius.circular(8),
-                      //     border: Border.all(
-                      //       color: Colors.orange.withOpacity(0.3),
-                      //     ),
-                      //   ),
-                      //   child: const Row(
-                      //     children: [
-                      //       const Icon(
-                      //         Icons.info_outline,
-                      //         color: Colors.orange,
-                      //         size: 16,
-                      //       ),
-                      //       const SizedBox(width: 8),
-                      //       Expanded(
-                      //         child: Text(
-                      //           'Primary Muscle and Category are read-only. These require ID mappings that are not currently available.',
-                      //           style: const TextStyle(
-                      //             color: Colors.orange,
-                      //             fontSize: 12,
-                      //           ),
-                      //         ),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 16),
-
-                      // Video URL
+                      // Male Video URL
                       _buildTextField(
-                        controller: _videoUrlController,
-                        label: 'Video URL (Optional)',
-                        hint: 'Enter YouTube video URL',
-                        icon: Icons.video_library,
+                        controller: _maleVideoUrlController,
+                        label: 'Male Video URL (Optional)',
+                        hint: 'Enter YouTube video URL for male demonstration',
+                        icon: Icons.male,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Female Video URL
+                      _buildTextField(
+                        controller: _femaleVideoUrlController,
+                        label: 'Female Video URL (Optional)',
+                        hint:
+                            'Enter YouTube video URL for female demonstration',
+                        icon: Icons.female,
                       ),
                       const SizedBox(height: 32),
 

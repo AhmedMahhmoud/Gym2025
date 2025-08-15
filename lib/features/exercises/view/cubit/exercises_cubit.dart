@@ -314,10 +314,12 @@ class ExercisesCubit extends Cubit<ExercisesState> {
   }
 
   Future<void> updateExercise({
-    required String exerciseName,
+    required String exerciseId,
     required String title,
     required String description,
     String? videoUrl,
+    String? maleVideoUrl,
+    String? femaleVideoUrl,
     String? picturePath,
     String? primaryMuscleId,
     String? categoryId,
@@ -325,10 +327,12 @@ class ExercisesCubit extends Cubit<ExercisesState> {
     emit(state.copyWith(status: ExerciseStatus.loading));
     try {
       final result = await exerciseRepository.updateExercise(
-        exerciseName: exerciseName,
+        exerciseId: exerciseId,
         title: title,
         description: description,
         videoUrl: videoUrl,
+        maleVideoUrl: maleVideoUrl,
+        femaleVideoUrl: femaleVideoUrl,
         picturePath: picturePath,
         primaryMuscleId: primaryMuscleId,
         categoryId: categoryId,
@@ -345,7 +349,7 @@ class ExercisesCubit extends Cubit<ExercisesState> {
         },
         (updatedExercise) {
           final updatedAllExercises = state.allExercises.map((exercise) {
-            if (exercise.name == exerciseName) {
+            if (exercise.id == exerciseId) {
               return updatedExercise;
             }
             return exercise;

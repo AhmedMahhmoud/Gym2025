@@ -23,12 +23,12 @@ class ExercisesService {
       '/api/Exercises/GetAllExercises',
       queryParameters: query.isEmpty ? null : query,
     );
-    return Exercise.parseExercises(res.data);
+    return Exercise.parseExercises(res.data, gender!, false);
   }
 
   Future<List<Exercise>> fetchCustomExercises() async {
     final res = await dioService.get('/api/customExercises');
-    final exercises = Exercise.parseExercises(res.data);
+    final exercises = Exercise.parseExercises(res.data, null, true);
     // Mark all exercises from custom endpoint as custom
     return exercises
         .map((e) => Exercise(
@@ -40,6 +40,8 @@ class ExercisesService {
               primaryMuscle: e.primaryMuscle,
               category: e.category,
               videoUrl: e.videoUrl,
+              maleVideoUrl: e.maleVideoUrl,
+              femaleVideoUrl: e.femaleVideoUrl,
               imageUrl: e.imageUrl,
               workoutId: e.workoutId,
             ))
@@ -73,6 +75,8 @@ class ExercisesService {
       primaryMuscle: exercise.primaryMuscle,
       category: exercise.category,
       videoUrl: exercise.videoUrl,
+      maleVideoUrl: exercise.maleVideoUrl,
+      femaleVideoUrl: exercise.femaleVideoUrl,
       imageUrl: exercise.imageUrl,
       workoutId: exercise.workoutId,
     );
@@ -109,26 +113,32 @@ class ExercisesService {
       primaryMuscle: exercise.primaryMuscle,
       category: exercise.category,
       videoUrl: exercise.videoUrl,
+      maleVideoUrl: exercise.maleVideoUrl,
+      femaleVideoUrl: exercise.femaleVideoUrl,
       imageUrl: exercise.imageUrl,
       workoutId: exercise.workoutId,
     );
   }
 
   Future<Exercise> updateExercise({
-    required String exerciseName,
+    required String exerciseId,
     required String title,
     required String description,
     String? videoUrl,
+    String? maleVideoUrl,
+    String? femaleVideoUrl,
     String? picturePath,
     String? primaryMuscleId,
     String? categoryId,
   }) async {
     final res = await dioService.put(
-      '/api/Exercises/UpdateExercise/$exerciseName',
+      '/api/Exercises/UpdateExercise/$exerciseId',
       data: {
         'title': title,
         'description': description,
         'videoUrl': videoUrl,
+        'maleVideoUrl': maleVideoUrl,
+        'femaleVideoUrl': femaleVideoUrl,
         'picturePath': picturePath,
         if (primaryMuscleId != null) 'primaryMuscleId': primaryMuscleId,
         if (categoryId != null) 'categoryId': categoryId,
