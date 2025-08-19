@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
-import 'package:trackletics/features/workouts/data/models/plan_model.dart';
 import 'package:trackletics/features/workouts/data/models/plan_response.dart';
 import 'package:trackletics/features/workouts/data/models/set_model.dart';
 import 'package:trackletics/features/workouts/data/models/workout_model.dart';
@@ -39,6 +37,7 @@ class WorkoutsState extends Equatable {
   final WorkoutModel? currentWorkout;
   final Exercise? currentExercise;
   final WorkoutExercise? currentWorkoutExercise;
+  final bool isGuidedMode;
 
   const WorkoutsState({
     this.status = WorkoutsStatus.initial,
@@ -52,6 +51,7 @@ class WorkoutsState extends Equatable {
     this.currentWorkout,
     this.currentExercise,
     this.currentWorkoutExercise,
+    this.isGuidedMode = false,
   });
 
   WorkoutsState copyWith({
@@ -66,6 +66,7 @@ class WorkoutsState extends Equatable {
     WorkoutModel? currentWorkout,
     Exercise? currentExercise,
     WorkoutExercise? currentWorkoutExercise,
+    bool? isGuidedMode,
     bool clearError = false,
     bool clearCurrentPlan = false,
     bool clearCurrentWorkout = false,
@@ -86,6 +87,7 @@ class WorkoutsState extends Equatable {
           clearCurrentExercise ? null : currentExercise ?? this.currentExercise,
       currentWorkoutExercise:
           currentWorkoutExercise ?? this.currentWorkoutExercise,
+      isGuidedMode: isGuidedMode ?? this.isGuidedMode,
     );
   }
 
@@ -102,5 +104,6 @@ class WorkoutsState extends Equatable {
         currentWorkout,
         currentExercise,
         currentWorkoutExercise,
+        isGuidedMode,
       ];
 }

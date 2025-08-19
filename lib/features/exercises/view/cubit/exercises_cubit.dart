@@ -19,6 +19,12 @@ class ExercisesCubit extends Cubit<ExercisesState> {
   static Future<void>? _inflightLoad;
   static bool _hasFetchedOnce = false;
 
+  /// Reset static variables - useful after signout to ensure fresh data
+  static void resetStaticData() {
+    _inflightLoad = null;
+    _hasFetchedOnce = false;
+  }
+
   Future<void> loadExercises([
     BuildContext? context,
     bool force = false,

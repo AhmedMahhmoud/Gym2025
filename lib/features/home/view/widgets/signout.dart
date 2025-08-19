@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/core/services/token_manager.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -295,22 +296,46 @@ class SignOutBtn extends StatelessWidget {
 
   Future<void> _performSignOut(BuildContext context) async {
     try {
+      print('🔐 Starting signout process...');
+
       // Clear TokenManager cache first
       final tokenManager = TokenManager();
       await tokenManager.clearToken();
+      print('✅ TokenManager cache cleared');
+
+      // Force refresh cache to ensure no stale data persists
+      await tokenManager.forceRefreshCache();
+      print('✅ TokenManager cache force refreshed');
 
       // Clear only user data, preserve app settings like onboarding status
       final storage = StorageService();
       await storage.clearUserDataOnly();
+      print('✅ Storage user data cleared');
 
       // Reset ProfileCubit state and clear hydrated storage
       if (context.mounted) {
         await context.read<ProfileCubit>().clearAllData();
+        print('✅ ProfileCubit data cleared');
       }
+
+      // Reset ExercisesCubit static data to ensure fresh data on next login
+      ExercisesCubit.resetStaticData();
+      print('✅ ExercisesCubit static data reset');
+
+      // Clear any potential gender-related cached data
+      // Force clear any remaining cached data that might persist
+      await storage.delete(key: 'auth_token', type: StorageType.secure);
+      await storage.delete(key: 'user_id', type: StorageType.secure);
+      await storage.delete(key: 'user_email', type: StorageType.secure);
+      await storage.delete(key: 'user_name', type: StorageType.secure);
+      print('✅ Additional secure storage keys cleared');
 
       // Clear cached network images
       final cacheManager = DefaultCacheManager();
       await cacheManager.emptyCache();
+      print('✅ Network image cache cleared');
+
+      print('🔐 Signout process completed successfully');
 
       // Navigate to auth screen
       if (context.mounted) {
@@ -319,8 +344,10 @@ class SignOutBtn extends StatelessWidget {
           RouteNames.auth_screen_route,
           (route) => false,
         );
+        print('✅ Navigated to auth screen');
       }
     } catch (e) {
+      print('❌ Error during signout: $e');
       // If any error occurs, still try to navigate to auth screen
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(

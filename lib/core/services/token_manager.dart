@@ -42,11 +42,36 @@ class TokenManager {
 
   Future<void> clearToken() async {
     log('TokenManager: Clearing token');
+    print(
+        '🔐 TokenManager: Clearing cached token: ${_cachedToken != null ? "exists" : "null"}');
+    print(
+        '🔐 TokenManager: Clearing cached gender: ${_cachedGender ?? "null"}');
+    print(
+        '🔐 TokenManager: Clearing cached roles: ${_cachedRoles?.join(',') ?? "null"}');
+
     _cachedToken = null;
     _cachedGender = null;
     _cachedRoles = null;
     await _storage.delete(key: 'auth_token', type: StorageType.secure);
     log('TokenManager: Token cleared from cache and storage');
+    print('✅ TokenManager: All cached data cleared successfully');
+  }
+
+  /// Force refresh the cache - useful after signout to ensure no stale data
+  Future<void> forceRefreshCache() async {
+    log('TokenManager: Force refreshing cache');
+    print('🔄 TokenManager: Force refreshing cache...');
+    print(
+        '🔄 TokenManager: Before refresh - cached gender: ${_cachedGender ?? "null"}');
+
+    _cachedToken = null;
+    _cachedGender = null;
+    _cachedRoles = null;
+    // Also clear from storage to be extra sure
+    await _storage.delete(key: 'auth_token', type: StorageType.secure);
+    log('TokenManager: Cache force refreshed');
+    print(
+        '✅ TokenManager: Cache force refreshed - cached gender: ${_cachedGender ?? "null"}');
   }
 
   void _populateClaimsFromToken(String token) {
@@ -58,10 +83,23 @@ class TokenManager {
 
   /// Returns cached gender if available, otherwise decodes it from token and caches it
   Future<String?> getGender() async {
-    if (_cachedGender != null) return _cachedGender;
+    print(
+        '🔍 TokenManager: getGender() called - cached gender: ${_cachedGender ?? "null"}');
+
+    if (_cachedGender != null) {
+      print('🔍 TokenManager: Returning cached gender: $_cachedGender');
+      return _cachedGender;
+    }
+
     final token = await getToken();
-    if (token == null || token.isEmpty) return null;
+    if (token == null || token.isEmpty) {
+      print('🔍 TokenManager: No token available, returning null gender');
+      return null;
+    }
+
     _populateClaimsFromToken(token);
+    print(
+        '🔍 TokenManager: Populated gender from token: ${_cachedGender ?? "null"}');
     return _cachedGender;
   }
 

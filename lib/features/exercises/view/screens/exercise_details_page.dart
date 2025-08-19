@@ -138,9 +138,12 @@ class ExerciseDetailsPage extends StatelessWidget {
                     Stack(
                       alignment: Alignment.topLeft,
                       children: [
-                        if (updatedExercise.videoUrl.isNotEmpty)
+                        if (updatedExercise.videoUrl.isNotEmpty ||
+                            updatedExercise.maleVideoUrl.isNotEmpty)
                           YoutubeIframeWidget(
-                              videoId: updatedExercise.videoUrl),
+                              videoId: updatedExercise.videoUrl.isEmpty
+                                  ? updatedExercise.maleVideoUrl
+                                  : updatedExercise.videoUrl),
                         const Padding(
                           padding: EdgeInsets.all(8.0),
                           child: CustomBackBtn(),
@@ -251,20 +254,21 @@ class ExerciseDetailsPage extends StatelessWidget {
                     // Action buttons for custom exercises
                     if (isCustomExercise) ...[
                       const Divider(),
+                      Spacer(),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Custom Exercise Actions',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
+                            // Text(
+                            //   'Custom Exercise Actions',
+                            //   style: TextStyle(
+                            //     color: Colors.grey[400],
+                            //     fontSize: 14,
+                            //     fontWeight: FontWeight.w600,
+                            //   ),
+                            // ),
+                            // const SizedBox(height: 12),
                             Row(
                               children: [
                                 Expanded(

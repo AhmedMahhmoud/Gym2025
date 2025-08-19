@@ -2,17 +2,11 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:trackletics/Shared/ui/custom_elevated_button.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
-import 'package:trackletics/core/theme/app_theme.dart';
-import 'package:trackletics/features/exercises/view/screens/exercises_display_page.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/features/workouts/data/models/workout_model.dart';
-import 'package:trackletics/features/workouts/views/screens/exercise_sets_screen.dart';
 import 'package:trackletics/features/workouts/views/screens/workout_details_screen.dart';
-import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
-import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 
 class WorkoutsScreen extends StatefulWidget {
@@ -59,6 +53,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   }
 
   void _createWorkout() {
+    if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
     if (_titleController.text.isNotEmpty) {
       setState(() {
         _isAddingWorkout = true;
@@ -186,6 +181,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   }
 
   void _updateWorkout(String workoutId, String title, String notes) {
+    if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
     _workoutsCubit.updateWorkout(
       workoutId,
       title: title,
@@ -257,6 +253,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   }
 
   void _deleteWorkout(WorkoutModel workout) {
+    if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
     setState(() {
       _isDeleting[workout.id] = true;
     });
@@ -365,7 +362,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                     backgroundColor: AppColors.primary,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
-                if (_isAddingWorkout)
+                if (_isAddingWorkout && !state.isGuidedMode)
                   FadeIn(
                     duration: const Duration(milliseconds: 500),
                     child: Padding(
@@ -553,115 +550,133 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              SlideInUp(
-                                duration: const Duration(milliseconds: 1000),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isAddingWorkout = true;
-                                    });
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 40,
-                                      vertical: 15,
-                                    ),
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                  ).copyWith(
-                                    backgroundColor: MaterialStateProperty.all(
-                                      Colors.transparent,
-                                    ),
-                                    overlayColor: MaterialStateProperty.all(
-                                      Colors.white.withOpacity(0.1),
-                                    ),
-                                  ),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppColors.textSecondary,
-                                          AppColors.backgroundSurface
-                                              .withOpacity(0.7),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
+                              if (!state.isGuidedMode)
+                                SlideInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isAddingWorkout = true;
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 40,
+                                        vertical: 15,
                                       ),
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.buttonText
-                                              .withOpacity(0.5),
-                                          blurRadius: 2,
-                                          spreadRadius: 2,
-                                        ),
-                                      ],
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ).copyWith(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                        Colors.transparent,
+                                      ),
+                                      overlayColor: MaterialStateProperty.all(
+                                        Colors.white.withOpacity(0.1),
+                                      ),
                                     ),
-                                    padding: const EdgeInsets.all(15),
-                                    child: const Icon(
-                                      Icons.add,
-                                      color: Colors.white,
-                                      size: 30,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            AppColors.textSecondary,
+                                            AppColors.backgroundSurface
+                                                .withOpacity(0.7),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.buttonText
+                                                .withOpacity(0.5),
+                                            blurRadius: 2,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      padding: const EdgeInsets.all(15),
+                                      child: const Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         )
-                      : ReorderableListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                          itemCount: state.workouts.length,
-                          onReorder: (oldIndex, newIndex) async {
-                            await _workoutsCubit.reorderWorkouts(
-                                oldIndex, newIndex);
-                          },
-                          itemBuilder: (context, index) {
-                            final workout = state.workouts[index];
-                            final isDeleting = _isDeleting[workout.id] ?? false;
-                            return AnimatedSwitcher(
-                              key: ValueKey(workout.id),
-                              duration: const Duration(milliseconds: 300),
-                              switchOutCurve: Curves.easeOut,
-                              switchInCurve: Curves.easeIn,
-                              transitionBuilder:
-                                  (Widget child, Animation<double> animation) {
-                                if (!isDeleting) {
-                                  return FadeIn(
-                                    duration: const Duration(milliseconds: 500),
-                                    child: child,
-                                  );
-                                }
-                                return FadeOut(
-                                  curve: Curves.easeOut,
-                                  child: child,
+                      : (state.isGuidedMode
+                          ? ListView.builder(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                              itemCount: state.workouts.length,
+                              itemBuilder: (context, index) {
+                                final workout = state.workouts[index];
+                                return _buildWorkoutCard(workout, index);
+                              },
+                            )
+                          : ReorderableListView.builder(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                              itemCount: state.workouts.length,
+                              onReorder: (oldIndex, newIndex) async {
+                                await _workoutsCubit.reorderWorkouts(
+                                    oldIndex, newIndex);
+                              },
+                              itemBuilder: (context, index) {
+                                final workout = state.workouts[index];
+                                final isDeleting =
+                                    _isDeleting[workout.id] ?? false;
+                                return AnimatedSwitcher(
+                                  key: ValueKey(workout.id),
+                                  duration: const Duration(milliseconds: 300),
+                                  switchOutCurve: Curves.easeOut,
+                                  switchInCurve: Curves.easeIn,
+                                  transitionBuilder: (Widget child,
+                                      Animation<double> animation) {
+                                    if (!isDeleting) {
+                                      return FadeIn(
+                                        duration:
+                                            const Duration(milliseconds: 500),
+                                        child: child,
+                                      );
+                                    }
+                                    return FadeOut(
+                                      curve: Curves.easeOut,
+                                      child: child,
+                                    );
+                                  },
+                                  child: isDeleting
+                                      ? Container(
+                                          key: ValueKey(
+                                              '${workout.id}_deleting'))
+                                      : _buildWorkoutCard(workout, index),
                                 );
                               },
-                              child: isDeleting
-                                  ? Container(
-                                      key: ValueKey('${workout.id}_deleting'))
-                                  : _buildWorkoutCard(workout, index),
-                            );
-                          },
-                        ),
+                            )),
                 ),
-                BlocBuilder<WorkoutsCubit, WorkoutsState>(
-                  builder: (context, state) {
-                    return StickyAddButton(
-                      onPressed: () {
-                        setState(() {
-                          _isAddingWorkout = true;
-                        });
-                      },
-                      text: 'Add Workout',
-                      icon: Icons.add,
-                      isVisible: !_isAddingWorkout && state.workouts.isNotEmpty,
-                    );
-                  },
-                ),
+                if (!state.isGuidedMode)
+                  BlocBuilder<WorkoutsCubit, WorkoutsState>(
+                    builder: (context, state) {
+                      return StickyAddButton(
+                        onPressed: () {
+                          setState(() {
+                            _isAddingWorkout = true;
+                          });
+                        },
+                        text: 'Add Workout',
+                        icon: Icons.add,
+                        isVisible:
+                            !_isAddingWorkout && state.workouts.isNotEmpty,
+                      );
+                    },
+                  ),
               ],
             );
           },
@@ -714,15 +729,18 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.edit, color: Colors.white70),
-                onPressed: () => _showEditWorkoutDialog(workout),
-              ),
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.circleXmark,
-                    color: Colors.redAccent),
-                onPressed: () => _showDeleteConfirmationDialog(workout),
-              ),
+              if (!context.read<WorkoutsCubit>().state.isGuidedMode)
+                IconButton(
+                  icon:
+                      const Icon(FontAwesomeIcons.edit, color: Colors.white70),
+                  onPressed: () => _showEditWorkoutDialog(workout),
+                ),
+              if (!context.read<WorkoutsCubit>().state.isGuidedMode)
+                IconButton(
+                  icon: const Icon(FontAwesomeIcons.circleXmark,
+                      color: Colors.redAccent),
+                  onPressed: () => _showDeleteConfirmationDialog(workout),
+                ),
               const Icon(
                 Icons.chevron_right,
                 color: Colors.white70,

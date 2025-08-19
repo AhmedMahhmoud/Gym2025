@@ -14,6 +14,7 @@ class CustomExerciseForm extends StatefulWidget {
 
 class _CustomExerciseFormState extends State<CustomExerciseForm>
     with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _videoUrlController = TextEditingController();
@@ -76,24 +77,48 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
     );
   }
 
-  Future<void> _handleSubmit() async {
-    if (_titleController.text.isEmpty || _categoryController.text.isEmpty) {
-      CustomSnackbar.show(
-        context,
-        'Please fill in all required fields',
-        isError: true,
-      );
-      return;
+  String? _validateTitle(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Exercise name is required';
     }
+    if (value.trim().length < 2) {
+      return 'Exercise name must be at least 2 characters';
+    }
+    return null;
+  }
 
-    final exercisesCubit = context.read<ExercisesCubit>();
-    await exercisesCubit.createCustomExercise(
-      title: _titleController.text,
-      description: _descriptionController.text,
-      primaryMuscle: _categoryController.text,
-      videoUrl:
-          _videoUrlController.text.isNotEmpty ? _videoUrlController.text : null,
-    );
+  String? _validateCategory(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Muscle group is required';
+    }
+    if (value.trim().length < 2) {
+      return 'Muscle group must be at least 2 characters';
+    }
+    return null;
+  }
+
+  String? _validateVideoUrl(String? value) {
+    if (value != null && value.trim().isNotEmpty) {
+      // Basic YouTube URL validation
+      if (!value.contains('youtube.com') && !value.contains('youtu.be')) {
+        return 'Please enter a valid YouTube URL';
+      }
+    }
+    return null;
+  }
+
+  Future<void> _handleSubmit() async {
+    if (_formKey.currentState!.validate()) {
+      final exercisesCubit = context.read<ExercisesCubit>();
+      await exercisesCubit.createCustomExercise(
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        primaryMuscle: _categoryController.text.trim(),
+        videoUrl: _videoUrlController.text.trim().isNotEmpty
+            ? _videoUrlController.text.trim()
+            : null,
+      );
+    }
   }
 
   @override
@@ -128,178 +153,212 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
         ),
         body: BlocBuilder<ExercisesCubit, ExercisesState>(
           builder: (context, state) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Animated Lottie
-                  _buildAnimatedFormField(
-                    index: 0,
-                    child: Center(
-                      child: Lottie.asset(
-                        'assets/images/gymLottie.json',
-                        height: 300,
+            return Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Animated Lottie
+                    _buildAnimatedFormField(
+                      index: 0,
+                      child: Center(
+                        child: Lottie.asset(
+                          'assets/images/gymLottie.json',
+                          height: 300,
+                        ),
                       ),
                     ),
-                  ),
 
-                  // Loading Indicator
-                  if (state.status == ExerciseStatus.loading)
-                    const LinearProgressIndicator(
-                      backgroundColor: Colors.transparent,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.primary),
-                    ),
-                  const SizedBox(height: 5),
-
-                  // Title Field
-                  _buildAnimatedFormField(
-                    index: 1,
-                    child: TextField(
-                      controller: _titleController,
-                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
-                      decoration: InputDecoration(
-                        hintText: 'Exercise Name',
-                        filled: true,
-                        fillColor: AppColors.background,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
+                    // Loading Indicator
+                    if (state.status == ExerciseStatus.loading)
+                      const LinearProgressIndicator(
+                        backgroundColor: Colors.transparent,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppColors.primary),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 5),
 
-                  // Description Field
-                  _buildAnimatedFormField(
-                    index: 2,
-                    child: TextField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
-                      decoration: InputDecoration(
-                        hintText: 'Description',
-                        filled: true,
-                        fillColor: AppColors.background,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Video URL Field
-                  _buildAnimatedFormField(
-                    index: 3,
-                    child: TextField(
-                      controller: _videoUrlController,
-                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
-                      decoration: InputDecoration(
-                        hintText: 'YouTube Video URL (Optional)',
-                        filled: true,
-                        fillColor: AppColors.background,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Category Field
-                  _buildAnimatedFormField(
-                    index: 4,
-                    child: TextField(
-                      controller: _categoryController,
-                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
-                      decoration: InputDecoration(
-                        hintText: 'Muscle Group (e.g., Chest)',
-                        filled: true,
-                        fillColor: AppColors.background,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Submit Button
-                  _buildAnimatedFormField(
-                    index: 4,
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: state.status == ExerciseStatus.loading
-                            ? null
-                            : _handleSubmit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
+                    // Title Field
+                    _buildAnimatedFormField(
+                      index: 1,
+                      child: TextFormField(
+                        controller: _titleController,
+                        onTapOutside: (event) =>
+                            FocusScope.of(context).unfocus(),
+                        validator: _validateTitle,
+                        decoration: InputDecoration(
+                          hintText: 'Exercise Name',
+                          filled: true,
+                          fillColor: AppColors.background,
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: AppColors.primary),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Description Field
+                    _buildAnimatedFormField(
+                      index: 2,
+                      child: TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 3,
+                        onTapOutside: (event) =>
+                            FocusScope.of(context).unfocus(),
+                        decoration: InputDecoration(
+                          hintText: 'Description',
+                          filled: true,
+                          fillColor: AppColors.background,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: AppColors.primary),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Video URL Field
+                    _buildAnimatedFormField(
+                      index: 3,
+                      child: TextFormField(
+                        controller: _videoUrlController,
+                        onTapOutside: (event) =>
+                            FocusScope.of(context).unfocus(),
+                        validator: _validateVideoUrl,
+                        decoration: InputDecoration(
+                          hintText: 'YouTube Video URL (Optional)',
+                          filled: true,
+                          fillColor: AppColors.background,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: AppColors.primary),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Category Field
+                    _buildAnimatedFormField(
+                      index: 4,
+                      child: TextFormField(
+                        controller: _categoryController,
+                        onTapOutside: (event) =>
+                            FocusScope.of(context).unfocus(),
+                        validator: _validateCategory,
+                        decoration: InputDecoration(
+                          hintText: 'Muscle Group (e.g., Chest)',
+                          filled: true,
+                          fillColor: AppColors.background,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: AppColors.primary),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Submit Button
+                    _buildAnimatedFormField(
+                      index: 4,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: state.status == ExerciseStatus.loading
+                              ? null
+                              : _handleSubmit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            state.status == ExerciseStatus.loading
+                                ? 'Adding Exercise...'
+                                : 'Add Custom Exercise',
+                            style: const TextStyle(fontSize: 16),
                           ),
                         ),
-                        child: Text(
-                          state.status == ExerciseStatus.loading
-                              ? 'Adding Exercise...'
-                              : 'Add Custom Exercise',
-                          style: const TextStyle(fontSize: 16),
-                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },

@@ -57,7 +57,7 @@ class SetCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Center(
+                child: const Center(
                   child: Icon(
                     Icons.fitness_center,
                     size: 24,

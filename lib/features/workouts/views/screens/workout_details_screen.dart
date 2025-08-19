@@ -5,15 +5,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/core/utils/shared_utils.dart';
-import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
-import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
+// import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
+// import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
-import 'package:trackletics/features/workouts/data/models/exercise_model.dart';
+// import 'package:trackletics/features/workouts/data/models/exercise_model.dart';
 import 'package:trackletics/features/workouts/views/screens/exercise_sets_screen.dart';
 import 'package:trackletics/features/workouts/views/widgets/add_exercise_bottom_sheet.dart';
 import 'package:trackletics/features/workouts/views/widgets/animated_widgets.dart';
-import 'package:trackletics/Shared/ui/sticky_add_button.dart';
+// import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
@@ -115,6 +115,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
   }
 
   void _deleteExercise(Exercise exercise) {
+    if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
     setState(() {
       _isDeleting[exercise.id] = true;
     });
@@ -136,6 +137,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
   }
 
   void _showAddExerciseBottomSheet() {
+    if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -176,7 +178,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
             ),
           ),
           subtitle: Text(
-            exercise.primaryMuscle!,
+            exercise.primaryMuscle,
             style: const TextStyle(
               color: Colors.white70,
             ),
@@ -185,7 +187,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   FontAwesomeIcons.circleInfo,
                   color: Colors.white70,
                 ),
@@ -195,17 +197,20 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                     RouteNames.exercise_details_route,
                     arguments: [
                       exercise,
-                      SharedUtils.extractThumbnail(exercise.videoUrl)
+                      SharedUtils.extractThumbnail(exercise.videoUrl.isEmpty
+                          ? exercise.maleVideoUrl
+                          : exercise.videoUrl)
                     ],
                   );
                 },
               ),
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.circleXmark,
-                    color: Colors.redAccent),
-                onPressed: () => _showDeleteConfirmationDialog(exercise),
-              ),
-              Icon(
+              if (!context.read<WorkoutsCubit>().state.isGuidedMode)
+                IconButton(
+                  icon: const Icon(FontAwesomeIcons.circleXmark,
+                      color: Colors.redAccent),
+                  onPressed: () => _showDeleteConfirmationDialog(exercise),
+                ),
+              const Icon(
                 Icons.chevron_right,
                 color: Colors.white70,
               ),
@@ -266,16 +271,17 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _showAddExerciseBottomSheet,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    if (!state.isGuidedMode)
+                      ElevatedButton(
+                        onPressed: _showAddExerciseBottomSheet,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
+                        child: const Text('Add Exercise'),
                       ),
-                      child: const Text('Add Exercise'),
-                    ),
                   ],
                 ),
               );
@@ -321,7 +327,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                   ),
                 ),
                 // Add button integrated into the scrollable content
-                if (state.selectedExercises.isNotEmpty)
+                if (state.selectedExercises.isNotEmpty && !state.isGuidedMode)
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),

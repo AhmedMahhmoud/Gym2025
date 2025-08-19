@@ -11,7 +11,7 @@ class Exercise {
             : gender == 'male'
                 ? json['videoUrl'] ?? ''
                 : json['femaleVideoUrl'] ?? '',
-        maleVideoUrl: json['videoUrl'] ?? '',
+        maleVideoUrl: json['videoUrl'] ?? json['maleVideoUrl'] ?? '',
         femaleVideoUrl: json['femaleVideoUrl'] ?? '',
         primaryMuscle: json['primaryMuscle'] ?? json['muscleGroup'] ?? '',
         primaryMuscleId: json['primaryMuscleId'] ?? '',

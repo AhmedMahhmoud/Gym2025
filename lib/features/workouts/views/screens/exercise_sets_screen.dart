@@ -6,12 +6,12 @@ import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/features/workouts/data/models/set_model.dart';
 import 'package:trackletics/features/workouts/data/units_service.dart';
-import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
+// import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/features/workouts/views/widgets/set_card.dart';
 import 'package:trackletics/features/workouts/views/widgets/add_set_dialog.dart';
 import 'package:trackletics/core/widgets/dialogs/input_dialog_container.dart';
-import 'package:trackletics/Shared/ui/sticky_add_button.dart';
+// import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 
 class ExerciseSetsScreen extends StatefulWidget {
   const ExerciseSetsScreen({Key? key}) : super(key: key);
@@ -46,6 +46,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
   }
 
   void _showAddSetDialog() {
+    if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
     showAnimatedDialog(
       context: context,
       builder: (context) => AddSetDialog(
@@ -117,16 +118,17 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _showAddSetDialog,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  if (!state.isGuidedMode)
+                    ElevatedButton(
+                      onPressed: _showAddSetDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
+                      child: const Text('Add Set'),
                     ),
-                    child: const Text('Add Set'),
-                  ),
                 ],
               ),
             );
@@ -142,15 +144,19 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                     final set = state.sets[index];
                     return SetCard(
                       set: set,
-                      onEdit: () => _showEditSetDialog(set, _workoutsCubit),
-                      onDelete: () =>
-                          _showDeleteConfirmationDialog(set, _workoutsCubit),
+                      onEdit: state.isGuidedMode
+                          ? null
+                          : () => _showEditSetDialog(set, _workoutsCubit),
+                      onDelete: state.isGuidedMode
+                          ? null
+                          : () => _showDeleteConfirmationDialog(
+                              set, _workoutsCubit),
                     );
                   },
                 ),
               ),
               // Add button integrated into the scrollable content
-              if (state.sets.isNotEmpty)
+              if (state.sets.isNotEmpty && !state.isGuidedMode)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
@@ -581,9 +587,9 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: Text(
+        content: const Text(
           'Are you sure you want to delete this set?',
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
@@ -675,7 +681,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
-import 'package:trackletics/features/workouts/data/models/plan_model.dart';
 import 'package:trackletics/features/workouts/data/models/plan_response.dart';
 import 'package:trackletics/features/workouts/data/models/set_model.dart';
 import 'package:trackletics/features/workouts/data/models/workout_model.dart';
@@ -29,7 +28,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     emit(state.copyWith(selectedExercises: updatedExercises));
   }
 
-  deleteWorkoutExercise(String workoutExcId) async {
+  Future<void> deleteWorkoutExercise(String workoutExcId) async {
     final resp = await _repository.deleteWorkoutExercise(workoutExcId);
     resp.fold(
       (l) => emit(state.copyWith(errorMessage: l.message)),
@@ -154,14 +153,22 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
   // Set current plan
   void setCurrentPlan(PlanResponse plan) {
-    emit(state.copyWith(currentPlan: plan, workouts: []
+    final bool isGuided = plan.userId == 'static';
+    emit(state.copyWith(currentPlan: plan, workouts: [], isGuidedMode: isGuided
         // clearCurrentWorkout: true,
         // clearCurrentExercise: true,
         ));
-    // Only load workouts if we don't have any for this plan
-    // if (plan.workouts.isEmpty) {
-    loadWorkoutsForPlan(plan.id);
-    // }
+    // For guided plans, workouts are embedded; otherwise, load from backend
+    if (isGuided) {
+      // Use the workouts from the provided plan directly
+      final processedWorkouts = plan.workouts;
+      emit(state.copyWith(
+        status: WorkoutsStatus.success,
+        workouts: processedWorkouts,
+      ));
+    } else {
+      loadWorkoutsForPlan(plan.id);
+    }
   }
 
   // Helper function to unify exercise data

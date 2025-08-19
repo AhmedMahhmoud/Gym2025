@@ -136,8 +136,7 @@ class ExercisesService {
       data: {
         'title': title,
         'description': description,
-        'videoUrl': videoUrl,
-        'maleVideoUrl': maleVideoUrl,
+        'videoUrl': maleVideoUrl,
         'femaleVideoUrl': femaleVideoUrl,
         'picturePath': picturePath,
         if (primaryMuscleId != null) 'primaryMuscleId': primaryMuscleId,
