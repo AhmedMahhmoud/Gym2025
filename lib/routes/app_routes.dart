@@ -5,7 +5,8 @@ import 'package:trackletics/features/auth/view/screens/auth_screen.dart';
 import 'package:trackletics/features/auth/view/screens/forgot_password.dart';
 import 'package:trackletics/features/auth/view/screens/otp_screen.dart';
 import 'package:trackletics/features/exercises/view/screens/exercise_details_page.dart';
-import 'package:trackletics/features/home/view/screens/home.dart';
+import 'package:trackletics/features/exercises/view/screens/admin_missing_videos_screen.dart';
+import 'package:trackletics/features/exercises/view/screens/admin_exercise_edit_screen.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:trackletics/shared/widgets/main_scaffold.dart';
 
@@ -24,6 +25,12 @@ class OnPageRoute {
           (args) =>
               ExerciseDetailsPage(exercise: args[0], videoThumbnail: args[1]),
         ),
+      RouteNames.admin_exercise_edit_route =>
+        _createPage<AdminExerciseEditScreen>(
+          settings.arguments,
+          (args) => AdminExerciseEditScreen(exercise: args[0]),
+        ),
+      RouteNames.admin_missing_videos_route => const AdminMissingVideosScreen(),
       _ => _errorPage(settings.name),
     };
 

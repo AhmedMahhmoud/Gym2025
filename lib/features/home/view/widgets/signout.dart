@@ -66,7 +66,9 @@ class SignOutBtn extends StatelessWidget {
                     size: 20,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(
+                  width: 16,
+                ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

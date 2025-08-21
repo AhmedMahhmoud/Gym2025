@@ -1,9 +1,9 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:trackletics/core/constants/constants.dart';
-import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/core/services/token_manager.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -93,11 +93,22 @@ class DioService {
     CancelToken? cancelToken,
   }) async {
     try {
-      return await _dio.get(
+      return await _dio
+          .get(
         path,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
+      )
+          .timeout(
+        const Duration(milliseconds: timeoutDuration),
+        onTimeout: () {
+          throw DioException(
+            requestOptions: RequestOptions(path: path),
+            type: DioExceptionType.receiveTimeout,
+            error: 'Request timed out',
+          );
+        },
       );
     } catch (e) {
       rethrow;
@@ -112,12 +123,23 @@ class DioService {
     CancelToken? cancelToken,
   }) async {
     try {
-      return await _dio.post(
+      return await _dio
+          .post(
         path,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
+      )
+          .timeout(
+        const Duration(milliseconds: timeoutDuration),
+        onTimeout: () {
+          throw DioException(
+            requestOptions: RequestOptions(path: path),
+            type: DioExceptionType.receiveTimeout,
+            error: 'Request timed out',
+          );
+        },
       );
     } catch (e) {
       rethrow;
@@ -132,12 +154,23 @@ class DioService {
     CancelToken? cancelToken,
   }) async {
     try {
-      return await _dio.delete(
+      return await _dio
+          .delete(
         path,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
+      )
+          .timeout(
+        const Duration(milliseconds: timeoutDuration),
+        onTimeout: () {
+          throw DioException(
+            requestOptions: RequestOptions(path: path),
+            type: DioExceptionType.receiveTimeout,
+            error: 'Request timed out',
+          );
+        },
       );
     } catch (e) {
       rethrow;
@@ -152,12 +185,23 @@ class DioService {
     CancelToken? cancelToken,
   }) async {
     try {
-      return await _dio.put(
+      return await _dio
+          .put(
         path,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
+      )
+          .timeout(
+        const Duration(milliseconds: timeoutDuration),
+        onTimeout: () {
+          throw DioException(
+            requestOptions: RequestOptions(path: path),
+            type: DioExceptionType.receiveTimeout,
+            error: 'Request timed out',
+          );
+        },
       );
     } catch (e) {
       rethrow;
@@ -172,12 +216,23 @@ class DioService {
     void Function(int, int)? onSendProgress,
   }) async {
     try {
-      return await _dio.post(
+      return await _dio
+          .post(
         path,
         data: formData,
         options: options,
         cancelToken: cancelToken,
         onSendProgress: onSendProgress,
+      )
+          .timeout(
+        const Duration(milliseconds: timeoutDuration),
+        onTimeout: () {
+          throw DioException(
+            requestOptions: RequestOptions(path: path),
+            type: DioExceptionType.receiveTimeout,
+            error: 'Request timed out',
+          );
+        },
       );
     } catch (e) {
       rethrow;
