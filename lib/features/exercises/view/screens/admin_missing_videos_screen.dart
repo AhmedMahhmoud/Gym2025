@@ -2,20 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/exercises/data/models/missing_video_exercise.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/cubit/profile_state.dart';
 import 'package:trackletics/routes/route_names.dart';
 
-class AdminMissingVideosScreen extends StatelessWidget {
+class AdminMissingVideosScreen extends StatefulWidget {
   const AdminMissingVideosScreen({Key? key}) : super(key: key);
 
-  List<Exercise> _getExercisesMissingAnyVideo(List<Exercise> all) {
-    return all.where((e) {
-      final hasMale = (e.maleVideoUrl).isNotEmpty;
-      final hasFemale = (e.femaleVideoUrl).isNotEmpty;
-      return !(hasMale && hasFemale);
-    }).toList();
+  @override
+  State<AdminMissingVideosScreen> createState() =>
+      _AdminMissingVideosScreenState();
+}
+
+class _AdminMissingVideosScreenState extends State<AdminMissingVideosScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Always refresh missing videos on enter
+    final cubit = context.read<ExercisesCubit>();
+    cubit.loadMissingVideos();
   }
 
   @override
@@ -41,20 +48,37 @@ class AdminMissingVideosScreen extends StatelessWidget {
         return BlocBuilder<ExercisesCubit, ExercisesState>(
           builder: (context, state) {
             final exercises = state.allExercises;
+            final bool isLoadingMissing =
+                state.missingVideosStatus == ExerciseStatus.loading;
 
+            // Ensure full exercises are loaded for navigation/editing
             if (state.status == ExerciseStatus.initial) {
               context.read<ExercisesCubit>().loadExercises(context, true, true);
             }
-
-            final missing = _getExercisesMissingAnyVideo(exercises);
+            final List<MissingVideoExercise> missing = state.missingVideos;
 
             return Scaffold(
               appBar: AppBar(
                 title: const Text('Exercises Missing Videos'),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
+                actions: [
+                  if (isLoadingMissing)
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              body: state.status == ExerciseStatus.loading && exercises.isEmpty
+              body: (isLoadingMissing && missing.isEmpty)
                   ? const Center(
                       child: CircularProgressIndicator(
                         valueColor:
@@ -69,131 +93,140 @@ class AdminMissingVideosScreen extends StatelessWidget {
                             style: TextStyle(color: Colors.white70),
                           ),
                         )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: missing.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final exercise = missing[index];
-                            final hasMale = exercise.maleVideoUrl.isNotEmpty;
-                            final hasFemale =
-                                exercise.femaleVideoUrl.isNotEmpty;
-
-                            return InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  RouteNames.admin_exercise_edit_route,
-                                  arguments: [exercise],
-                                );
-                              },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
+                      : Column(
+                          children: [
+                            if (isLoadingMissing)
+                              const Column(
+                                children: [
+                                  LinearProgressIndicator(
+                                    backgroundColor: Colors.transparent,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.primary),
                                   ),
-                                ),
+                                  SizedBox(height: 8),
+                                ],
+                              ),
+                            Expanded(
+                              child: ListView.separated(
                                 padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 44,
+                                itemCount: missing.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 12),
+                                itemBuilder: (context, index) {
+                                  final item = missing[index];
+                                  // Try to find full exercise details for editing
+                                  final matches = exercises
+                                      .where((e) => e.id == item.id)
+                                      .toList();
+                                  final Exercise? fullExercise =
+                                      matches.isNotEmpty ? matches.first : null;
+
+                                  return InkWell(
+                                    onTap: () {
+                                      if (fullExercise != null) {
+                                        Navigator.pushNamed(
+                                          context,
+                                          RouteNames.admin_exercise_edit_route,
+                                          arguments: [fullExercise],
+                                        );
+                                      } else {
+                                        // Fallback by title match if ids differ
+                                        final byTitle = exercises
+                                            .where((e) => e.name == item.title)
+                                            .toList();
+                                        if (byTitle.isNotEmpty) {
+                                          Navigator.pushNamed(
+                                            context,
+                                            RouteNames
+                                                .admin_exercise_edit_route,
+                                            arguments: [byTitle.first],
+                                          );
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Exercise details not available yet. Try again after list loads.',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
                                       decoration: BoxDecoration(
-                                        color:
-                                            AppColors.primary.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(8),
+                                        color: Colors.white.withOpacity(0.05),
+                                        borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                            color: AppColors.primary
-                                                .withOpacity(0.3)),
+                                          color: Colors.white.withOpacity(0.1),
+                                        ),
                                       ),
-                                      child: const Icon(
-                                        Icons.videocam_off,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
                                         children: [
-                                          Text(
-                                            exercise.name,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
+                                          Container(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                  color: AppColors.primary
+                                                      .withOpacity(0.3)),
+                                            ),
+                                            child: const Icon(
+                                              Icons.videocam_off,
+                                              color: AppColors.primary,
                                             ),
                                           ),
-                                          const SizedBox(height: 6),
-                                          Row(
-                                            children: [
-                                              _buildChip(
-                                                label: 'Male',
-                                                ok: hasMale,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              _buildChip(
-                                                label: 'Female',
-                                                ok: hasFemale,
-                                              ),
-                                            ],
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  item.title,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 6),
+                                                const Text(
+                                                  'Missing at least one video',
+                                                  style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const Icon(
+                                            Icons.chevron_right,
+                                            color: Colors.white70,
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const Icon(
-                                      Icons.chevron_right,
-                                      color: Colors.white70,
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
-                            );
-                          },
+                            ),
+                          ],
                         ),
             );
           },
         );
       },
-    );
-  }
-
-  Widget _buildChip({required String label, required bool ok}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: (ok ? Colors.green : Colors.red).withOpacity(0.15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: (ok ? Colors.green : Colors.red).withOpacity(0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            ok ? Icons.check_circle : Icons.error_outline,
-            color: ok ? Colors.green : Colors.red,
-            size: 14,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: ok ? Colors.green : Colors.red,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

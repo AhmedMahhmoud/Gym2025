@@ -16,9 +16,22 @@ class AppValidator {
     if (!RegExp(r'[a-z]').hasMatch(value)) {
       return 'Password must contain at least one lowercase letter';
     }
+    if (!RegExp(r'[0-9]').hasMatch(value)) {
+      return 'Password must contain at least one numeric value';
+    }
     //check for 1 special character
     if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
       return 'Password must contain at least one special character';
+    }
+    return null;
+  }
+
+  static String? validateUsername(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Username is required';
+    }
+    if (value.contains(' ')) {
+      return 'Username cannot contain spaces';
     }
     return null;
   }

@@ -75,7 +75,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     );
   }
 
-  // Load all plans
+  // Load all plans (both user and static)
   Future<void> loadPlans() async {
     emit(state.copyWith(status: WorkoutsStatus.loadingPlans, clearError: true));
 
@@ -88,13 +88,29 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           errorMessage: failure.message,
         ));
       },
-      (plansData) {
+      (allPlansData) {
+        // Filter plans based on isStatic field
+        final userPlans =
+            allPlansData.where((plan) => plan.isStatic != true).toList();
+        final staticPlans =
+            allPlansData.where((plan) => plan.isStatic == true).toList();
+
         emit(state.copyWith(
           status: WorkoutsStatus.success,
-          plans: plansData,
+          plans: userPlans,
+          staticPlans: staticPlans,
         ));
       },
     );
+  }
+
+  // Switch between user plans and static plans view
+  void switchToStaticPlans() {
+    emit(state.copyWith(isViewingStaticPlans: true));
+  }
+
+  void switchToUserPlans() {
+    emit(state.copyWith(isViewingStaticPlans: false));
   }
 
   void updateExercisesOrder(List<Exercise> updatedExercises) {
@@ -119,6 +135,31 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         emit(state.copyWith(
           status: WorkoutsStatus.success,
           plans: plans,
+          currentPlan: response,
+        ));
+      },
+    );
+  }
+
+  // Create a new static plan (admin only)
+  Future<void> createStaticPlan(String title, {String? notes}) async {
+    emit(state.copyWith(
+        status: WorkoutsStatus.creatingStaticPlan, clearError: true));
+
+    final result = await _repository.createStaticPlan(title, notes: notes);
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to create static plan: ${failure.message}',
+        ));
+      },
+      (response) {
+        final List<PlanResponse> staticPlans = state.staticPlans..add(response);
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          staticPlans: staticPlans,
           currentPlan: response,
         ));
       },

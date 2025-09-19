@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:trackletics/core/network/connectivity.dart';
@@ -11,12 +10,11 @@ import 'package:trackletics/core/services/auth_initialization_service.dart';
 import 'package:trackletics/core/services/jwt_service.dart';
 import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/core/services/token_manager.dart';
-import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/auth/view/screens/auth_screen.dart';
+import 'package:trackletics/features/auth/view/screens/otp_screen.dart';
 import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
 import 'package:trackletics/features/exercises/data/services/exercises_service.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
-import 'package:trackletics/features/home/view/screens/home.dart';
 import 'package:trackletics/features/onboarding/screens/onboarding_screen.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/data/repositories/profile_repository.dart';
@@ -53,6 +51,7 @@ class _MyAppState extends State<MyApp> {
   final AuthInitializationService _authService = AuthInitializationService();
   AuthInitStatus _authStatus = AuthInitStatus.checking;
   bool _hasSeenOnboarding = false;
+  String? _pendingVerificationEmail;
   final ConnectivityService _connectivityService = ConnectivityService();
 
   @override
@@ -71,17 +70,25 @@ class _MyAppState extends State<MyApp> {
       // Check onboarding status
       final hasSeenOnboarding = await _authService.checkOnboardingStatus();
 
+      // Get pending verification email if needed
+      String? pendingEmail;
+      if (authStatus == AuthInitStatus.pendingVerification) {
+        pendingEmail = await _authService.getPendingVerificationEmail();
+      }
+
       setState(() {
         _authStatus = authStatus;
         _hasSeenOnboarding = hasSeenOnboarding;
+        _pendingVerificationEmail = pendingEmail;
       });
 
-      log('App initialized - Auth: $authStatus, Onboarding: $hasSeenOnboarding');
+      log('App initialized - Auth: $authStatus, Onboarding: $hasSeenOnboarding, Pending Email: $pendingEmail');
     } catch (e) {
       log('Error initializing app: $e');
       setState(() {
         _authStatus = AuthInitStatus.error;
         _hasSeenOnboarding = false;
+        _pendingVerificationEmail = null;
       });
     }
   }
@@ -113,6 +120,12 @@ class _MyAppState extends State<MyApp> {
         return _hasSeenOnboarding
             ? const AuthScreen()
             : const OnboardingScreen();
+
+      case AuthInitStatus.pendingVerification:
+        return OtpScreen(
+          email: _pendingVerificationEmail ?? '',
+          isResetPassword: false,
+        );
 
       case AuthInitStatus.error:
         return Scaffold(

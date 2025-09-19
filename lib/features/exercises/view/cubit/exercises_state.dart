@@ -19,6 +19,8 @@ class ExercisesState {
     this.selectedChip,
     this.searchQuery = '',
     this.errorMessage,
+    this.missingVideos = const [],
+    this.missingVideosStatus = ExerciseStatus.initial,
   });
 
   final ExerciseStatus status;
@@ -30,6 +32,8 @@ class ExercisesState {
   final String? selectedChip;
   final String searchQuery;
   final String? errorMessage;
+  final List<MissingVideoExercise> missingVideos;
+  final ExerciseStatus missingVideosStatus;
 
   List<Exercise> get filteredExercises {
     var exercises = allExercises;
@@ -117,6 +121,8 @@ class ExercisesState {
     String? selectedChip,
     String? searchQuery,
     String? errorMessage,
+    List<MissingVideoExercise>? missingVideos,
+    ExerciseStatus? missingVideosStatus,
   }) {
     return ExercisesState(
       status: status ?? this.status,
@@ -128,6 +134,8 @@ class ExercisesState {
       selectedChip: selectedChip ?? this.selectedChip,
       searchQuery: searchQuery ?? this.searchQuery,
       errorMessage: errorMessage ?? this.errorMessage,
+      missingVideos: missingVideos ?? this.missingVideos,
+      missingVideosStatus: missingVideosStatus ?? this.missingVideosStatus,
     );
   }
 }

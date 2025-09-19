@@ -60,7 +60,7 @@ class SignOutBtn extends StatelessWidget {
                       width: 1,
                     ),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     FontAwesomeIcons.rightFromBracket,
                     color: Colors.orange,
                     size: 20,
@@ -143,7 +143,7 @@ class SignOutBtn extends StatelessWidget {
                       width: 1,
                     ),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     FontAwesomeIcons.userXmark,
                     color: Colors.red,
                     size: 20,

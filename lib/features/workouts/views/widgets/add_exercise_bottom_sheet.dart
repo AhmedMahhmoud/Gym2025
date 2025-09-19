@@ -7,9 +7,11 @@ import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/features/exercises/view/widgets/custom_exercise_form.dart';
 import 'package:trackletics/features/exercises/view/widgets/update_custom_exercise_form.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
+import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 
 class AddExerciseBottomSheet extends StatefulWidget {
   const AddExerciseBottomSheet({super.key});
@@ -67,6 +69,19 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
   void _addExerciseToWorkout(BuildContext context, Exercise exercise) {
     final workoutsCubit = context.read<WorkoutsCubit>();
     final selectedExercises = workoutsCubit.state.selectedExercises;
+
+    // Check if user is admin when viewing static plans
+    if (workoutsCubit.state.isViewingStaticPlans) {
+      final isAdmin = context.read<ProfileCubit>().state.isAdmin;
+      if (!isAdmin) {
+        CustomSnackbar.show(
+          context,
+          'Only admins can add exercises to static plans',
+          isError: true,
+        );
+        return;
+      }
+    }
 
     // Check if exercise already exists in the workout
     final exerciseExists = selectedExercises.any((e) => e.id == exercise.id);
@@ -464,43 +479,54 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         ),
         const SizedBox(height: 12),
 
-        // Add custom exercise row
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Add new custom exercise?',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () => _navigateToCustomExerciseForm(context),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+        // Add custom exercise row (only for admins when viewing static plans)
+        BlocBuilder<WorkoutsCubit, WorkoutsState>(
+          builder: (context, workoutsState) {
+            final isViewingStaticPlans = workoutsState.isViewingStaticPlans;
+            final isAdmin = context.read<ProfileCubit>().state.isAdmin;
+
+            if (isViewingStaticPlans && !isAdmin) {
+              return const SizedBox.shrink();
+            }
+
+            return Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Add new custom exercise?',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                  ],
+                  ),
                 ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 18,
+                GestureDetector(
+                  onTap: () => _navigateToCustomExerciseForm(context),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
         const SizedBox(height: 16),
 

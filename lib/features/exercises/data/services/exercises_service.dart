@@ -1,5 +1,6 @@
 import 'package:trackletics/core/network/dio_service.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/exercises/data/models/missing_video_exercise.dart';
 
 class ExercisesService {
   ExercisesService({required this.dioService});
@@ -145,5 +146,10 @@ class ExercisesService {
     );
 
     return Exercise.fromJson(res.data);
+  }
+
+  Future<List<MissingVideoExercise>> fetchExercisesMissingVideos() async {
+    final res = await dioService.get('/api/Exercises/CheckIsVideoAvailable');
+    return MissingVideoExercise.parseList(res.data);
   }
 }

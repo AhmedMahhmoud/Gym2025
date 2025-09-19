@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:trackletics/core/error/failures.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/exercises/data/models/missing_video_exercise.dart';
 import 'package:trackletics/features/exercises/data/services/exercises_service.dart';
 
 class ExercisesRepository {
@@ -108,6 +109,16 @@ class ExercisesRepository {
         categoryId: categoryId,
       );
       return Right(exercise);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<MissingVideoExercise>>>
+      fetchExercisesMissingVideos() async {
+    try {
+      final list = await exercisesService.fetchExercisesMissingVideos();
+      return Right(list);
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }

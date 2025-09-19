@@ -6,10 +6,9 @@ import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/features/workouts/data/models/set_model.dart';
-import 'package:trackletics/features/workouts/views/screens/exercise_sets_screen.dart';
-import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 
 class SetsScreen extends StatefulWidget {
   const SetsScreen({Key? key}) : super(key: key);
@@ -526,32 +525,39 @@ class _SetsScreenState extends State<SetsScreen> {
                       color: Colors.grey,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'No sets added yet',
-                      style: TextStyle(
+                    Text(
+                      state.isViewingStaticPlans
+                          ? 'No sets in this exercise'
+                          : 'No sets added yet',
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Add your first set to start tracking',
-                      style: TextStyle(
+                    Text(
+                      state.isViewingStaticPlans
+                          ? 'This exercise has no sets configured'
+                          : 'Add your first set to start tracking',
+                      style: const TextStyle(
                         color: Colors.grey,
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: _showAddSetDialog,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Set'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                    if (!state.isViewingStaticPlans ||
+                        context.read<ProfileCubit>().state.isAdmin) ...[
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: _showAddSetDialog,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add Set'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               );
@@ -581,7 +587,9 @@ class _SetsScreenState extends State<SetsScreen> {
                 onPressed: _showAddSetDialog,
                 text: 'Add Set',
                 icon: Icons.add,
-                isVisible: state.sets.isNotEmpty,
+                isVisible: state.sets.isNotEmpty &&
+                    (!state.isViewingStaticPlans ||
+                        context.read<ProfileCubit>().state.isAdmin),
               );
             },
           ),
@@ -701,20 +709,28 @@ class _SetsScreenState extends State<SetsScreen> {
               ),
 
               // Edit and delete buttons
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(FontAwesomeIcons.edit,
-                        color: Colors.white70, size: 16),
-                    onPressed: () => _showEditSetDialog(set),
-                  ),
-                  IconButton(
-                    icon: const Icon(FontAwesomeIcons.circleXmark,
-                        color: Colors.redAccent, size: 16),
-                    onPressed: () => _showDeleteConfirmationDialog(set),
-                  ),
-                ],
+              BlocBuilder<WorkoutsCubit, WorkoutsState>(
+                builder: (context, state) {
+                  if (state.isViewingStaticPlans &&
+                      !context.read<ProfileCubit>().state.isAdmin) {
+                    return const SizedBox.shrink();
+                  }
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(FontAwesomeIcons.edit,
+                            color: Colors.white70, size: 16),
+                        onPressed: () => _showEditSetDialog(set),
+                      ),
+                      IconButton(
+                        icon: const Icon(FontAwesomeIcons.circleXmark,
+                            color: Colors.redAccent, size: 16),
+                        onPressed: () => _showDeleteConfirmationDialog(set),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),

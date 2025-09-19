@@ -37,6 +37,7 @@ class SignupView extends StatelessWidget {
             hintText: 'Username',
             onSaved: (p0) => authCubit.signUpModel.username = p0!,
             suffixIcon: const Icon(FontAwesomeIcons.user),
+            validator: (p0) => AppValidator.validateUsername(p0),
           ),
           const SizedBox(
             height: 10,

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/features/auth/data/models/sign_up_model.dart';
 import 'package:trackletics/features/auth/data/repositories/auth_repository.dart';
 
@@ -10,6 +11,7 @@ part 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit({required this.authRepository}) : super(const AuthInitial());
   final AuthRepository authRepository;
+  final StorageService _storageService = StorageService();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   SignUpModel signUpModel = SignUpModel(
       username: '', inAppName: '', mail: '', password: '', gender: null);
@@ -25,7 +27,12 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthUnauthenticated(errorMessage: failure.message));
         log(failure.message);
       },
-      (_) => emit(const AuthNeedsValidation()),
+      (_) async {
+        // Cache registration state and email for recovery
+        await _storageService.setRegistrationInProgress(true);
+        await _storageService.setPendingVerificationEmail(signUpModel.mail);
+        emit(const AuthNeedsValidation());
+      },
     );
   }
 
@@ -41,7 +48,11 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthUnauthenticated(errorMessage: failure.message));
         log(failure.message);
       },
-      (token) => emit(AuthAuthenticated(token: token)),
+      (token) async {
+        // Clear any pending registration state on successful login
+        await _storageService.clearRegistrationState();
+        emit(AuthAuthenticated(token: token));
+      },
     );
   }
 }

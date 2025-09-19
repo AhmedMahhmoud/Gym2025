@@ -35,6 +35,23 @@ class WorkoutsRepository {
     }
   }
 
+  // Create a new static plan (admin only)
+  Future<Either<Failure, PlanResponse>> createStaticPlan(String title,
+      {String? notes}) async {
+    try {
+      final response = await _dioService.post(
+        '/api/Plans/static',
+        data: {
+          'title': title,
+          if (notes != null) 'notes': notes,
+        },
+      );
+      return Right(PlanResponse.fromJson(response.data));
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
   // Create a new workout in a plan
   Future<Either<Failure, WorkoutModel>> createWorkout(
       String planId, String title,

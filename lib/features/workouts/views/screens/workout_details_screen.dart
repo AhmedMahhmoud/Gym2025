@@ -18,6 +18,7 @@ import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/routes/route_names.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class WorkoutDetailsScreen extends StatefulWidget {
@@ -271,7 +272,9 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                     const SizedBox(height: 16),
-                    if (!state.isGuidedMode)
+                    if (!state.isGuidedMode &&
+                        (!state.isViewingStaticPlans ||
+                            context.read<ProfileCubit>().state.isAdmin))
                       ElevatedButton(
                         onPressed: _showAddExerciseBottomSheet,
                         style: ElevatedButton.styleFrom(
@@ -327,7 +330,10 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                   ),
                 ),
                 // Add button integrated into the scrollable content
-                if (state.selectedExercises.isNotEmpty && !state.isGuidedMode)
+                if (state.selectedExercises.isNotEmpty &&
+                    !state.isGuidedMode &&
+                    (!state.isViewingStaticPlans ||
+                        context.read<ProfileCubit>().state.isAdmin))
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),

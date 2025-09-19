@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/features/auth/data/repositories/otp_repository.dart';
 
 part 'otp_state.dart';
@@ -6,13 +7,18 @@ part 'otp_state.dart';
 class OtpCubit extends Cubit<OtpState> {
   OtpCubit({required this.otpRepository}) : super(OtpInitial());
   final OtpRepository otpRepository;
+  final StorageService _storageService = StorageService();
 
   Future<void> verifyOtp(String mail, String otp) async {
     emit(OtpLoadingState());
     final res = await otpRepository.verifyOtp(mail, otp);
     res.fold(
       (l) => emit(OtpErrorState(errorMessage: l.message)),
-      (r) => emit(OtpSuccessState(successMsg: r)),
+      (r) async {
+        // Clear registration state after successful verification
+        await _storageService.clearRegistrationState();
+        emit(OtpSuccessState(successMsg: r));
+      },
     );
   }
 

@@ -212,11 +212,16 @@ class _OtpScreenState extends State<OtpScreen> {
                                   ? null
                                   : () {
                                       _startTimer();
+                                      // Use widget.email if provided, otherwise get from cache
+                                      final emailToUse = widget.email.isNotEmpty
+                                          ? widget.email
+                                          : widget
+                                              .email; // This will be handled by the screen constructor
                                       if (widget.isResetPassword) {
                                         otpCubit
-                                            .verifyResetPassword(widget.email);
+                                            .verifyResetPassword(emailToUse);
                                       } else {
-                                        otpCubit.resendOTP(widget.email);
+                                        otpCubit.resendOTP(emailToUse);
                                       }
                                     },
                               child: Text(
@@ -245,11 +250,13 @@ class _OtpScreenState extends State<OtpScreen> {
                       onPressed: () {
                         final otpCubit = context.read<OtpCubit>();
                         if (otpCode.length == 6) {
+                          // Use widget.email for verification
+                          final emailToUse = widget.email;
                           if (widget.isResetPassword) {
-                            otpCubit.resetPassword(widget.email, otpCode,
+                            otpCubit.resetPassword(emailToUse, otpCode,
                                 _newPasswordController.text);
                           } else {
-                            otpCubit.verifyOtp(widget.email, otpCode);
+                            otpCubit.verifyOtp(emailToUse, otpCode);
                           }
                         } else {
                           _errorController.add(ErrorAnimationType

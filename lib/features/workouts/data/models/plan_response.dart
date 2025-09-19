@@ -5,6 +5,7 @@ class PlanResponse {
   final String userId;
   final String title;
   final String? notes;
+  final bool isStatic;
   final List<WorkoutModel> workouts;
 
   PlanResponse({
@@ -12,6 +13,7 @@ class PlanResponse {
     required this.userId,
     required this.title,
     this.notes,
+    this.isStatic = false,
     required this.workouts,
   });
 
@@ -20,6 +22,7 @@ class PlanResponse {
     String? userId,
     String? title,
     String? notes,
+    bool? isStatic,
     List<WorkoutModel>? workouts,
   }) {
     return PlanResponse(
@@ -27,6 +30,7 @@ class PlanResponse {
       userId: userId ?? this.userId,
       title: title ?? this.title,
       notes: notes ?? this.notes,
+      isStatic: isStatic ?? this.isStatic,
       workouts: workouts ?? this.workouts,
     );
   }
@@ -37,6 +41,7 @@ class PlanResponse {
       userId: json['userId'],
       title: json['title'],
       notes: json['notes'],
+      isStatic: json['isStatic'] ?? false,
       workouts: (json['workouts'] as List<dynamic>?)
               ?.map((e) => WorkoutModel.fromJson(e))
               .toList() ??
@@ -50,6 +55,7 @@ class PlanResponse {
       'userId': userId,
       'title': title,
       'notes': notes,
+      'isStatic': isStatic,
       'workouts': workouts.map((e) => e.toJson()).toList(),
     };
   }

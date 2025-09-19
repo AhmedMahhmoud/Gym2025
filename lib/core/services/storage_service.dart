@@ -30,6 +30,9 @@ class StorageService {
   static const String _userNameKey = 'user_name';
   static const String _themeModeKey = 'theme_mode';
   static const String _languageKey = 'language';
+  static const String _registrationInProgressKey = 'registration_in_progress';
+  static const String _pendingVerificationEmailKey =
+      'pending_verification_email';
 
   // Write Methods
   Future<void> write({
@@ -198,12 +201,37 @@ class StorageService {
         false;
   }
 
+  // Registration State Management
+  Future<void> setRegistrationInProgress(bool inProgress) async {
+    await write(key: _registrationInProgressKey, value: inProgress);
+  }
+
+  Future<bool> isRegistrationInProgress() async {
+    return await read<bool>(
+            key: _registrationInProgressKey, defaultValue: false) ??
+        false;
+  }
+
+  Future<void> setPendingVerificationEmail(String email) async {
+    await write(key: _pendingVerificationEmailKey, value: email);
+  }
+
+  Future<String?> getPendingVerificationEmail() async {
+    return await read<String>(key: _pendingVerificationEmailKey);
+  }
+
+  Future<void> clearRegistrationState() async {
+    await delete(key: _registrationInProgressKey);
+    await delete(key: _pendingVerificationEmailKey);
+  }
+
   // Clear User Data
   Future<void> clearUserData() async {
     await delete(key: _authTokenKey, type: StorageType.secure);
     await delete(key: _userIdKey, type: StorageType.secure);
     await delete(key: _userEmailKey, type: StorageType.secure);
     await delete(key: _userNameKey, type: StorageType.secure);
+    await clearRegistrationState();
   }
 
   // Clear All Data (both secure and non-secure)
@@ -227,6 +255,8 @@ class StorageService {
       _themeModeKey,
       _languageKey,
       'app_version', // Preserve app version
+      _registrationInProgressKey, // Preserve registration state
+      _pendingVerificationEmailKey, // Preserve pending email
     ];
 
     // Get all keys

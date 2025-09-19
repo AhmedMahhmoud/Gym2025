@@ -10,7 +10,7 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 class DioService {
   DioService() : _dio = Dio() {
     _dio.options = BaseOptions(
-      baseUrl: AppConstants.baseUrl,
+      baseUrl: AppConstants.testUrl,
       connectTimeout: const Duration(milliseconds: timeoutDuration),
       receiveTimeout: const Duration(milliseconds: timeoutDuration),
       sendTimeout: const Duration(milliseconds: timeoutDuration),

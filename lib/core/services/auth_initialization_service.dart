@@ -7,6 +7,7 @@ enum AuthInitStatus {
   checking,
   authenticated,
   unauthenticated,
+  pendingVerification,
   error,
 }
 
@@ -35,6 +36,14 @@ class AuthInitializationService {
         log('App version changed from $storedVersion to $_currentAppVersion');
         await _handleVersionChange();
         await _storage.write(key: _appVersionKey, value: _currentAppVersion);
+      }
+
+      // Check if registration is in progress
+      final isRegistrationInProgress =
+          await _storage.isRegistrationInProgress();
+      if (isRegistrationInProgress) {
+        log('Registration in progress, navigating to OTP verification');
+        return AuthInitStatus.pendingVerification;
       }
 
       // Get stored token
@@ -91,6 +100,15 @@ class AuthInitializationService {
     } catch (e) {
       log('Error checking onboarding status: $e');
       return false;
+    }
+  }
+
+  Future<String?> getPendingVerificationEmail() async {
+    try {
+      return await _storage.getPendingVerificationEmail();
+    } catch (e) {
+      log('Error getting pending verification email: $e');
+      return null;
     }
   }
 

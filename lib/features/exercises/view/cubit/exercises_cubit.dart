@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/core/services/token_manager.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/exercises/data/models/missing_video_exercise.dart';
 import 'package:trackletics/features/exercises/data/repo/exercises_repo.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 
@@ -388,6 +388,32 @@ class ExercisesCubit extends Cubit<ExercisesState> {
           errorMessage: e.toString(),
         ),
       );
+    }
+  }
+
+  Future<void> loadMissingVideos() async {
+    emit(state.copyWith(missingVideosStatus: ExerciseStatus.loading));
+    try {
+      final data = await exerciseRepository.fetchExercisesMissingVideos();
+      data.fold(
+        (failure) {
+          emit(state.copyWith(
+            missingVideosStatus: ExerciseStatus.error,
+            errorMessage: failure.message,
+          ));
+        },
+        (missing) {
+          emit(state.copyWith(
+            missingVideosStatus: ExerciseStatus.success,
+            missingVideos: missing,
+          ));
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(
+        missingVideosStatus: ExerciseStatus.error,
+        errorMessage: e.toString(),
+      ));
     }
   }
 }
