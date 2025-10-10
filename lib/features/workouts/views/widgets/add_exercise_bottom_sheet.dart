@@ -22,11 +22,10 @@ class AddExerciseBottomSheet extends StatefulWidget {
 
 class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     with SingleTickerProviderStateMixin {
-  bool _isSelectingCategory = true;
-  FilterType _selectedFilterType = FilterType.none;
-  String? _selectedCategory;
-  String _searchQuery = '';
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _allExercisesSearchController =
+      TextEditingController();
+  final TextEditingController _customExercisesSearchController =
+      TextEditingController();
   final List<String> _selectedExerciseIds = [];
   final List<String> _selectedCustomExerciseIds = [];
   late TabController _tabController;
@@ -40,30 +39,140 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       setState(() {
         _isCustomExercise = _tabController.index == 1;
       });
+      // Clear search when switching tabs to maintain independent search states
+      context.read<ExercisesCubit>().setSearchQuery('');
+      if (_isCustomExercise) {
+        _allExercisesSearchController.clear();
+      } else {
+        _customExercisesSearchController.clear();
+      }
     });
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _allExercisesSearchController.dispose();
+    _customExercisesSearchController.dispose();
     _tabController.dispose();
     super.dispose();
   }
 
-  void _selectCategory(FilterType type, String category) {
-    setState(() {
-      _selectedFilterType = type;
-      _selectedCategory = category;
-      _isSelectingCategory = false;
-    });
+  void _syncSearchControllers(ExercisesState state) {
+    // Sync the search controllers with the current ExercisesCubit state
+    if (!_isCustomExercise) {
+      // For All Exercises tab
+      if (_allExercisesSearchController.text != state.searchQuery) {
+        _allExercisesSearchController.text = state.searchQuery;
+      }
+    } else {
+      // For Custom Exercises tab
+      if (_customExercisesSearchController.text != state.searchQuery) {
+        _customExercisesSearchController.text = state.searchQuery;
+      }
+    }
   }
 
-  void _goBackToCategories() {
-    setState(() {
-      _isSelectingCategory = true;
-      _searchQuery = '';
-      _searchController.clear();
-    });
+  void _showFilterOptions(BuildContext context, ExercisesState state) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Filter Exercises',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'By Muscle',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: state.groupedByMuscle.keys.map((muscle) {
+                return FilterChip(
+                  label: Text(muscle),
+                  selected: state.selectedFilterType == FilterType.muscle &&
+                      state.selectedChip == muscle,
+                  onSelected: (_) {
+                    context.read<ExercisesCubit>().setFilter(
+                          type: FilterType.muscle,
+                          chipValue: muscle,
+                        );
+                    Navigator.pop(context);
+                  },
+                  selectedColor: AppColors.primary,
+                  labelStyle: const TextStyle(color: AppColors.textPrimary),
+                  backgroundColor: AppColors.background,
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const Text(
+              'By Category',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: state.groupedByCategory.keys.map((category) {
+                return FilterChip(
+                  label: Text(category),
+                  selected: state.selectedFilterType == FilterType.category &&
+                      state.selectedChip == category,
+                  onSelected: (_) {
+                    context.read<ExercisesCubit>().setFilter(
+                          type: FilterType.category,
+                          chipValue: category,
+                        );
+                    Navigator.pop(context);
+                  },
+                  selectedColor: AppColors.primary,
+                  labelStyle: const TextStyle(color: AppColors.textPrimary),
+                  backgroundColor: AppColors.background,
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  context.read<ExercisesCubit>().clearFilter();
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[600],
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Show All Exercises'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _addExerciseToWorkout(BuildContext context, Exercise exercise) {
@@ -140,36 +249,18 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       return state.filteredCustomExercises;
     }
 
-    if (_selectedFilterType == FilterType.none) return [];
-
-    Map<String, List<Exercise>> groupedExercises;
-
-    if (_selectedFilterType == FilterType.muscle) {
-      groupedExercises = state.groupedByMuscle;
-    } else {
-      groupedExercises = state.groupedByCategory;
-    }
-
-    final exercises = groupedExercises[_selectedCategory] ?? [];
-
-    // Use the cubit's search query (which is the same as _searchQuery now)
-    if (state.searchQuery.isEmpty) return exercises;
-
-    return exercises
-        .where((exercise) =>
-            exercise.name
-                .toLowerCase()
-                .contains(state.searchQuery.toLowerCase()) ||
-            exercise.description
-                .toLowerCase()
-                .contains(state.searchQuery.toLowerCase()))
-        .toList();
+    // Use the ExercisesState's built-in filtering logic which properly handles
+    // search only in exercise names and applies category/muscle filters correctly
+    return state.filteredExercises;
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ExercisesCubit, ExercisesState>(
       builder: (context, state) {
+        // Sync search controllers with the current state
+        _syncSearchControllers(state);
+
         return StatefulBuilder(
           builder: (context, setState) {
             return WillPopScope(
@@ -199,18 +290,9 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                             color: Colors.white,
                           ),
                         ),
-                        Row(
-                          children: [
-                            if (!_isSelectingCategory && !_isCustomExercise)
-                              IconButton(
-                                onPressed: _goBackToCategories,
-                                icon: const Icon(Icons.arrow_back),
-                              ),
-                            IconButton(
-                              onPressed: _handleClose,
-                              icon: const Icon(FontAwesomeIcons.circleXmark),
-                            ),
-                          ],
+                        IconButton(
+                          onPressed: _handleClose,
+                          icon: const Icon(FontAwesomeIcons.circleXmark),
                         )
                       ],
                     ),
@@ -256,9 +338,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                         controller: _tabController,
                         children: [
                           // All Exercises Tab
-                          _isSelectingCategory
-                              ? _buildCategorySelection(state)
-                              : _buildExerciseSelection(context, state),
+                          _buildExerciseSelection(context, state),
                           // Custom Exercises Tab
                           _buildCustomExerciseSelection(context, state),
                         ],
@@ -274,63 +354,6 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     );
   }
 
-  Widget _buildCategorySelection(ExercisesState state) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'By Muscle',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 17,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 8,
-            children: state.groupedByMuscle.keys.map((muscle) {
-              return FilterChip(
-                label: Text(muscle),
-                selected: false,
-                onSelected: (_) => _selectCategory(FilterType.muscle, muscle),
-                selectedColor: AppColors.primary,
-                labelStyle: const TextStyle(color: AppColors.textPrimary),
-                backgroundColor: AppColors.background,
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          const Divider(),
-          const Text(
-            'By Category',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 17,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: state.groupedByCategory.keys.map((category) {
-              return FilterChip(
-                label: Text(category),
-                selected: false,
-                onSelected: (_) =>
-                    _selectCategory(FilterType.category, category),
-                selectedColor: AppColors.primary,
-                labelStyle: const TextStyle(color: AppColors.textPrimary),
-                backgroundColor: AppColors.background,
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildExerciseSelection(BuildContext context, ExercisesState state) {
     final filteredExercises = _getFilteredExercises(state);
     final workoutsCubit = context.read<WorkoutsCubit>();
@@ -341,11 +364,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       children: [
         // Search field
         TextField(
-          controller: _searchController,
+          controller: _allExercisesSearchController,
           onChanged: (value) {
-            setState(() {
-              _searchQuery = value;
-            });
             // Update the ExercisesCubit search query for consistent filtering
             context.read<ExercisesCubit>().setSearchQuery(value);
           },
@@ -361,18 +381,44 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
-        // Category title
-        Text(
-          _selectedCategory ?? '',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+        // Filter button and current filter display
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => _showFilterOptions(context, state),
+                icon: const Icon(Icons.filter_list, size: 18),
+                label: Text(
+                  state.selectedFilterType == FilterType.none
+                      ? 'Filter by category'
+                      : 'Filter: ${state.selectedChip}',
+                  style: const TextStyle(fontSize: 14),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.background,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+            if (state.selectedFilterType != FilterType.none) ...[
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () {
+                  context.read<ExercisesCubit>().clearFilter();
+                },
+                icon: const Icon(Icons.clear, color: Colors.red),
+                tooltip: 'Clear filter',
+              ),
+            ],
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
 
         // Exercise list
         Expanded(
@@ -405,7 +451,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                           ),
                         ),
                         subtitle: Text(
-                          exercise.primaryMuscle ?? '',
+                          exercise.primaryMuscle,
                           style: TextStyle(
                             color:
                                 Colors.white70.withOpacity(isAdded ? 0.7 : 1.0),
@@ -457,11 +503,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       children: [
         // Search field
         TextField(
-          controller: _searchController,
+          controller: _customExercisesSearchController,
           onChanged: (value) {
-            setState(() {
-              _searchQuery = value;
-            });
             // Update the ExercisesCubit search query to filter custom exercises
             context.read<ExercisesCubit>().setSearchQuery(value);
           },
@@ -561,7 +604,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                           ),
                         ),
                         subtitle: Text(
-                          exercise.primaryMuscle ?? '',
+                          exercise.primaryMuscle,
                           style: TextStyle(
                             color:
                                 Colors.white70.withOpacity(isAdded ? 0.7 : 1.0),
@@ -639,31 +682,15 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
   // Navigate to custom exercise form and handle the result
   Future<void> _navigateToCustomExerciseForm(BuildContext context) async {
     // Navigate to custom exercise form and wait for result
-    final Exercise? newExercise = await Navigator.push<Exercise>(
+    await Navigator.push<Exercise>(
       context,
       MaterialPageRoute(
         builder: (context) => const CustomExerciseForm(),
       ),
     );
 
-    // If an exercise was created, add it to the current state without API call
-    if (mounted && newExercise != null) {
-      // Get current cubit and state
-      final exercisesCubit = context.read<ExercisesCubit>();
-      final currentState = exercisesCubit.state;
-
-      // Create updated custom exercises list with the new exercise
-      final updatedCustomExercises = [...currentState.customExercises];
-
-      // Check if exercise already exists to avoid duplicates
-      if (!updatedCustomExercises.any((e) => e.id == newExercise.id)) {
-        updatedCustomExercises.add(newExercise);
-
-        // Update state directly without API call
-        exercisesCubit.emit(currentState.copyWith(
-          customExercises: updatedCustomExercises,
-        ));
-      }
-    }
+    // The CustomExerciseForm already handles updating the ExercisesCubit state
+    // through the createCustomExercise method, so we don't need to do anything here
+    // The new exercise will be automatically available in the state
   }
 }
