@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
@@ -59,7 +60,7 @@ class _AdminMissingVideosScreenState extends State<AdminMissingVideosScreen> {
 
             return Scaffold(
               appBar: AppBar(
-                title: const Text('Exercises Missing Videos'),
+                title: Text('profile.admin_missing_videos'.tr()),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 actions: [

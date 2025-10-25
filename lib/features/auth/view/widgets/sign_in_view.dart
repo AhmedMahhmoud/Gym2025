@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:trackletics/Shared/ui/custom_text_form_field.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/core/utils/validators/validations.dart';
@@ -26,7 +27,7 @@ class SignInView extends StatelessWidget {
         children: [
           AppTextField(
             autovalidateMode: AutovalidateMode.disabled,
-            hintText: 'Email',
+            hintText: 'auth.email'.tr(),
             suffixIcon: const Icon(FontAwesomeIcons.envelope),
             validator: (p0) => AppValidator.validateEmail(p0),
             onSaved: (p0) => authCubit.signUpModel.mail = p0!,
@@ -35,7 +36,7 @@ class SignInView extends StatelessWidget {
             height: 10,
           ),
           AppTextField(
-            hintText: 'Password',
+            hintText: 'auth.password'.tr(),
             autovalidateMode: AutovalidateMode.disabled,
             onSaved: (p0) => authCubit.signUpModel.password = p0!,
             isPassword: true,
@@ -46,13 +47,13 @@ class SignInView extends StatelessWidget {
           GestureDetector(
             onTap: () =>
                 Navigator.pushNamed(context, RouteNames.forgot_password_route),
-            child: const Align(
+            child: Align(
               alignment: Alignment.centerRight,
               child: Text(
-                'Forgot Password',
-                style: TextStyle(
+                'auth.forgot_password',
+                style: const TextStyle(
                     color: AppColors.primary, fontWeight: FontWeight.w500),
-              ),
+              ).tr(),
             ),
           ),
           const SizedBox(

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
@@ -110,8 +111,8 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'No sets added yet',
+                  Text(
+                    'workouts.no_sets_added_yet'.tr(),
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.white70,
@@ -127,7 +128,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text('Add Set'),
+                      child: Text('workouts.add_set_button'.tr()),
                     ),
                 ],
               ),
@@ -204,7 +205,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                 'Add Set',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 0.5,
                                 ),

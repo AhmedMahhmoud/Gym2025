@@ -9,6 +9,7 @@ import 'package:trackletics/features/workouts/data/models/set_model.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SetsScreen extends StatefulWidget {
   const SetsScreen({Key? key}) : super(key: key);
@@ -59,9 +60,9 @@ class _SetsScreenState extends State<SetsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Add New Set',
-                        style: TextStyle(
+                      Text(
+                        'workouts.add_new_set'.tr(),
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -209,7 +210,7 @@ class _SetsScreenState extends State<SetsScreen> {
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.white70,
                             ),
-                            child: const Text('Cancel'),
+                            child: Text('workouts.cancel'.tr()),
                           ),
                           const SizedBox(width: 16),
                           ElevatedButton(
@@ -265,7 +266,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 24, vertical: 12),
                             ),
-                            child: const Text('Add Set'),
+                            child: Text('workouts.add_set_button'.tr()),
                           ),
                         ],
                       ),
@@ -307,9 +308,9 @@ class _SetsScreenState extends State<SetsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Edit Set',
-                        style: TextStyle(
+                      Text(
+                        'workouts.edit_set'.tr(),
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -378,7 +379,7 @@ class _SetsScreenState extends State<SetsScreen> {
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.white70,
                             ),
-                            child: const Text('Cancel'),
+                            child: Text('workouts.cancel'.tr()),
                           ),
                           const SizedBox(width: 16),
                           ElevatedButton(
@@ -422,7 +423,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 24, vertical: 12),
                             ),
-                            child: const Text('Save Changes'),
+                            child: Text('workouts.save_changes'.tr()),
                           ),
                         ],
                       ),
@@ -445,23 +446,23 @@ class _SetsScreenState extends State<SetsScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
-        title: const Text(
-          'Delete Set',
-          style: TextStyle(
+        title: Text(
+          'workouts.delete_set'.tr(),
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: const Text(
-          'Are you sure you want to delete this set?',
-          style: TextStyle(color: Colors.white70),
+        content: Text(
+          'workouts.delete_set_confirmation'.tr(),
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white70),
+            child: Text(
+              'workouts.cancel'.tr(),
+              style: const TextStyle(color: Colors.white70),
             ),
           ),
           TextButton(
@@ -469,9 +470,9 @@ class _SetsScreenState extends State<SetsScreen> {
               context.read<WorkoutsCubit>().deleteSet(set.id);
               Navigator.pop(context);
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              'workouts.delete'.tr(),
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -481,11 +482,14 @@ class _SetsScreenState extends State<SetsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Scaffold(
       appBar: AppBar(
         title: BlocSelector<WorkoutsCubit, WorkoutsState, String?>(
           selector: (state) => state.currentExercise?.name,
-          builder: (context, name) => Text(name ?? 'Sets'),
+          builder: (context, name) => Text(name ?? 'workouts.sets'.tr()),
         ),
       ),
       body: Stack(children: [
@@ -504,8 +508,8 @@ class _SetsScreenState extends State<SetsScreen> {
               current.status == WorkoutsStatus.deletingSet,
           listener: (context, state) {
             if (state.status == WorkoutsStatus.error) {
-              CustomSnackbar.show(
-                  context, state.errorMessage ?? 'An error occurred',
+              CustomSnackbar.show(context,
+                  state.errorMessage ?? 'workouts.an_error_occurred'.tr(),
                   isError: true);
             }
           },
@@ -527,8 +531,8 @@ class _SetsScreenState extends State<SetsScreen> {
                     const SizedBox(height: 16),
                     Text(
                       state.isViewingStaticPlans
-                          ? 'No sets in this exercise'
-                          : 'No sets added yet',
+                          ? 'workouts.no_sets_in_exercise'.tr()
+                          : 'workouts.no_sets_added_yet'.tr(),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -537,8 +541,8 @@ class _SetsScreenState extends State<SetsScreen> {
                     const SizedBox(height: 8),
                     Text(
                       state.isViewingStaticPlans
-                          ? 'This exercise has no sets configured'
-                          : 'Add your first set to start tracking',
+                          ? 'workouts.exercise_no_sets_configured'.tr()
+                          : 'workouts.add_first_set_to_start'.tr(),
                       style: const TextStyle(
                         color: Colors.grey,
                       ),
@@ -549,7 +553,7 @@ class _SetsScreenState extends State<SetsScreen> {
                       ElevatedButton.icon(
                         onPressed: _showAddSetDialog,
                         icon: const Icon(Icons.add),
-                        label: const Text('Add Set'),
+                        label: Text('workouts.add_set_button'.tr()),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -585,7 +589,7 @@ class _SetsScreenState extends State<SetsScreen> {
             builder: (context, state) {
               return StickyAddButton(
                 onPressed: _showAddSetDialog,
-                text: 'Add Set',
+                text: 'workouts.add_set_button'.tr(),
                 icon: Icons.add,
                 isVisible: state.sets.isNotEmpty &&
                     (!state.isViewingStaticPlans ||
@@ -653,7 +657,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               color: Colors.white70, size: 16),
                           const SizedBox(width: 4),
                           Text(
-                            '${set.repetitions} reps',
+                            '${set.repetitions} ${'workouts.reps'.tr()}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w500,
@@ -695,7 +699,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               color: Colors.white54, size: 14),
                           const SizedBox(width: 4),
                           Text(
-                            'Rest: ${set.restTime}s',
+                            '${'workouts.rest'.tr()}: ${set.restTime}s',
                             style: const TextStyle(
                               color: Colors.white54,
                               fontSize: 12,

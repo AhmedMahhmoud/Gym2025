@@ -134,7 +134,7 @@ class _StickyAddButtonState extends State<StickyAddButton>
                               widget.text,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.5,
                               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:trackletics/core/theme/app_theme.dart';
 import 'package:trackletics/routes/route_names.dart';
 import '../models/onboarding_item.dart';
@@ -16,25 +17,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingItem> _pages = [
-    OnboardingItem(
-      title: 'Meet your coach,\nstart your journey',
-      subtitle: '',
-      imagePath: 'assets/images/gym1.jpg',
-    ),
-    OnboardingItem(
-      title: 'Create a workout plan\nto stay fit',
-      subtitle: '',
-      imagePath: 'assets/images/gym2.jpeg',
-    ),
-    OnboardingItem(
-      title: 'Action is the\nkey to all success',
-      subtitle: '',
-      imagePath: 'assets/images/gym3.jpg',
-      hasButton: true,
-      buttonText: 'Start Now',
-    ),
-  ];
+  List<OnboardingItem> get _pages => [
+        OnboardingItem(
+          title: 'onboarding.title_1'.tr(),
+          subtitle: '',
+          imagePath: 'assets/images/gym1.jpg',
+        ),
+        OnboardingItem(
+          title: 'onboarding.title_2'.tr(),
+          subtitle: '',
+          imagePath: 'assets/images/gym2.jpeg',
+        ),
+        OnboardingItem(
+          title: 'onboarding.title_3'.tr(),
+          subtitle: '',
+          imagePath: 'assets/images/gym3.jpg',
+          hasButton: true,
+          buttonText: 'onboarding.get_started'.tr(),
+        ),
+      ];
 
   @override
   void dispose() {
@@ -44,6 +45,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Scaffold(
       backgroundColor: AppTheme.darkTheme.scaffoldBackgroundColor,
       body: Stack(
@@ -166,7 +170,7 @@ class OnboardingPage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(item.buttonText ?? 'Start Now'),
+                    Text(item.buttonText ?? 'onboarding.get_started'.tr()),
                     const SizedBox(width: 8),
                     const Icon(Icons.arrow_forward, size: 16),
                   ],

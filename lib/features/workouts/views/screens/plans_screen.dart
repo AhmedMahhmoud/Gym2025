@@ -12,6 +12,7 @@ import 'package:trackletics/features/workouts/views/screens/workouts_screen.dart
 import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class PlansScreen extends StatefulWidget {
   const PlansScreen({Key? key}) : super(key: key);
@@ -123,9 +124,9 @@ class _PlansScreenState extends State<PlansScreen>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          title: const Text(
-            'Edit Plan',
-            style: TextStyle(
+          title: Text(
+            'plans.edit_plan'.tr(),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -136,7 +137,7 @@ class _PlansScreenState extends State<PlansScreen>
               TextField(
                 controller: titleController,
                 decoration: InputDecoration(
-                  labelText: 'Title',
+                  labelText: 'plans.title'.tr(),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.1),
                   labelStyle: const TextStyle(color: Colors.grey),
@@ -151,7 +152,7 @@ class _PlansScreenState extends State<PlansScreen>
               TextField(
                 controller: notesController,
                 decoration: InputDecoration(
-                  labelText: 'Notes (Optional)',
+                  labelText: 'plans.notes_optional'.tr(),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.1),
                   labelStyle: const TextStyle(color: Colors.grey),
@@ -168,9 +169,9 @@ class _PlansScreenState extends State<PlansScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white70),
+              child: Text(
+                'plans.cancel'.tr(),
+                style: const TextStyle(color: Colors.white70),
               ),
             ),
             TextButton(
@@ -196,9 +197,9 @@ class _PlansScreenState extends State<PlansScreen>
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  'Update',
-                  style: TextStyle(
+                child: Text(
+                  'plans.update'.tr(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -221,9 +222,12 @@ class _PlansScreenState extends State<PlansScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Workout Plans'),
+        title: Text('plans.workout_plans'.tr()),
         elevation: 0,
         backgroundColor: Colors.transparent,
         bottom: PreferredSize(
@@ -233,9 +237,9 @@ class _PlansScreenState extends State<PlansScreen>
             indicatorColor: AppColors.primary,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
-            tabs: const [
-              Tab(text: 'My Plans'),
-              Tab(text: 'Static Plans'),
+            tabs: [
+              Tab(text: 'plans.my_plans'.tr()),
+              Tab(text: 'plans.static_plans'.tr()),
             ],
             onTap: (index) {
               if (index == 0) {
@@ -278,14 +282,15 @@ class _PlansScreenState extends State<PlansScreen>
                   previous.status == WorkoutsStatus.updatingPlan)),
       listener: (context, state) {
         if (state.status == WorkoutsStatus.error) {
-          _showErrorSnackBar(state.errorMessage ?? 'An error occurred');
+          _showErrorSnackBar(
+              state.errorMessage ?? 'plans.an_error_occurred'.tr());
         }
       },
       builder: (context, state) {
         log(state.status.toString(), name: 'test');
         if (state.status == WorkoutsStatus.error && state.plans.isEmpty) {
           return ErrorMessage(
-            message: state.errorMessage ?? 'Failed to load plans',
+            message: state.errorMessage ?? 'plans.failed_to_load_plans'.tr(),
             onRetry: () => _workoutsCubit.loadPlans(),
           );
         }
@@ -295,17 +300,17 @@ class _PlansScreenState extends State<PlansScreen>
             if (state.status == WorkoutsStatus.loadingPlans)
               SizedBox(
                 height: MediaQuery.sizeOf(context).height / 2,
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(
+                      const CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
-                        'Loading plans...',
-                        style: TextStyle(color: Colors.white70),
+                        'plans.loading_plans'.tr(),
+                        style: const TextStyle(color: Colors.white70),
                       ),
                     ],
                   ),
@@ -321,13 +326,13 @@ class _PlansScreenState extends State<PlansScreen>
                       TextField(
                         controller: _titleController,
                         decoration: InputDecoration(
-                          labelText: 'Plan Title',
+                          labelText: 'plans.plan_title'.tr(),
                           floatingLabelStyle: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 20,
                             color: Colors.white,
                           ),
-                          hintText: 'e.g., Push Pull Legs',
+                          hintText: 'plans.plan_title_hint'.tr(),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.1),
                           labelStyle: const TextStyle(
@@ -353,13 +358,13 @@ class _PlansScreenState extends State<PlansScreen>
                       TextField(
                         controller: _notesController,
                         decoration: InputDecoration(
-                          labelText: 'Notes (Optional)',
+                          labelText: 'plans.notes_optional'.tr(),
                           floatingLabelStyle: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 20,
                             color: Colors.white,
                           ),
-                          hintText: 'e.g., Push Pull Leg split',
+                          hintText: 'plans.notes_hint'.tr(),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.1),
                           labelStyle: const TextStyle(
@@ -395,7 +400,7 @@ class _PlansScreenState extends State<PlansScreen>
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.white70,
                             ),
-                            child: const Text('Cancel'),
+                            child: Text('plans.cancel'.tr()),
                           ),
                           const SizedBox(width: 16),
                           if (state.status == WorkoutsStatus.loading)
@@ -459,9 +464,9 @@ class _PlansScreenState extends State<PlansScreen>
                                     horizontal: 30,
                                     vertical: 15,
                                   ),
-                                  child: const Text(
-                                    'Create Plan',
-                                    style: TextStyle(
+                                  child: Text(
+                                    'plans.create_plan'.tr(),
+                                    style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
@@ -504,11 +509,12 @@ class _PlansScreenState extends State<PlansScreen>
                         children: [
                           FadeIn(
                             duration: const Duration(milliseconds: 800),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 30),
                               child: Text(
-                                "Add New Plan",
-                                style: TextStyle(
+                                'plans.add_new_plan'.tr(),
+                                style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white70,
@@ -615,7 +621,7 @@ class _PlansScreenState extends State<PlansScreen>
                       _isAddingPlan = true;
                     });
                   },
-                  text: 'Add Plan',
+                  text: 'plans.add_plan'.tr(),
                   icon: Icons.add,
                   isVisible: !_isAddingPlan && state.plans.isNotEmpty,
                 );
@@ -633,17 +639,17 @@ class _PlansScreenState extends State<PlansScreen>
         if (state.status == WorkoutsStatus.loadingPlans) {
           return SizedBox(
             height: MediaQuery.sizeOf(context).height / 2,
-            child: const Center(
+            child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(
+                  const CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
-                    'Loading plans...',
-                    style: TextStyle(color: Colors.white70),
+                    'plans.loading_plans'.tr(),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 ],
               ),
@@ -653,7 +659,8 @@ class _PlansScreenState extends State<PlansScreen>
 
         if (state.status == WorkoutsStatus.error && state.staticPlans.isEmpty) {
           return ErrorMessage(
-            message: state.errorMessage ?? 'Failed to load static plans',
+            message:
+                state.errorMessage ?? 'plans.failed_to_load_static_plans'.tr(),
             onRetry: () => _workoutsCubit.loadPlans(),
           );
         }
@@ -680,13 +687,13 @@ class _PlansScreenState extends State<PlansScreen>
                       TextField(
                         controller: _staticTitleController,
                         decoration: InputDecoration(
-                          labelText: 'Static Plan Title',
+                          labelText: 'plans.static_plan_title'.tr(),
                           floatingLabelStyle: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 20,
                             color: Colors.white,
                           ),
-                          hintText: 'e.g., General Plan',
+                          hintText: 'plans.static_plan_title_hint'.tr(),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.1),
                           labelStyle: const TextStyle(
@@ -712,13 +719,13 @@ class _PlansScreenState extends State<PlansScreen>
                       TextField(
                         controller: _staticNotesController,
                         decoration: InputDecoration(
-                          labelText: 'Notes (Optional)',
+                          labelText: 'plans.notes_optional'.tr(),
                           floatingLabelStyle: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 20,
                             color: Colors.white,
                           ),
-                          hintText: 'e.g., General Plan Example 1',
+                          hintText: 'plans.static_notes_hint'.tr(),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.1),
                           labelStyle: const TextStyle(
@@ -754,7 +761,7 @@ class _PlansScreenState extends State<PlansScreen>
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.white70,
                             ),
-                            child: const Text('Cancel'),
+                            child: Text('plans.cancel'.tr()),
                           ),
                           const SizedBox(width: 16),
                           if (state.status == WorkoutsStatus.creatingStaticPlan)
@@ -816,9 +823,9 @@ class _PlansScreenState extends State<PlansScreen>
                                   horizontal: 30,
                                   vertical: 15,
                                 ),
-                                child: const Text(
-                                  'Create Static Plan',
-                                  style: TextStyle(
+                                child: Text(
+                                  'plans.create_static_plan'.tr(),
+                                  style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -845,9 +852,7 @@ class _PlansScreenState extends State<PlansScreen>
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            context.read<ProfileCubit>().state.isAdmin
-                                ? 'No static plans available'
-                                : 'No static plans available',
+                            'plans.no_static_plans_available'.tr(),
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -857,8 +862,8 @@ class _PlansScreenState extends State<PlansScreen>
                           const SizedBox(height: 8),
                           Text(
                             context.read<ProfileCubit>().state.isAdmin
-                                ? 'Create your first static plan'
-                                : 'Check back later for new plans',
+                                ? 'plans.create_first_static_plan'.tr()
+                                : 'plans.check_back_later'.tr(),
                             style: const TextStyle(
                               color: Colors.grey,
                             ),
@@ -872,7 +877,7 @@ class _PlansScreenState extends State<PlansScreen>
                                 });
                               },
                               icon: const Icon(Icons.add),
-                              label: const Text('Create Static Plan'),
+                              label: Text('plans.create_static_plan'.tr()),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
@@ -902,7 +907,7 @@ class _PlansScreenState extends State<PlansScreen>
                         _isAddingStaticPlan = true;
                       });
                     },
-                    text: 'Add Static Plan',
+                    text: 'plans.add_static_plan'.tr(),
                     icon: Icons.add,
                     isVisible:
                         !_isAddingStaticPlan && state.staticPlans.isNotEmpty,
@@ -1055,23 +1060,24 @@ class _PlansScreenState extends State<PlansScreen>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          title: const Text(
-            'Delete Plan',
-            style: TextStyle(
+          title: Text(
+            'plans.delete_plan'.tr(),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: Text(
-            'Are you sure you want to delete "${plan.title}"?',
+            'plans.delete_plan_confirmation'
+                .tr(namedArgs: {'title': plan.title}),
             style: const TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white70),
+              child: Text(
+                'plans.cancel'.tr(),
+                style: const TextStyle(color: Colors.white70),
               ),
             ),
             TextButton(
@@ -1095,9 +1101,9 @@ class _PlansScreenState extends State<PlansScreen>
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(
+                child: Text(
+                  'plans.delete'.tr(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1124,7 +1130,8 @@ class _PlansScreenState extends State<PlansScreen>
       setState(() {
         _isDeleting.remove(plan.id);
       });
-      _showErrorSnackBar('Failed to delete plan: $error');
+      _showErrorSnackBar('plans.failed_to_delete_plan'
+          .tr(namedArgs: {'error': error.toString()}));
     });
   }
 }

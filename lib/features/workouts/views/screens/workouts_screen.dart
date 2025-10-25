@@ -9,6 +9,7 @@ import 'package:trackletics/features/workouts/data/models/workout_model.dart';
 import 'package:trackletics/features/workouts/views/screens/workout_details_screen.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class WorkoutsScreen extends StatefulWidget {
   const WorkoutsScreen({Key? key}) : super(key: key);
@@ -101,9 +102,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          title: const Text(
-            'Edit Workout',
-            style: TextStyle(
+          title: Text(
+            'workouts.edit_workout'.tr(),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -128,7 +129,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
               TextField(
                 controller: notesController,
                 decoration: InputDecoration(
-                  hintText: 'Notes (Optional)',
+                  hintText: 'workouts.notes_optional'.tr(),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.1),
                   labelStyle: const TextStyle(color: Colors.grey),
@@ -145,9 +146,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white70),
+              child: Text(
+                'workouts.cancel'.tr(),
+                style: const TextStyle(color: Colors.white70),
               ),
             ),
             TextButton(
@@ -173,9 +174,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  'Update',
-                  style: TextStyle(
+                child: Text(
+                  'workouts.update'.tr(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -214,23 +215,24 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          title: const Text(
-            'Delete Workout',
-            style: TextStyle(
+          title: Text(
+            'workouts.delete_workout'.tr(),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: Text(
-            'Are you sure you want to delete "${workout.title}"?',
+            'workouts.delete_workout_confirmation'
+                .tr(namedArgs: {'title': workout.title}),
             style: const TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white70),
+              child: Text(
+                'workouts.cancel'.tr(),
+                style: const TextStyle(color: Colors.white70),
               ),
             ),
             TextButton(
@@ -252,9 +254,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(
+                child: Text(
+                  'workouts.delete'.tr(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -290,7 +292,8 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to delete workout: $error'),
+          content: Text('workouts.failed_to_delete_workout'
+              .tr(namedArgs: {'error': error.toString()})),
           backgroundColor: Colors.red,
         ),
       );
@@ -299,9 +302,13 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_workoutsCubit.state.currentPlan?.title ?? 'Workouts'),
+        title: Text(_workoutsCubit.state.currentPlan?.title ??
+            'workouts.workouts'.tr()),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -320,7 +327,8 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
             if (state.status == WorkoutsStatus.error) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.errorMessage ?? 'An error occurred'),
+                  content: Text(
+                      state.errorMessage ?? 'workouts.an_error_occurred'.tr()),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -341,14 +349,14 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                       const SizedBox(height: 16),
                       if (state.status == WorkoutsStatus.loading ||
                           state.status == WorkoutsStatus.loadingWorkouts)
-                        const Text(
-                          'Loading workouts ...',
-                          style: TextStyle(color: Colors.white70),
+                        Text(
+                          'workouts.loading_workouts'.tr(),
+                          style: const TextStyle(color: Colors.white70),
                         )
                       else
-                        const Text(
-                          'Loading workouts ...',
-                          style: TextStyle(color: Colors.white70),
+                        Text(
+                          'workouts.loading_workouts'.tr(),
+                          style: const TextStyle(color: Colors.white70),
                         ),
                     ],
                   ),
@@ -363,14 +371,15 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      state.errorMessage ?? 'Failed to load workouts',
+                      state.errorMessage ??
+                          'workouts.failed_to_load_workouts'.tr(),
                       style: const TextStyle(color: Colors.red),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => _workoutsCubit.loadWorkoutsForPlan(
                           _workoutsCubit.state.currentPlan!.id),
-                      child: const Text('Retry'),
+                      child: Text('workouts.retry'.tr()),
                     ),
                   ],
                 ),
@@ -397,13 +406,13 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                           TextField(
                             controller: _titleController,
                             decoration: InputDecoration(
-                              labelText: 'Workout Title',
+                              labelText: 'workouts.workout_title'.tr(),
                               floatingLabelStyle: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 20,
                                 color: Colors.white,
                               ),
-                              hintText: 'e.g., Push Day',
+                              hintText: 'workouts.workout_title_hint'.tr(),
                               filled: true,
                               fillColor: Colors.white.withOpacity(0.1),
                               labelStyle: const TextStyle(
@@ -430,13 +439,13 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                           TextField(
                             controller: _notesController,
                             decoration: InputDecoration(
-                              labelText: 'Notes (Optional)',
+                              labelText: 'workouts.notes_optional'.tr(),
                               floatingLabelStyle: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 20,
                                 color: Colors.white,
                               ),
-                              hintText: 'e.g., Focus on chest and triceps',
+                              hintText: 'workouts.workout_notes_hint'.tr(),
                               filled: true,
                               fillColor: Colors.white.withOpacity(0.1),
                               labelStyle: const TextStyle(
@@ -473,7 +482,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.white70,
                                 ),
-                                child: const Text('Cancel'),
+                                child: Text('workouts.cancel'.tr()),
                               ),
                               const SizedBox(width: 16),
                               if (state.status == WorkoutsStatus.loading)
@@ -536,9 +545,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                         horizontal: 30,
                                         vertical: 15,
                                       ),
-                                      child: const Text(
-                                        'Create Workout',
-                                        style: TextStyle(
+                                      child: Text(
+                                        'workouts.create_workout'.tr(),
+                                        style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
@@ -566,13 +575,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                       horizontal: 30),
                                   child: Text(
                                     state.isViewingStaticPlans
-                                        ? (context
-                                                .read<ProfileCubit>()
-                                                .state
-                                                .isAdmin
-                                            ? "No workouts in this static plan"
-                                            : "No workouts in this static plan")
-                                        : "Add New Workout",
+                                        ? 'workouts.no_workouts_in_static_plan'
+                                            .tr()
+                                        : 'workouts.add_new_workout'.tr(),
                                     style: const TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
@@ -710,7 +715,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                             _isAddingWorkout = true;
                           });
                         },
-                        text: 'Add Workout',
+                        text: 'workouts.add_workout'.tr(),
                         icon: Icons.add,
                         isVisible:
                             !_isAddingWorkout && state.workouts.isNotEmpty,

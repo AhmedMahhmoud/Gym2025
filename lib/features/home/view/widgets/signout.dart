@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,6 +19,9 @@ class SignOutBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Column(
       children: [
         // Sign Out Button
@@ -73,9 +77,9 @@ class SignOutBtn extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Sign Out',
-                        style: TextStyle(
+                      Text(
+                        'signout.title'.tr(),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -83,7 +87,7 @@ class SignOutBtn extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Log out of your account',
+                        'signout.logoutMessage'.tr(),
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
                           fontSize: 14,
@@ -154,9 +158,9 @@ class SignOutBtn extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Delete Account',
-                        style: TextStyle(
+                      Text(
+                        'Delete Account.title'.tr(),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -164,7 +168,7 @@ class SignOutBtn extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Permanently delete your account',
+                        'Delete Account.pernament'.tr(),
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
                           fontSize: 14,
@@ -190,12 +194,11 @@ class SignOutBtn extends StatelessWidget {
   void _showSignOutConfirmation(BuildContext context) {
     _showModernConfirmationDialog(
       context: context,
-      title: 'Sign Out',
-      message:
-          'Are you sure you want to sign out? You will need to log in again.',
+      title: 'signout.title'.tr(),
+      message: 'signout.message'.tr(),
       icon: FontAwesomeIcons.rightFromBracket,
       iconColor: Colors.orange,
-      confirmText: 'Sign Out',
+      confirmText: 'signout.title'.tr(),
       confirmColor: Colors.orange,
       onConfirm: () async {
         Navigator.pop(context);
@@ -207,12 +210,11 @@ class SignOutBtn extends StatelessWidget {
   void _showDeleteUserConfirmation(BuildContext context) {
     _showModernConfirmationDialog(
       context: context,
-      title: 'Delete Account',
-      message:
-          'This action cannot be undone. All your data will be permanently deleted.',
+      title: 'Delete Account.title'.tr(),
+      message: 'Delete Account.message'.tr(),
       icon: FontAwesomeIcons.userXmark,
       iconColor: Colors.red,
-      confirmText: 'Delete Account',
+      confirmText: 'Delete Account.title'.tr(),
       confirmColor: Colors.red,
       onConfirm: () async {
         Navigator.pop(context);
@@ -273,9 +275,9 @@ class SignOutBtn extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white70),
+            child: Text(
+              'common.cancel'.tr(),
+              style: const TextStyle(color: Colors.white70),
             ),
           ),
           ElevatedButton(

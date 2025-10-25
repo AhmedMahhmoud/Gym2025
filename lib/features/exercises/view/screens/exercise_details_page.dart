@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:trackletics/Shared/ui/cached_network_img.dart';
 import 'package:trackletics/Shared/ui/custom_back_btn.dart';
@@ -110,6 +111,9 @@ class ExerciseDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return BlocBuilder<ProfileCubit, ProfileState>(
       builder: (context, profileState) {
         return BlocBuilder<ExercisesCubit, ExercisesState>(
@@ -275,7 +279,7 @@ class ExerciseDetailsPage extends StatelessWidget {
                                   child: _buildActionButton(
                                     context: context,
                                     icon: Icons.edit_outlined,
-                                    label: 'Edit Exercise',
+                                    label: 'exercises.edit_exercise'.tr(),
                                     color: Colors.orange,
                                     onTap: () => _editCustomExercise(
                                         context, updatedExercise),

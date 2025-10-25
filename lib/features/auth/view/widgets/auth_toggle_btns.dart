@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 
 enum AuthType { login, signup }
@@ -19,7 +20,8 @@ class AuthToggleTabs extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(right: 20),
           child: AuthTabButton(
-            label: type == AuthType.login ? 'Login' : 'Sign up',
+            label:
+                type == AuthType.login ? 'auth.login'.tr() : 'auth.signup'.tr(),
             isSelected: selectedType == type,
             onTap: () => onSelect(type),
           ),

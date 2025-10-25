@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -11,6 +12,9 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Scaffold(
         body: SafeArea(
       child: Padding(
@@ -23,9 +27,9 @@ class Home extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Text(
-                      'Hello',
-                      style: TextStyle(fontSize: 27),
+                    Text(
+                      'home.hello'.tr(),
+                      style: const TextStyle(fontSize: 27),
                     ),
                     const SizedBox(
                       width: 7,

@@ -12,6 +12,8 @@ import 'package:trackletics/features/auth/view/cubit/otp_cubit.dart';
 import 'package:trackletics/features/auth/data/repositories/otp_repository.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/routes/route_names.dart';
+import 'package:trackletics/features/profile/view/widgets/language_selector_widget.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
@@ -52,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to pick image: $e'),
+          content: Text('${'profile.failed_to_pick_image'.tr()}: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -79,14 +81,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
+              ).tr(),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildImageSourceButton(
                     icon: FontAwesomeIcons.camera,
-                    label: 'Camera',
+                    label: 'common.camera'.tr(),
                     onTap: () async {
                       Navigator.pop(context);
                       await _pickImage(ImageSource.camera);
@@ -94,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   _buildImageSourceButton(
                     icon: FontAwesomeIcons.images,
-                    label: 'Gallery',
+                    label: 'common.gallery'.tr(),
                     onTap: () async {
                       Navigator.pop(context);
                       await _pickImage(ImageSource.gallery);
@@ -106,9 +108,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
-                  'Cancel',
+                  'common.cancel',
                   style: TextStyle(color: Colors.white70),
-                ),
+                ).tr(),
               ),
             ],
           ),
@@ -170,18 +172,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Edit Display Name',
+                'profile.edit_profile',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
+              ).tr(),
               const SizedBox(height: 20),
               TextField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  hintText: 'Enter your display name',
+                  hintText: 'profile.enter_display_name'.tr(),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.1),
                   border: OutlineInputBorder(
@@ -243,9 +245,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: const Text(
-                      'Cancel',
+                      'common.cancel',
                       style: TextStyle(color: Colors.white70),
-                    ),
+                    ).tr(),
                   ),
                   const SizedBox(width: 16),
                   Builder(
@@ -277,13 +279,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         child: Text(
-                          'Save',
+                          'common.save',
                           style: TextStyle(
                             color: isValid
                                 ? Colors.white
                                 : Colors.white.withOpacity(0.5),
                           ),
-                        ),
+                        ).tr(),
                       );
                     },
                   ),
@@ -308,11 +310,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _getValidationMessage(String name) {
     if (name.length < 2) {
-      return 'Display name must be at least 2 characters long';
+      return 'profile.display_name_min_length'.tr();
     }
 
     if (!RegExp(r'[a-zA-Z0-9]').hasMatch(name)) {
-      return 'Display name must contain at least one letter or number';
+      return 'profile.display_name_invalid'.tr();
     }
 
     return '';
@@ -320,6 +322,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Scaffold(
       body: SafeArea(
         child: BlocConsumer<ProfileCubit, ProfileState>(
@@ -327,7 +332,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (state.status == ProfileStatus.error) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.errorMessage ?? 'An error occurred'),
+                  content:
+                      Text(state.errorMessage ?? 'profile.error_occurred'.tr()),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -335,16 +341,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Show success message for both image and name updates
               if (state.profileImage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile picture updated successfully!'),
+                  SnackBar(
+                    content: Text('profile.profile_picture_updated'.tr()),
                     backgroundColor: Colors.green,
                   ),
                 );
               } else {
                 // This handles name updates (no image change)
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile updated successfully!'),
+                  SnackBar(
+                    content: Text('profile.profile_updated'.tr()),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -700,13 +706,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   const Text(
-                                    'Profile Information',
+                                    'profile.personal_info',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                     ),
-                                  ),
+                                  ).tr(),
                                   const Spacer(),
                                   IconButton(
                                     onPressed: _showEditNameDialog,
@@ -742,12 +748,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           const Text(
-                                            'Display Name',
+                                            'profile.name',
                                             style: TextStyle(
                                               color: Colors.white70,
                                               fontSize: 12,
                                             ),
-                                          ),
+                                          ).tr(),
                                           const SizedBox(height: 4),
                                           Text(
                                             state.displayName,
@@ -788,12 +794,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             const Text(
-                                              'Email',
+                                              'profile.email',
                                               style: TextStyle(
                                                 color: Colors.white70,
                                                 fontSize: 12,
                                               ),
-                                            ),
+                                            ).tr(),
                                             const SizedBox(height: 4),
                                             Text(
                                               state.email!,
@@ -814,6 +820,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
+
+                        // Language Selector
+                        const LanguageSelectorWidget(),
+                        const SizedBox(height: 24),
+
                         if (state.isAdmin) ...[
                           const SizedBox(height: 8),
                           GestureDetector(
@@ -867,28 +878,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 16),
-                                  const Expanded(
+                                  Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          'Exercises Missing Videos',
+                                        const Text(
+                                          'profile.admin_missing_videos',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                           ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          'Review and update exercises with missing male/female videos',
+                                        ).tr(),
+                                        const SizedBox(height: 4),
+                                        const Text(
+                                          'profile.admin_missing_videos_desc',
                                           style: TextStyle(
                                             color: Colors.white70,
                                             fontSize: 14,
                                             fontWeight: FontWeight.w400,
                                           ),
-                                        ),
+                                        ).tr(),
                                       ],
                                     ),
                                   ),
@@ -980,23 +991,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           const Text(
-                                            'Reset Password',
+                                            'auth.reset_password',
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
                                             ),
-                                          ),
+                                          ).tr(),
                                           const SizedBox(height: 4),
                                           Text(
-                                            'Change your account password',
+                                            'profile.change_password_desc',
                                             style: TextStyle(
                                               color:
                                                   Colors.white.withOpacity(0.7),
                                               fontSize: 14,
                                               fontWeight: FontWeight.w400,
                                             ),
-                                          ),
+                                          ).tr(),
                                         ],
                                       ),
                                     ),
@@ -1179,29 +1190,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(width: 12),
             const Text(
-              'Reset Password',
+              'auth.reset_password',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
-            ),
+            ).tr(),
           ],
         ),
         content: const Text(
-          'We will send a verification code to your email address to reset your password.',
+          'profile.reset_password_confirmation',
           style: TextStyle(
             color: Colors.white70,
             fontSize: 16,
           ),
-        ),
+        ).tr(),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
-              'Cancel',
+              'common.cancel',
               style: TextStyle(color: Colors.white70),
-            ),
+            ).tr(),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1211,7 +1222,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (userEmail != null && userEmail.isNotEmpty) {
                 context.read<OtpCubit>().verifyResetPassword(userEmail);
               } else {
-                CustomSnackbar.show(context, 'Email not found', isError: true);
+                CustomSnackbar.show(context, 'profile.email_not_found'.tr(),
+                    isError: true);
               }
             },
             style: ElevatedButton.styleFrom(
@@ -1221,9 +1233,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             child: const Text(
-              'Reset Password',
+              'auth.reset_password',
               style: TextStyle(color: Colors.white),
-            ),
+            ).tr(),
           ),
         ],
       ),

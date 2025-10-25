@@ -10,6 +10,7 @@ import 'package:trackletics/features/profile/cubit/profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AdminExerciseDetailsPage extends StatefulWidget {
   const AdminExerciseDetailsPage({
@@ -244,19 +245,19 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
           color: Colors.grey[300],
           borderRadius: BorderRadius.circular(13),
         ),
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.video_library,
                 size: 48,
                 color: Colors.grey,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'No video available',
-                style: TextStyle(
+                'exercises.no_video_available'.tr(),
+                style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 16,
                 ),
@@ -276,8 +277,8 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
           key: ValueKey(gender), // <-- forces rebuild when tab changes
           controller: controller,
           bottomActions: [
-            CurrentPosition(),
-            ProgressBar(isExpanded: true),
+            const CurrentPosition(),
+            const ProgressBar(isExpanded: true),
             IconButton(
               color: Colors.white,
               icon: const Icon(
@@ -320,124 +321,99 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
 
             return SafeArea(
               child: Scaffold(
-                body: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(
-                      alignment: Alignment.topLeft,
-                      children: [
-                        _buildPlayerFor(
-                          gender: _selectedGender,
-                          exercise: updatedExercise,
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: CustomBackBtn(),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    Center(
-                      child: Text(
-                        updatedExercise.name,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const Divider(),
-
-                    // Gender selection tabs (only show if exercise has both videos)
-                    if (updatedExercise.hasBothVideos) ...[
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: TabBar(
-                          onTap: (value) {
-                            setState(() {
-                              _selectedGender = value == 0 ? 'male' : 'female';
-                              // Do NOT re-init controllers here; keys will force rebuild
-                            });
-                          },
-                          controller: _tabController,
-                          indicator: BoxDecoration(
-                            borderRadius: BorderRadius.circular(25),
-                            color: AppColors.primary,
-                          ),
-                          labelColor: Colors.white,
-                          unselectedLabelColor: Colors.grey,
-                          tabs: const [
-                            Tab(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.male, size: 16),
-                                  SizedBox(width: 4),
-                                  Text('Male'),
-                                ],
-                              ),
-                            ),
-                            Tab(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.female, size: 16),
-                                  SizedBox(width: 4),
-                                  Text('Female'),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: updatedExercise.category.isEmpty
-                            ? MainAxisAlignment.start
-                            : MainAxisAlignment.spaceAround,
+                body: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        alignment: Alignment.topLeft,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Primary Muscle',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                          _buildPlayerFor(
+                            gender: _selectedGender,
+                            exercise: updatedExercise,
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: CustomBackBtn(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Center(
+                        child: Text(
+                          updatedExercise.name,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const Divider(),
+
+                      // Gender selection tabs (only show if exercise has both videos)
+                      if (updatedExercise.hasBothVideos) ...[
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: TabBar(
+                            onTap: (value) {
+                              setState(() {
+                                _selectedGender =
+                                    value == 0 ? 'male' : 'female';
+                                // Do NOT re-init controllers here; keys will force rebuild
+                              });
+                            },
+                            controller: _tabController,
+                            indicator: BoxDecoration(
+                              borderRadius: BorderRadius.circular(25),
+                              color: AppColors.primary,
+                            ),
+                            labelColor: Colors.white,
+                            unselectedLabelColor: Colors.grey,
+                            tabs: [
+                              Tab(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.male, size: 16),
+                                    const SizedBox(width: 4),
+                                    Text('exercises.male'.tr()),
+                                  ],
                                 ),
                               ),
-                              Chip(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                label: Text(
-                                  updatedExercise.primaryMuscle,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
+                              Tab(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.female, size: 16),
+                                    const SizedBox(width: 4),
+                                    Text('exercises.female'.tr()),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                          if (updatedExercise.category.isNotEmpty)
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: updatedExercise.category.isEmpty
+                              ? MainAxisAlignment.start
+                              : MainAxisAlignment.spaceAround,
+                          children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Equipment',
-                                  style: TextStyle(
+                                Text(
+                                  'exercises.primary_muscle'.tr(),
+                                  style: const TextStyle(
                                     color: AppColors.textSecondary,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -448,7 +424,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   label: Text(
-                                    updatedExercise.category,
+                                    updatedExercise.primaryMuscle,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -458,101 +434,131 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                                 ),
                               ],
                             ),
-                        ],
-                      ),
-                    ),
-                    const Divider(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Builder(
-                            builder: (context) {
-                              final formattedResult =
-                                  _buildFormattedDescription(
-                                      updatedExercise.description);
-                              return Text(
-                                formattedResult.$2 ? 'Steps' : 'Description',
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 15),
-                          Builder(
-                            builder: (context) {
-                              final formattedResult =
-                                  _buildFormattedDescription(
-                                      updatedExercise.description);
-                              return formattedResult.$1;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Video availability info for admin
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Video Availability',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.male,
-                                color: updatedExercise.hasMaleVideo
-                                    ? Colors.green
-                                    : Colors.grey,
-                                size: 20,
+                            if (updatedExercise.category.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'exercises.equipment'.tr(),
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Chip(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    label: Text(
+                                      updatedExercise.category,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Male Video: ${updatedExercise.hasMaleVideo ? "Available" : "Not Available"}',
-                                style: TextStyle(
+                          ],
+                        ),
+                      ),
+                      const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Builder(
+                              builder: (context) {
+                                final formattedResult =
+                                    _buildFormattedDescription(
+                                        updatedExercise.description);
+                                return Text(
+                                  formattedResult.$2
+                                      ? 'exercises.steps'.tr()
+                                      : 'exercises.description'.tr(),
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 15),
+                            Builder(
+                              builder: (context) {
+                                final formattedResult =
+                                    _buildFormattedDescription(
+                                        updatedExercise.description);
+                                return formattedResult.$1;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Video availability info for admin
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'exercises.video_availability'.tr(),
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.male,
                                   color: updatedExercise.hasMaleVideo
                                       ? Colors.green
                                       : Colors.grey,
-                                  fontSize: 12,
+                                  size: 20,
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              Icon(
-                                Icons.female,
-                                color: updatedExercise.hasFemaleVideo
-                                    ? Colors.green
-                                    : Colors.grey,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Female Video: ${updatedExercise.hasFemaleVideo ? "Available" : "Not Available"}',
-                                style: TextStyle(
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${'exercises.male_video'.tr()}: ${updatedExercise.hasMaleVideo ? 'exercises.available'.tr() : 'exercises.not_available'.tr()}',
+                                  style: TextStyle(
+                                    color: updatedExercise.hasMaleVideo
+                                        ? Colors.green
+                                        : Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Icon(
+                                  Icons.female,
                                   color: updatedExercise.hasFemaleVideo
                                       ? Colors.green
                                       : Colors.grey,
-                                  fontSize: 12,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${'exercises.female_video'.tr()}: ${updatedExercise.hasFemaleVideo ? 'exercises.available'.tr() : 'exercises.not_available'.tr()}',
+                                  style: TextStyle(
+                                    color: updatedExercise.hasFemaleVideo
+                                        ? Colors.green
+                                        : Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 // Admin Edit Floating Action Button
                 floatingActionButton: FloatingActionButton(

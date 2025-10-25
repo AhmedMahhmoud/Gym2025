@@ -4,6 +4,7 @@ import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class CustomExerciseForm extends StatefulWidget {
   const CustomExerciseForm({super.key});
@@ -79,20 +80,20 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
 
   String? _validateTitle(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Exercise name is required';
+      return 'workouts.exercise_name_required'.tr();
     }
     if (value.trim().length < 2) {
-      return 'Exercise name must be at least 2 characters';
+      return 'workouts.exercise_name_min_length'.tr();
     }
     return null;
   }
 
   String? _validateCategory(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Muscle group is required';
+      return 'workouts.muscle_group_required'.tr();
     }
     if (value.trim().length < 2) {
-      return 'Muscle group must be at least 2 characters';
+      return 'workouts.muscle_group_min_length'.tr();
     }
     return null;
   }
@@ -101,7 +102,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
     if (value != null && value.trim().isNotEmpty) {
       // Basic YouTube URL validation
       if (!value.contains('youtube.com') && !value.contains('youtu.be')) {
-        return 'Please enter a valid YouTube URL';
+        return 'workouts.valid_youtube_url'.tr();
       }
     }
     return null;
@@ -123,19 +124,23 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return BlocListener<ExercisesCubit, ExercisesState>(
       listener: (context, state) {
         if (state.status == ExerciseStatus.error) {
           CustomSnackbar.show(
             context,
-            state.errorMessage ?? 'Failed to create custom exercise',
+            state.errorMessage ??
+                'workouts.failed_to_create_custom_exercise'.tr(),
             isError: true,
           );
         } else if (state.status == ExerciseStatus.success) {
           // First show the success message
           CustomSnackbar.show(
             context,
-            'Custom exercise added successfully',
+            'workouts.custom_exercise_added_successfully'.tr(),
             isError: false,
           );
           // Return the newly created exercise (last one in the list)
@@ -147,7 +152,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Add Custom Exercise'),
+          title: Text('workouts.add_custom_exercise'.tr()),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -189,7 +194,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                             FocusScope.of(context).unfocus(),
                         validator: _validateTitle,
                         decoration: InputDecoration(
-                          hintText: 'Exercise Name',
+                          hintText: 'workouts.exercise_name'.tr(),
                           filled: true,
                           fillColor: AppColors.background,
                           border: OutlineInputBorder(
@@ -229,7 +234,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                         onTapOutside: (event) =>
                             FocusScope.of(context).unfocus(),
                         decoration: InputDecoration(
-                          hintText: 'Description',
+                          hintText: 'workouts.description'.tr(),
                           filled: true,
                           fillColor: AppColors.background,
                           border: OutlineInputBorder(
@@ -261,7 +266,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                             FocusScope.of(context).unfocus(),
                         validator: _validateVideoUrl,
                         decoration: InputDecoration(
-                          hintText: 'YouTube Video URL (Optional)',
+                          hintText: 'workouts.youtube_video_url_optional'.tr(),
                           filled: true,
                           fillColor: AppColors.background,
                           border: OutlineInputBorder(
@@ -301,7 +306,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                             FocusScope.of(context).unfocus(),
                         validator: _validateCategory,
                         decoration: InputDecoration(
-                          hintText: 'Muscle Group (e.g., Chest)',
+                          hintText: 'workouts.muscle_group'.tr(),
                           filled: true,
                           fillColor: AppColors.background,
                           border: OutlineInputBorder(
@@ -350,8 +355,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                           ),
                           child: Text(
                             state.status == ExerciseStatus.loading
-                                ? 'Adding Exercise...'
-                                : 'Add Custom Exercise',
+                                ? 'workouts.adding_exercise'.tr()
+                                : 'workouts.add_custom_exercise_button'.tr(),
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),

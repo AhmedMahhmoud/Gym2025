@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:trackletics/Shared/ui/custom_text_form_field.dart';
 import 'package:trackletics/Shared/ui/custom_dropdown.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
@@ -25,7 +26,7 @@ class SignupView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppTextField(
-            hintText: 'Email',
+            hintText: 'auth.email'.tr(),
             onSaved: (p0) => authCubit.signUpModel.mail = p0!,
             suffixIcon: const Icon(FontAwesomeIcons.envelope),
             validator: (p0) => AppValidator.validateEmail(p0),
@@ -34,7 +35,7 @@ class SignupView extends StatelessWidget {
             height: 10,
           ),
           AppTextField(
-            hintText: 'Username',
+            hintText: 'auth.username'.tr(),
             onSaved: (p0) => authCubit.signUpModel.username = p0!,
             suffixIcon: const Icon(FontAwesomeIcons.user),
             validator: (p0) => AppValidator.validateUsername(p0),
@@ -43,7 +44,7 @@ class SignupView extends StatelessWidget {
             height: 10,
           ),
           AppTextField(
-            hintText: 'In App Name',
+            hintText: 'auth.in_app_name'.tr(),
             onSaved: (p0) => authCubit.signUpModel.inAppName = p0!,
             suffixIcon: const Icon(FontAwesomeIcons.dumbbell),
           ),
@@ -51,7 +52,7 @@ class SignupView extends StatelessWidget {
             height: 10,
           ),
           AppDropdown<String>(
-            hintText: 'Select Gender',
+            hintText: 'auth.select_gender'.tr(),
             value: authCubit.signUpModel.gender,
             onChanged: (value) {
               authCubit.signUpModel.gender = value;
@@ -63,14 +64,14 @@ class SignupView extends StatelessWidget {
               FontAwesomeIcons.venusMars,
               color: AppColors.textSecondary.withOpacity(0.6),
             ),
-            items: const [
+            items: [
               DropdownMenuItem<String>(
                 value: 'male',
-                child: Text('Male'),
+                child: Text('auth.male'.tr()),
               ),
               DropdownMenuItem<String>(
                 value: 'female',
-                child: Text('Female'),
+                child: Text('auth.female'.tr()),
               ),
             ],
           ),
@@ -78,7 +79,7 @@ class SignupView extends StatelessWidget {
             height: 10,
           ),
           AppTextField(
-            hintText: 'Password',
+            hintText: 'auth.password'.tr(),
             onSaved: (p0) => authCubit.signUpModel.password = p0!,
             isPassword: true,
             validator: (p0) => AppValidator.validatePassword(p0!),
@@ -88,12 +89,12 @@ class SignupView extends StatelessWidget {
             height: 10,
           ),
           AppTextField(
-            hintText: 'Confirm Password',
+            hintText: 'auth.confirm_password'.tr(),
             isPassword: true,
             textInputAction: TextInputAction.done,
             validator: (p0) {
               if (p0 != authCubit.signUpModel.password) {
-                return 'Passwords do not match';
+                return 'validation.passwords_dont_match'.tr();
               }
               AppValidator.validatePassword(p0!);
               return null;

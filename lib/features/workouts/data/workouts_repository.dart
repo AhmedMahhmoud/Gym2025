@@ -4,7 +4,6 @@ import 'package:trackletics/core/network/dio_service.dart';
 import 'package:trackletics/core/network/error_handler.dart';
 import 'package:trackletics/features/workouts/data/models/plan_response.dart';
 import 'package:trackletics/features/workouts/data/models/set_model.dart';
-import 'package:trackletics/features/workouts/data/static_data_provider.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/features/workouts/data/models/workout_model.dart';
 import 'package:dio/dio.dart';
@@ -387,6 +386,25 @@ class WorkoutsRepository {
       await _dioService.put(
         '/api/Plans/$planId/workouts/reorder',
         data: {'workoutOrders': workoutOrders},
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  // Reorder exercises within a workout
+  Future<Either<Failure, void>> reorderExercises(
+    String workoutId,
+    List<Map<String, dynamic>> exerciseOrders,
+  ) async {
+    try {
+      await _dioService.put(
+        '/api/Workouts/ReorderExercises',
+        data: {
+          'workoutId': workoutId,
+          'exerciseOrders': exerciseOrders,
+        },
       );
       return const Right(null);
     } catch (e) {

@@ -289,9 +289,24 @@ class ExercisesCubit extends Cubit<ExercisesState> {
     emit(state.copyWith(
       selectedFilterType: type,
       selectedChip: chipValue,
+      selectedMuscle: null, // Clear dual filter selections
+      selectedCategory: null,
     ));
     // Refetch from server with filter
     loadExercises(null, true);
+  }
+
+  void setDualFilter({
+    required String muscle,
+    required String category,
+  }) {
+    emit(state.copyWith(
+      selectedFilterType: FilterType.both,
+      selectedMuscle: muscle,
+      selectedCategory: category,
+      selectedChip: null, // Clear single filter selection
+    ));
+    // No need to refetch from server since we're doing client-side filtering
   }
 
   void setSearchQuery(String query) {
@@ -313,6 +328,8 @@ class ExercisesCubit extends Cubit<ExercisesState> {
     emit(state.copyWith(
       selectedFilterType: FilterType.none,
       selectedChip: null,
+      selectedMuscle: null,
+      selectedCategory: null,
     ));
     // Refetch all from server without filter
     _hasFetchedOnce = false;

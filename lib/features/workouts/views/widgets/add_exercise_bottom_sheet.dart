@@ -5,6 +5,7 @@ import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/core/utils/shared_utils.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/features/exercises/view/widgets/custom_exercise_form.dart';
+import 'package:trackletics/features/exercises/view/widgets/exercises_filter_bottomsheet.dart';
 import 'package:trackletics/features/exercises/view/widgets/update_custom_exercise_form.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
@@ -12,6 +13,7 @@ import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AddExerciseBottomSheet extends StatefulWidget {
   const AddExerciseBottomSheet({super.key});
@@ -30,6 +32,12 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
   final List<String> _selectedCustomExerciseIds = [];
   late TabController _tabController;
   bool _isCustomExercise = false;
+
+  // Local filter state for add exercise bottom sheet
+  FilterType _localFilterType = FilterType.none;
+  String? _localSelectedChip;
+  String? _localSelectedMuscle;
+  String? _localSelectedCategory;
 
   @override
   void initState() {
@@ -72,6 +80,114 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     }
   }
 
+  String _getFilterButtonText(ExercisesState state) {
+    if (_localFilterType == FilterType.both) {
+      if (_localSelectedMuscle != null && _localSelectedCategory != null) {
+        return 'Dual: $_localSelectedMuscle + $_localSelectedCategory';
+      } else if (_localSelectedMuscle != null) {
+        return 'Muscle: $_localSelectedMuscle';
+      } else if (_localSelectedCategory != null) {
+        return 'Category: $_localSelectedCategory';
+      }
+    } else if (_localFilterType != FilterType.none &&
+        _localSelectedChip != null) {
+      return '${_localFilterType.name}: $_localSelectedChip';
+    }
+    return 'workouts.filter_by_category'.tr();
+  }
+
+  List<Exercise> _getLocallyFilteredExercises(List<Exercise> exercises) {
+    var filteredExercises = exercises;
+
+    // Apply local dual filtering (both muscle and category)
+    if (_localFilterType == FilterType.both &&
+        _localSelectedMuscle != null &&
+        _localSelectedCategory != null) {
+      // Filter by both muscle and category
+      final muscleExercises = exercises
+          .where((exercise) => exercise.primaryMuscle == _localSelectedMuscle)
+          .toList();
+      final categoryExercises = exercises
+          .where((exercise) => exercise.category == _localSelectedCategory)
+          .toList();
+
+      // Find intersection of both filters
+      filteredExercises = muscleExercises
+          .where((muscleExercise) => categoryExercises.any(
+              (categoryExercise) => categoryExercise.id == muscleExercise.id))
+          .toList();
+    }
+    // Apply local single filter (muscle or category)
+    else if (_localFilterType != FilterType.none &&
+        _localSelectedChip != null) {
+      switch (_localFilterType) {
+        case FilterType.muscle:
+          filteredExercises = exercises
+              .where((exercise) => exercise.primaryMuscle == _localSelectedChip)
+              .toList();
+          break;
+        case FilterType.category:
+          filteredExercises = exercises
+              .where((exercise) => exercise.category == _localSelectedChip)
+              .toList();
+          break;
+        case FilterType.none:
+        case FilterType.both:
+          break;
+      }
+    }
+
+    // Apply search filter
+    if (_allExercisesSearchController.text.isNotEmpty) {
+      final query = _allExercisesSearchController.text.trim().toLowerCase();
+      final queryWords =
+          query.split(' ').where((word) => word.isNotEmpty).toList();
+
+      filteredExercises = filteredExercises.where((exercise) {
+        final exerciseName = exercise.name.toLowerCase();
+        final exerciseWords =
+            exerciseName.split(' ').where((word) => word.isNotEmpty).toList();
+
+        if (queryWords.length == 1) {
+          final singleQuery = queryWords.first;
+          return exerciseWords.any((word) => word.startsWith(singleQuery));
+        } else {
+          return queryWords.every((queryWord) => exerciseWords
+              .any((exerciseWord) => exerciseWord.startsWith(queryWord)));
+        }
+      }).toList();
+    }
+
+    return filteredExercises;
+  }
+
+  List<Exercise> _getLocallyFilteredCustomExercises(List<Exercise> exercises) {
+    var filteredExercises = exercises;
+
+    // Apply search filter for custom exercises
+    if (_customExercisesSearchController.text.isNotEmpty) {
+      final query = _customExercisesSearchController.text.trim().toLowerCase();
+      final queryWords =
+          query.split(' ').where((word) => word.isNotEmpty).toList();
+
+      filteredExercises = filteredExercises.where((exercise) {
+        final exerciseName = exercise.name.toLowerCase();
+        final exerciseWords =
+            exerciseName.split(' ').where((word) => word.isNotEmpty).toList();
+
+        if (queryWords.length == 1) {
+          final singleQuery = queryWords.first;
+          return exerciseWords.any((word) => word.startsWith(singleQuery));
+        } else {
+          return queryWords.every((queryWord) => exerciseWords
+              .any((exerciseWord) => exerciseWord.startsWith(queryWord)));
+        }
+      }).toList();
+    }
+
+    return filteredExercises;
+  }
+
   void _showFilterOptions(BuildContext context, ExercisesState state) {
     showModalBottomSheet(
       context: context,
@@ -79,99 +195,239 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Filter Exercises',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'By Muscle',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: state.groupedByMuscle.keys.map((muscle) {
-                return FilterChip(
-                  label: Text(muscle),
-                  selected: state.selectedFilterType == FilterType.muscle &&
-                      state.selectedChip == muscle,
-                  onSelected: (_) {
-                    context.read<ExercisesCubit>().setFilter(
-                          type: FilterType.muscle,
-                          chipValue: muscle,
-                        );
-                    Navigator.pop(context);
-                  },
-                  selectedColor: AppColors.primary,
-                  labelStyle: const TextStyle(color: AppColors.textPrimary),
-                  backgroundColor: AppColors.background,
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const Text(
-              'By Category',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: state.groupedByCategory.keys.map((category) {
-                return FilterChip(
-                  label: Text(category),
-                  selected: state.selectedFilterType == FilterType.category &&
-                      state.selectedChip == category,
-                  onSelected: (_) {
-                    context.read<ExercisesCubit>().setFilter(
-                          type: FilterType.category,
-                          chipValue: category,
-                        );
-                    Navigator.pop(context);
-                  },
-                  selectedColor: AppColors.primary,
-                  labelStyle: const TextStyle(color: AppColors.textPrimary),
-                  backgroundColor: AppColors.background,
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  context.read<ExercisesCubit>().clearFilter();
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[600],
-                  foregroundColor: Colors.white,
+      builder: (context) => _buildLocalFilterBottomSheet(context, state),
+    );
+  }
+
+  Widget _buildLocalFilterBottomSheet(
+      BuildContext context, ExercisesState state) {
+    return StatefulBuilder(
+      builder: (context, setModalState) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.9,
+          ),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Header (fixed)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'workouts.filter_exercises'.tr(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setModalState(() {
+                                  _localFilterType = FilterType.none;
+                                  _localSelectedChip = null;
+                                  _localSelectedMuscle = null;
+                                  _localSelectedCategory = null;
+                                });
+                                setState(() {});
+                              },
+                              child: const Icon(FontAwesomeIcons.refresh),
+                            ),
+                            const SizedBox(width: 15),
+                            InkWell(
+                              onTap: () => Navigator.pop(context),
+                              child: const Icon(FontAwesomeIcons.circleXmark),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                    const Divider(),
+                  ],
                 ),
-                child: const Text('Show All Exercises'),
               ),
-            ),
-          ],
-        ),
-      ),
+
+              // Scrollable content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Show current filter selections if any
+                      if (_localFilterType == FilterType.both &&
+                          (_localSelectedMuscle != null ||
+                              _localSelectedCategory != null))
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: AppColors.primary.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.filter_alt,
+                                  color: AppColors.primary, size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _localSelectedMuscle != null &&
+                                          _localSelectedCategory != null
+                                      ? 'Dual Filter: $_localSelectedMuscle + $_localSelectedCategory'
+                                      : _localSelectedMuscle != null
+                                          ? 'Muscle Selected: $_localSelectedMuscle (select category for dual filter)'
+                                          : 'Category Selected: $_localSelectedCategory (select muscle for dual filter)',
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      // Filter by muscle
+                      Text('workouts.by_muscle'.tr(),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17)),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        children: state.groupedByMuscle.keys.map((muscle) {
+                          final isSelected =
+                              (_localFilterType == FilterType.muscle &&
+                                      _localSelectedChip == muscle) ||
+                                  (_localFilterType == FilterType.both &&
+                                      _localSelectedMuscle == muscle);
+                          return FilterChip(
+                            label: Text(muscle),
+                            selected: isSelected,
+                            onSelected: (_) {
+                              setModalState(() {
+                                if (isSelected) {
+                                  _localSelectedMuscle = null;
+                                  if (_localSelectedCategory == null) {
+                                    _localFilterType = FilterType.none;
+                                  }
+                                } else {
+                                  _localSelectedMuscle = muscle;
+                                  _localFilterType = FilterType.both;
+                                  _localSelectedChip = null;
+                                }
+                              });
+                              setState(() {});
+                            },
+                            selectedColor: AppColors.primary,
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppColors.textPrimary,
+                            ),
+                            backgroundColor: AppColors.background,
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Divider(),
+
+                      // Filter by category
+                      Text('workouts.by_category'.tr(),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: state.groupedByCategory.keys.map((category) {
+                          final isSelected =
+                              (_localFilterType == FilterType.category &&
+                                      _localSelectedChip == category) ||
+                                  (_localFilterType == FilterType.both &&
+                                      _localSelectedCategory == category);
+                          return FilterChip(
+                            label: Text(category),
+                            selected: isSelected,
+                            onSelected: (_) {
+                              setModalState(() {
+                                if (isSelected) {
+                                  _localSelectedCategory = null;
+                                  if (_localSelectedMuscle == null) {
+                                    _localFilterType = FilterType.none;
+                                  }
+                                } else {
+                                  _localSelectedCategory = category;
+                                  _localFilterType = FilterType.both;
+                                  _localSelectedChip = null;
+                                }
+                              });
+                              setState(() {});
+                            },
+                            selectedColor: AppColors.primary,
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppColors.textPrimary,
+                            ),
+                            backgroundColor: AppColors.background,
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Fixed bottom button
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'exercises.Apply Filter'.tr(),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -185,7 +441,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       if (!isAdmin) {
         CustomSnackbar.show(
           context,
-          'Only admins can add exercises to static plans',
+          'workouts.only_admins_can_add'.tr(),
           isError: true,
         );
         return;
@@ -198,7 +454,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     if (exerciseExists) {
       CustomSnackbar.show(
         context,
-        '${exercise.name} is already added to this workout',
+        'workouts.exercise_already_added'
+            .tr(namedArgs: {'name': exercise.name}),
         isError: true,
       );
       return;
@@ -216,7 +473,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
 
       CustomSnackbar.show(
         context,
-        '${exercise.name} added to workout',
+        'workouts.exercise_added_to_workout'
+            .tr(namedArgs: {'name': exercise.name}),
         isError: false,
       );
       // Force rebuild of the bottom sheet
@@ -224,7 +482,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     } catch (e) {
       CustomSnackbar.show(
         context,
-        'Failed to add exercise',
+        'workouts.failed_to_add_exercise'.tr(),
         isError: true,
       );
     }
@@ -246,16 +504,18 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
 
   List<Exercise> _getFilteredExercises(ExercisesState state) {
     if (_isCustomExercise) {
-      return state.filteredCustomExercises;
+      return _getLocallyFilteredCustomExercises(state.customExercises);
     }
 
-    // Use the ExercisesState's built-in filtering logic which properly handles
-    // search only in exercise names and applies category/muscle filters correctly
-    return state.filteredExercises;
+    // Use local filtering instead of global state filtering
+    return _getLocallyFilteredExercises(state.allExercises);
   }
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return BlocBuilder<ExercisesCubit, ExercisesState>(
       builder: (context, state) {
         // Sync search controllers with the current state
@@ -282,9 +542,9 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Add workout exercise',
-                          style: TextStyle(
+                        Text(
+                          'workouts.add_workout_exercise'.tr(),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -322,11 +582,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                           fontWeight: FontWeight.normal,
                           fontSize: 14,
                         ),
-                        tabs: const [
+                        tabs: [
                           Tab(
-                            text: 'All Exercises',
+                            text: 'workouts.all_exercises'.tr(),
                           ),
-                          Tab(text: 'Custom Exercises'),
+                          Tab(text: 'workouts.custom_exercises'.tr()),
                         ],
                       ),
                     ),
@@ -366,11 +626,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         TextField(
           controller: _allExercisesSearchController,
           onChanged: (value) {
-            // Update the ExercisesCubit search query for consistent filtering
-            context.read<ExercisesCubit>().setSearchQuery(value);
+            // Update local state only, don't affect global ExercisesCubit
+            setState(() {});
           },
           decoration: InputDecoration(
-            hintText: 'Search exercises...',
+            hintText: 'workouts.search_exercises'.tr(),
             prefixIcon: const Icon(Icons.search, color: Colors.grey),
             filled: true,
             fillColor: AppColors.background,
@@ -391,9 +651,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                 onPressed: () => _showFilterOptions(context, state),
                 icon: const Icon(Icons.filter_list, size: 18),
                 label: Text(
-                  state.selectedFilterType == FilterType.none
-                      ? 'Filter by category'
-                      : 'Filter: ${state.selectedChip}',
+                  _getFilterButtonText(state),
                   style: const TextStyle(fontSize: 14),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -406,14 +664,21 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                 ),
               ),
             ),
-            if (state.selectedFilterType != FilterType.none) ...[
+            if (_localFilterType != FilterType.none ||
+                _localSelectedMuscle != null ||
+                _localSelectedCategory != null) ...[
               const SizedBox(width: 8),
               IconButton(
                 onPressed: () {
-                  context.read<ExercisesCubit>().clearFilter();
+                  setState(() {
+                    _localFilterType = FilterType.none;
+                    _localSelectedChip = null;
+                    _localSelectedMuscle = null;
+                    _localSelectedCategory = null;
+                  });
                 },
                 icon: const Icon(Icons.clear, color: Colors.red),
-                tooltip: 'Clear filter',
+                tooltip: 'workouts.clear_filter'.tr(),
               ),
             ],
           ],
@@ -423,10 +688,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         // Exercise list
         Expanded(
           child: filteredExercises.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'No exercises found',
-                    style: TextStyle(color: Colors.white70),
+                    'workouts.no_exercises_found'.tr(),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 )
               : ListView.builder(
@@ -505,11 +770,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         TextField(
           controller: _customExercisesSearchController,
           onChanged: (value) {
-            // Update the ExercisesCubit search query to filter custom exercises
-            context.read<ExercisesCubit>().setSearchQuery(value);
+            // Update local state only, don't affect global ExercisesCubit
+            setState(() {});
           },
           decoration: InputDecoration(
-            hintText: 'Search custom exercises...',
+            hintText: 'workouts.search_custom_exercises'.tr(),
             prefixIcon: const Icon(Icons.search, color: Colors.grey),
             filled: true,
             fillColor: AppColors.background,
@@ -534,10 +799,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
 
             return Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Add new custom exercise?',
-                    style: TextStyle(
+                    'workouts.add_new_custom_exercise'.tr(),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -576,10 +841,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         // Custom Exercises list
         Expanded(
           child: customExercises.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'No custom exercises found',
-                    style: TextStyle(color: Colors.white70),
+                    'workouts.no_custom_exercises_found'.tr(),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 )
               : ListView.builder(

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
@@ -75,6 +76,9 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return BlocBuilder<ProfileCubit, ProfileState>(
       builder: (context, profileState) {
         // Check if user is admin
@@ -154,7 +158,7 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
 
               return Scaffold(
                 appBar: AppBar(
-                  title: const Text('Edit Exercise'),
+                  title: Text('exercises.edit_exercise'.tr()),
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   actions: [
@@ -225,8 +229,8 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                       // Exercise Name
                       _buildTextField(
                         controller: _nameController,
-                        label: 'Exercise Name',
-                        hint: 'Enter exercise name',
+                        label: 'exercises.exercise_name'.tr(),
+                        hint: 'exercises.exercise_name_hint'.tr(),
                         icon: Icons.fitness_center,
                       ),
                       const SizedBox(height: 16),
@@ -234,8 +238,8 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                       // Description
                       _buildTextField(
                         controller: _descriptionController,
-                        label: 'Description',
-                        hint: 'Enter exercise description',
+                        label: 'exercises.exercise_description'.tr(),
+                        hint: 'exercises.exercise_description_hint'.tr(),
                         icon: Icons.description,
                         maxLines: 3,
                       ),
@@ -245,7 +249,7 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                       _buildTextField(
                         controller: TextEditingController(
                             text: widget.exercise.primaryMuscle),
-                        label: 'Primary Muscle (Read Only)',
+                        label: 'exercises.primary_muscle'.tr(),
                         hint: 'e.g., Chest, Back, Legs',
                         icon: Icons.fitness_center,
                         enabled: false,
@@ -256,7 +260,7 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                       _buildTextField(
                         controller: TextEditingController(
                             text: widget.exercise.category),
-                        label: 'Category (Read Only)',
+                        label: 'exercises.category'.tr(),
                         hint: 'e.g., Strength, Cardio',
                         icon: Icons.category,
                         enabled: false,
@@ -266,8 +270,8 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                       // Male Video URL
                       _buildTextField(
                         controller: _maleVideoUrlController,
-                        label: 'Male Video URL (Optional)',
-                        hint: 'Enter YouTube video URL for male demonstration',
+                        label: 'exercises.exercise_male_video_url'.tr(),
+                        hint: 'exercises.exercise_male_video_hint'.tr(),
                         icon: Icons.male,
                       ),
                       const SizedBox(height: 16),
@@ -275,9 +279,8 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                       // Female Video URL
                       _buildTextField(
                         controller: _femaleVideoUrlController,
-                        label: 'Female Video URL (Optional)',
-                        hint:
-                            'Enter YouTube video URL for female demonstration',
+                        label: 'exercises.exercise_female_video_url'.tr(),
+                        hint: 'exercises.exercise_female_video_hint'.tr(),
                         icon: Icons.female,
                       ),
                       const SizedBox(height: 32),

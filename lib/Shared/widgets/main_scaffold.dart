@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
 import 'package:trackletics/features/home/view/screens/home.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
@@ -41,20 +42,20 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 
   // Define the navigation bar items
-  final List<FloatingNavBarItem> _navItems = [
-    FloatingNavBarItem(
-      icon: Icons.home_rounded,
-      label: 'Home',
-    ),
-    FloatingNavBarItem(
-      icon: Icons.fitness_center_rounded,
-      label: 'Workouts',
-    ),
-    FloatingNavBarItem(
-      icon: Icons.person_rounded,
-      label: 'Profile',
-    ),
-  ];
+  List<FloatingNavBarItem> get _navItems => [
+        FloatingNavBarItem(
+          icon: Icons.home_rounded,
+          label: 'home.home'.tr(),
+        ),
+        FloatingNavBarItem(
+          icon: Icons.fitness_center_rounded,
+          label: 'workouts.workouts'.tr(),
+        ),
+        FloatingNavBarItem(
+          icon: Icons.person_rounded,
+          label: 'profile.profile'.tr(),
+        ),
+      ];
 
   void _onNavItemTapped(int index) {
     setState(() {
@@ -84,6 +85,9 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,

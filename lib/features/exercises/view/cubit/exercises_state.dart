@@ -6,6 +6,7 @@ enum FilterType {
   none,
   muscle,
   category,
+  both, // New type for filtering by both muscle and category
 }
 
 class ExercisesState {
@@ -17,6 +18,8 @@ class ExercisesState {
     this.groupedByCategory = const {},
     this.selectedFilterType = FilterType.none,
     this.selectedChip,
+    this.selectedMuscle,
+    this.selectedCategory,
     this.searchQuery = '',
     this.errorMessage,
     this.missingVideos = const [],
@@ -30,6 +33,8 @@ class ExercisesState {
   final Map<String, List<Exercise>> groupedByCategory;
   final FilterType selectedFilterType;
   final String? selectedChip;
+  final String? selectedMuscle; // For dual filtering
+  final String? selectedCategory; // For dual filtering
   final String searchQuery;
   final String? errorMessage;
   final List<MissingVideoExercise> missingVideos;
@@ -38,8 +43,22 @@ class ExercisesState {
   List<Exercise> get filteredExercises {
     var exercises = allExercises;
 
-    // Apply category/muscle filter FIRST (if it's from API filtering)
-    if (selectedFilterType != FilterType.none && selectedChip != null) {
+    // Apply dual filtering (both muscle and category)
+    if (selectedFilterType == FilterType.both &&
+        selectedMuscle != null &&
+        selectedCategory != null) {
+      // Filter by both muscle and category
+      final muscleExercises = groupedByMuscle[selectedMuscle] ?? [];
+      final categoryExercises = groupedByCategory[selectedCategory] ?? [];
+
+      // Find intersection of both filters
+      exercises = muscleExercises
+          .where((muscleExercise) => categoryExercises.any(
+              (categoryExercise) => categoryExercise.id == muscleExercise.id))
+          .toList();
+    }
+    // Apply single filter (muscle or category)
+    else if (selectedFilterType != FilterType.none && selectedChip != null) {
       switch (selectedFilterType) {
         case FilterType.muscle:
           exercises = groupedByMuscle[selectedChip] ?? [];
@@ -48,6 +67,7 @@ class ExercisesState {
           exercises = groupedByCategory[selectedChip] ?? [];
           break;
         case FilterType.none:
+        case FilterType.both:
           break;
       }
     }
@@ -119,6 +139,8 @@ class ExercisesState {
     Map<String, List<Exercise>>? groupedByCategory,
     FilterType? selectedFilterType,
     String? selectedChip,
+    String? selectedMuscle,
+    String? selectedCategory,
     String? searchQuery,
     String? errorMessage,
     List<MissingVideoExercise>? missingVideos,
@@ -132,6 +154,8 @@ class ExercisesState {
       groupedByCategory: groupedByCategory ?? this.groupedByCategory,
       selectedFilterType: selectedFilterType ?? this.selectedFilterType,
       selectedChip: selectedChip ?? this.selectedChip,
+      selectedMuscle: selectedMuscle ?? this.selectedMuscle,
+      selectedCategory: selectedCategory ?? this.selectedCategory,
       searchQuery: searchQuery ?? this.searchQuery,
       errorMessage: errorMessage ?? this.errorMessage,
       missingVideos: missingVideos ?? this.missingVideos,

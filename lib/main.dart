@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:trackletics/core/network/connectivity.dart';
 import 'package:trackletics/core/network/dio_service.dart';
 import 'package:trackletics/core/services/auth_initialization_service.dart';
@@ -22,12 +23,17 @@ import 'package:trackletics/shared/widgets/main_scaffold.dart';
 import 'core/theme/app_theme.dart';
 import 'package:trackletics/routes/app_routes.dart';
 import 'package:trackletics/features/workouts/data/units_service.dart';
+import 'dart:ui' as ui;
 
 //create a global navigator key
 final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize easy_localization
+  await EasyLocalization.ensureInitialized();
+
   await StorageService().checkForAppUpdateAndClearIfNeeded();
   // Initialize HydratedBloc for offline data persistence
   HydratedBloc.storage = await HydratedStorage.build(
@@ -37,7 +43,18 @@ void main() async {
   // Initialize units service
   await UnitsService().initialize();
 
-  runApp(const MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ar'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      startLocale: const Locale('en'),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -96,18 +113,18 @@ class _MyAppState extends State<MyApp> {
   Widget _buildHomeScreen() {
     switch (_authStatus) {
       case AuthInitStatus.checking:
-        return const Scaffold(
+        return Scaffold(
           backgroundColor: Colors.black,
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(color: Colors.white),
-                SizedBox(height: 16),
-                Text(
-                  'Initializing...',
+                const CircularProgressIndicator(color: Colors.white),
+                const SizedBox(height: 16),
+                const Text(
+                  'initializing',
                   style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
+                ).tr(),
               ],
             ),
           ),
@@ -137,18 +154,18 @@ class _MyAppState extends State<MyApp> {
                 const Icon(Icons.error, color: Colors.red, size: 48),
                 const SizedBox(height: 16),
                 const Text(
-                  'Something went wrong',
+                  'something_went_wrong',
                   style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
+                ).tr(),
                 const SizedBox(height: 8),
                 const Text(
-                  'Please restart the app',
+                  'please_restart_app',
                   style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
+                ).tr(),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _initializeApp,
-                  child: const Text('Retry'),
+                  child: const Text('retry').tr(),
                 ),
               ],
             ),
@@ -159,6 +176,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen to locale changes to rebuild the widget
+    final currentLocale = context.locale;
+
     return StreamBuilder<bool>(
       stream: _connectivityService.connectionStatusStream,
       builder: (context, snapshot) {
@@ -178,48 +198,56 @@ class _MyAppState extends State<MyApp> {
                 BlocProvider(
                   create: (context) => ExercisesCubit(
                     exerciseRepository: ExercisesRepository(
-                        exercisesService:
-                            ExercisesService(dioService: DioService())),
+                      exercisesService:
+                          ExercisesService(dioService: DioService()),
+                    ),
                   )..loadExercises(context),
-                )
+                ),
               ],
               child: MaterialApp(
                 navigatorKey: navKey,
-                theme: AppTheme.darkTheme,
+                theme: AppTheme.getTheme(currentLocale.languageCode),
                 debugShowCheckedModeBanner: false,
                 onGenerateRoute: OnPageRoute.generateRoute,
                 home: _buildHomeScreen(),
+                localizationsDelegates: context.localizationDelegates,
+                supportedLocales: context.supportedLocales,
+                locale: currentLocale,
               ),
             ),
             Directionality(
-              textDirection: TextDirection.ltr,
+              textDirection: ui.TextDirection.ltr,
               child: AnimatedPositioned(
-                  bottom: isConnected ? -60 : 10,
-                  duration: const Duration(milliseconds: 500),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.red[600],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Column(
-                      children: [
-                        Icon(
-                          Icons.network_check,
-                          color: Colors.white,
-                        ),
-                        Center(
-                          child: Text('There is no internet connection.',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                      ],
-                    ),
-                  )),
-            )
+                bottom: isConnected ? -60 : 10,
+                duration: const Duration(milliseconds: 500),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.red[600],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.network_check,
+                        color: Colors.white,
+                      ),
+                      Center(
+                        child: const Text(
+                          'no_internet_connection',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ).tr(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         );
       },

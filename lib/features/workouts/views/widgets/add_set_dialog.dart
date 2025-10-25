@@ -4,6 +4,7 @@ import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/core/widgets/dialogs/input_dialog_container.dart';
 import 'package:trackletics/features/workouts/data/units_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AddSetDialog extends StatefulWidget {
   final Function({
@@ -69,7 +70,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
       // Only validate weight if it's provided
       if (_weightController.text.trim().isNotEmpty &&
           (weight == null || weight <= 0)) {
-        CustomSnackbar.show(context, 'Please enter a valid weight',
+        CustomSnackbar.show(context, 'workouts.valid_weight_required'.tr(),
             isError: true);
         setState(() {
           _isLoading = false;
@@ -96,7 +97,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
 
       if (_isRepsBased) {
         if (reps == null || reps <= 0) {
-          CustomSnackbar.show(context, 'Please enter a valid number of reps',
+          CustomSnackbar.show(context, 'workouts.valid_reps_required'.tr(),
               isError: true);
           setState(() {
             _isLoading = false;
@@ -114,7 +115,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
         );
       } else {
         if (duration == null || duration <= 0) {
-          CustomSnackbar.show(context, 'Please enter a valid duration',
+          CustomSnackbar.show(context, 'workouts.valid_duration_required'.tr(),
               isError: true);
           setState(() {
             _isLoading = false;
@@ -143,7 +144,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
         _isLoading = false;
       });
       if (mounted) {
-        CustomSnackbar.show(context, 'Failed to add set. Please try again.',
+        CustomSnackbar.show(context, 'workouts.failed_to_add_set'.tr(),
             isError: true);
       }
     }
@@ -151,6 +152,9 @@ class _AddSetDialogState extends State<AddSetDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(16),
@@ -210,9 +214,9 @@ class _AddSetDialogState extends State<AddSetDialog> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
-                    'Add Set',
-                    style: TextStyle(
+                  Text(
+                    'workouts.add_set'.tr(),
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -245,7 +249,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                   children: [
                     // Set Type Toggle
                     _buildSectionCard(
-                      title: 'Set Type',
+                      title: 'workouts.set_type'.tr(),
                       icon: Icons.tune,
                       child: _buildSetTypeToggle(),
                     ),
@@ -253,14 +257,14 @@ class _AddSetDialogState extends State<AddSetDialog> {
 
                     // Weight Section
                     _buildSectionCard(
-                      title: 'Weight',
+                      title: 'workouts.weight'.tr(),
                       icon: Icons.fitness_center,
                       child: Row(
                         children: [
                           Expanded(
                             child: _buildModernTextField(
                               controller: _weightController,
-                              hintText: 'e.g., 60.5 (optional)',
+                              hintText: 'workouts.weight_hint'.tr(),
                               keyboardType:
                                   const TextInputType.numberWithOptions(
                                       decimal: true),
@@ -284,12 +288,14 @@ class _AddSetDialogState extends State<AddSetDialog> {
 
                     // Reps/Duration Section
                     _buildSectionCard(
-                      title: _isRepsBased ? 'Repetitions' : 'Duration',
+                      title: _isRepsBased
+                          ? 'workouts.repetitions'.tr()
+                          : 'workouts.duration'.tr(),
                       icon: _isRepsBased ? Icons.repeat : Icons.timer_outlined,
                       child: _isRepsBased
                           ? _buildModernTextField(
                               controller: _repsController,
-                              hintText: 'e.g., 12',
+                              hintText: 'workouts.reps_hint'.tr(),
                               keyboardType: TextInputType.number,
                               prefixIcon: Icons.repeat,
                             )
@@ -298,7 +304,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                                 Expanded(
                                   child: _buildModernTextField(
                                     controller: _durationController,
-                                    hintText: 'e.g., 60',
+                                    hintText: 'workouts.duration_hint'.tr(),
                                     keyboardType: TextInputType.number,
                                     prefixIcon: Icons.timer_outlined,
                                   ),
@@ -320,14 +326,14 @@ class _AddSetDialogState extends State<AddSetDialog> {
 
                     // Rest Time Section
                     _buildSectionCard(
-                      title: 'Rest Time',
+                      title: 'workouts.rest_time'.tr(),
                       icon: Icons.timer,
                       child: Row(
                         children: [
                           Expanded(
                             child: _buildModernTextField(
                               controller: _restTimeController,
-                              hintText: 'e.g., 60',
+                              hintText: 'workouts.rest_time_hint'.tr(),
                               keyboardType: TextInputType.number,
                               prefixIcon: Icons.timer,
                             ),
@@ -349,11 +355,11 @@ class _AddSetDialogState extends State<AddSetDialog> {
 
                     // Notes Section
                     _buildSectionCard(
-                      title: 'Notes',
+                      title: 'workouts.notes'.tr(),
                       icon: Icons.note,
                       child: _buildModernTextField(
                         controller: _noteController,
-                        hintText: 'Add a note (optional)',
+                        hintText: 'workouts.notes_hint'.tr(),
                         prefixIcon: Icons.note,
                         maxLines: 3,
                       ),
@@ -373,9 +379,9 @@ class _AddSetDialogState extends State<AddSetDialog> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
+                            child: Text(
+                              'workouts.cancel'.tr(),
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -399,10 +405,10 @@ class _AddSetDialogState extends State<AddSetDialog> {
                               ),
                             ),
                             child: _isLoading
-                                ? const Row(
+                                ? Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      SizedBox(
+                                      const SizedBox(
                                         width: 16,
                                         height: 16,
                                         child: CircularProgressIndicator(
@@ -412,10 +418,10 @@ class _AddSetDialogState extends State<AddSetDialog> {
                                                   Colors.white),
                                         ),
                                       ),
-                                      SizedBox(width: 12),
+                                      const SizedBox(width: 12),
                                       Text(
-                                        'Adding Set...',
-                                        style: TextStyle(
+                                        'workouts.adding_set'.tr(),
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
@@ -423,9 +429,9 @@ class _AddSetDialogState extends State<AddSetDialog> {
                                       ),
                                     ],
                                   )
-                                : const Text(
-                                    'Add Set',
-                                    style: TextStyle(
+                                : Text(
+                                    'workouts.add_set_button'.tr(),
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -475,7 +481,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Reps',
+                      'workouts.reps'.tr(),
                       style: TextStyle(
                         color: _isRepsBased
                             ? Colors.white
@@ -510,7 +516,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Duration',
+                      'workouts.duration'.tr(),
                       style: TextStyle(
                         color: !_isRepsBased
                             ? Colors.white

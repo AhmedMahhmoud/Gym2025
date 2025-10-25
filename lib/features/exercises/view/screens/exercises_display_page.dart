@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
@@ -56,6 +57,9 @@ class _ExercisesScreenState extends State<ExercisesScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return BlocConsumer<ExercisesCubit, ExercisesState>(
       listener: (context, state) {
         if (state.status == ExerciseStatus.error) {
@@ -191,9 +195,9 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                   ),
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.grey,
-                  tabs: const [
-                    Tab(text: 'All Exercises'),
-                    Tab(text: 'Custom Exercises'),
+                  tabs: [
+                    Tab(text: 'workouts.all_exercises'.tr()),
+                    Tab(text: 'workouts.custom_exercises'.tr()),
                   ],
                 ),
               ),

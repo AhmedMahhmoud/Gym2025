@@ -1270,4 +1270,62 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       }
     }
   }
+
+  // Reorder exercises within a workout (local reordering)
+  void reorderExercisesLocally(int oldIndex, int newIndex) {
+    if (state.currentWorkout == null) return;
+
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    final exercises = List<Exercise>.from(state.selectedExercises);
+    final item = exercises.removeAt(oldIndex);
+    exercises.insert(newIndex, item);
+
+    // Update local state immediately for responsive UI
+    emit(state.copyWith(selectedExercises: exercises));
+  }
+
+  // Save exercise reordering to backend
+  Future<void> saveExerciseOrder() async {
+    if (state.currentWorkout == null) return;
+
+    emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
+
+    try {
+      // Create exercise orders list with current positions
+      final exerciseOrders =
+          state.selectedExercises.asMap().entries.map((entry) {
+        return {
+          'workoutExerciseId': entry.value.workoutExerciseID ?? '',
+          'order': entry.key + 1, // API expects 1-based indexing
+        };
+      }).toList();
+
+      final result = await _repository.reorderExercises(
+        state.currentWorkout!.id,
+        exerciseOrders,
+      );
+
+      result.fold(
+        (failure) {
+          emit(state.copyWith(
+            status: WorkoutsStatus.error,
+            errorMessage: 'Failed to save exercise order: ${failure.message}',
+          ));
+        },
+        (_) {
+          emit(state.copyWith(
+            status: WorkoutsStatus.success,
+          ));
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(
+        status: WorkoutsStatus.error,
+        errorMessage: 'Failed to save exercise order: $e',
+      ));
+    }
+  }
 }

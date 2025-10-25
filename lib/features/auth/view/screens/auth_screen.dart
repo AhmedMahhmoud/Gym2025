@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/auth/data/repositories/auth_repository.dart';
 import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
@@ -26,6 +27,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return BlocProvider(
       create: (context) => AuthCubit(authRepository: AuthRepository()),
       child: Scaffold(
@@ -71,8 +75,8 @@ class _AuthScreenState extends State<AuthScreen> {
                                 key: ValueKey(_selectedType),
                                 child: Text(
                                   _selectedType == AuthType.login
-                                      ? 'Welcome !\nAlready have an account ? Login now!'
-                                      : 'Enter your information below or login with another account',
+                                      ? 'auth.welcome_login'.tr()
+                                      : 'auth.welcome_signup'.tr(),
                                   style: const TextStyle(
                                     color: AppColors
                                         .textSecondary, // Light text color

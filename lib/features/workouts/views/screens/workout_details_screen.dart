@@ -20,6 +20,7 @@ import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class WorkoutDetailsScreen extends StatefulWidget {
   const WorkoutDetailsScreen({Key? key}) : super(key: key);
@@ -31,6 +32,7 @@ class WorkoutDetailsScreen extends StatefulWidget {
 class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
   final Map<String, bool> _isDeleting = {};
   late final WorkoutsCubit _workoutsCubit;
+  bool _isReordering = false;
 
   @override
   void initState() {
@@ -62,23 +64,24 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          title: const Text(
-            'Delete Exercise',
-            style: TextStyle(
+          title: Text(
+            'workouts.delete_exercise'.tr(),
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: Text(
-            'Are you sure you want to delete "${exercise.name}"?',
+            'workouts.delete_exercise_confirmation'
+                .tr(namedArgs: {'name': exercise.name}),
             style: const TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white70),
+              child: Text(
+                'workouts.cancel'.tr(),
+                style: const TextStyle(color: Colors.white70),
               ),
             ),
             TextButton(
@@ -100,9 +103,9 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(
+                child: Text(
+                  'workouts.delete'.tr(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -147,6 +150,27 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
         child: const AddExerciseBottomSheet(),
       ),
     );
+  }
+
+  void _toggleReordering() {
+    setState(() {
+      _isReordering = !_isReordering;
+    });
+  }
+
+  void _saveExerciseOrder() async {
+    await _workoutsCubit.saveExerciseOrder();
+    setState(() {
+      _isReordering = false;
+    });
+  }
+
+  void _cancelReordering() {
+    // Reload exercises to reset order
+    _workoutsCubit.loadExercisesForWorkout();
+    setState(() {
+      _isReordering = false;
+    });
   }
 
   Widget _buildExerciseCard(Exercise exercise, int index) {
@@ -223,13 +247,91 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
     );
   }
 
+  Widget _buildReorderableExerciseCard(Exercise exercise, int index) {
+    return Card(
+      key: ValueKey(exercise.id),
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.1),
+              Colors.white.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: ListTile(
+          leading: const Icon(
+            Icons.drag_handle,
+            color: Colors.white70,
+          ),
+          title: Text(
+            exercise.name,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Colors.white,
+            ),
+          ),
+          subtitle: Text(
+            exercise.primaryMuscle,
+            style: const TextStyle(
+              color: Colors.white70,
+            ),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(
+                  FontAwesomeIcons.circleInfo,
+                  color: Colors.white70,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    RouteNames.exercise_details_route,
+                    arguments: [
+                      exercise,
+                      SharedUtils.extractThumbnail(exercise.videoUrl.isEmpty
+                          ? exercise.maleVideoUrl
+                          : exercise.videoUrl)
+                    ],
+                  );
+                },
+              ),
+              if (!context.read<WorkoutsCubit>().state.isGuidedMode)
+                IconButton(
+                  icon: const Icon(FontAwesomeIcons.circleXmark,
+                      color: Colors.redAccent),
+                  onPressed: () => _showDeleteConfirmationDialog(exercise),
+                ),
+            ],
+          ),
+          onTap: () => _navigateToExerciseSets(exercise),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Scaffold(
       appBar: AppBar(
         title: BlocSelector<WorkoutsCubit, WorkoutsState, String?>(
           selector: (state) => state.currentWorkout?.title,
-          builder: (context, title) => Text(title ?? 'Workout Details'),
+          builder: (context, title) =>
+              Text(title ?? 'workouts.workout_details'.tr()),
         ),
       ),
       body: SafeArea(
@@ -255,7 +357,8 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
             if (state.status == WorkoutsStatus.error &&
                 state.selectedExercises.isEmpty) {
               return ErrorMessage(
-                message: state.errorMessage ?? 'Failed to load exercises',
+                message: state.errorMessage ??
+                    'workouts.failed_to_load_exercises'.tr(),
                 onRetry: () => state.currentWorkout != null
                     ? _workoutsCubit.loadExercisesForWorkout()
                     : null,
@@ -267,9 +370,9 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'No exercises added yet',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    Text(
+                      'workouts.no_exercises_added_yet'.tr(),
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
                     ),
                     const SizedBox(height: 16),
                     if (!state.isGuidedMode &&
@@ -283,7 +386,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: const Text('Add Exercise'),
+                        child: Text('workouts.add_exercise'.tr()),
                       ),
                   ],
                 ),
@@ -292,42 +395,110 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
 
             return Column(
               children: [
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: state.selectedExercises.length,
-                    itemBuilder: (context, index) {
-                      final exercise = state.selectedExercises[index];
-                      final isDeleting = _isDeleting[exercise.id] ?? false;
-
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        switchOutCurve: Curves.easeOut,
-                        switchInCurve: Curves.easeIn,
-                        transitionBuilder:
-                            (Widget child, Animation<double> animation) {
-                          if (!isDeleting) {
-                            return FadeInWidget(
-                              duration:
-                                  Duration(milliseconds: 500 + (index * 100)),
-                              child: child,
-                            );
-                          }
-                          return FadeOut(
-                            curve: Curves.easeOut,
-                            child: child,
-                          );
-                        },
-                        child: isDeleting
-                            ? Container(
-                                key: ValueKey('${exercise.id}_deleting'))
-                            : Skeletonizer(
-                                enabled: state.status == WorkoutsStatus.loading,
-                                child: _buildExerciseCard(exercise, index),
+                // Reordering controls
+                if (state.selectedExercises.isNotEmpty &&
+                    !state.isGuidedMode &&
+                    (!state.isViewingStaticPlans ||
+                        context.read<ProfileCubit>().state.isAdmin))
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (!_isReordering)
+                          TextButton.icon(
+                            onPressed: _toggleReordering,
+                            icon: const Icon(Icons.reorder,
+                                color: Colors.white70),
+                            label: Text(
+                              'workouts.reorder_exercises'.tr(),
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          )
+                        else
+                          Row(
+                            children: [
+                              TextButton(
+                                onPressed: _cancelReordering,
+                                child: Text(
+                                  'workouts.cancel'.tr(),
+                                  style:
+                                      const TextStyle(color: Colors.redAccent),
+                                ),
                               ),
-                      );
-                    },
+                              const SizedBox(width: 16),
+                              ElevatedButton(
+                                onPressed: _saveExerciseOrder,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(
+                                  'workouts.save_order'.tr(),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
+                Expanded(
+                  child: _isReordering
+                      ? ReorderableListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: state.selectedExercises.length,
+                          onReorder: (oldIndex, newIndex) {
+                            _workoutsCubit.reorderExercisesLocally(
+                                oldIndex, newIndex);
+                          },
+                          itemBuilder: (context, index) {
+                            final exercise = state.selectedExercises[index];
+                            return _buildReorderableExerciseCard(
+                                exercise, index);
+                          },
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: state.selectedExercises.length,
+                          itemBuilder: (context, index) {
+                            final exercise = state.selectedExercises[index];
+                            final isDeleting =
+                                _isDeleting[exercise.id] ?? false;
+
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              switchOutCurve: Curves.easeOut,
+                              switchInCurve: Curves.easeIn,
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                if (!isDeleting) {
+                                  return FadeInWidget(
+                                    duration: Duration(
+                                        milliseconds: 500 + (index * 100)),
+                                    child: child,
+                                  );
+                                }
+                                return FadeOut(
+                                  curve: Curves.easeOut,
+                                  child: child,
+                                );
+                              },
+                              child: isDeleting
+                                  ? Container(
+                                      key: ValueKey('${exercise.id}_deleting'))
+                                  : Skeletonizer(
+                                      enabled: state.status ==
+                                          WorkoutsStatus.loading,
+                                      child:
+                                          _buildExerciseCard(exercise, index),
+                                    ),
+                            );
+                          },
+                        ),
                 ),
                 // Add button integrated into the scrollable content
                 if (state.selectedExercises.isNotEmpty &&
@@ -368,20 +539,20 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                               horizontal: 24,
                               vertical: 16,
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.add,
                                   color: Colors.white,
                                   size: 24,
                                 ),
-                                SizedBox(width: 12),
+                                const SizedBox(width: 12),
                                 Text(
-                                  'Add Exercise',
-                                  style: TextStyle(
+                                  'workouts.add_exercise'.tr(),
+                                  style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.5,
                                   ),
