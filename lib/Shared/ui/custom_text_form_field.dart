@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
@@ -52,7 +53,7 @@ class _AppTextFieldState extends State<AppTextField> {
       validator: (value) {
         // Default Validation: Check if field is empty
         if (value == null || value.trim().isEmpty) {
-          return 'Required';
+          return 'validation.required'.tr();
         }
         // Apply custom validation if provided
         if (widget.validator != null) {

@@ -12,6 +12,8 @@ import 'package:trackletics/features/workouts/views/widgets/loading_indicator.da
 import 'package:trackletics/features/workouts/views/widgets/set_card.dart';
 import 'package:trackletics/features/workouts/views/widgets/add_set_dialog.dart';
 import 'package:trackletics/core/widgets/dialogs/input_dialog_container.dart';
+// import 'package:trackletics/core/debug/api_logger_model.dart';
+// import 'package:trackletics/routes/route_names.dart';
 // import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 
 class ExerciseSetsScreen extends StatefulWidget {
@@ -50,24 +52,44 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
     if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
     showAnimatedDialog(
       context: context,
-      builder: (context) => AddSetDialog(
+      builder: (dialogContext) => AddSetDialog(
         onAdd: ({
           double? weight,
           required int? reps,
           required int? duration,
           int? restTime,
           String? note,
-          String? timeUnitId,
+          String? restTimeUnitId,
+          String? durationTimeUnitId,
           String? weightUnitId,
         }) {
+          // Logger navigation commented out
+          // void navigateToLogger(ApiLoggerModel logData) {
+          //   // Close the dialog first, then navigate to logger using parent context
+          //   Navigator.pop(dialogContext);
+          //   // Use a small delay to ensure dialog is closed before navigation
+          //   Future.delayed(const Duration(milliseconds: 100), () {
+          //     if (parentContext.mounted) {
+          //       Navigator.pushNamed(
+          //         parentContext,
+          //         RouteNames.api_logger_route,
+          //         arguments: [logData],
+          //       );
+          //     }
+          //   });
+          // }
+
           if (reps != null) {
             _workoutsCubit.addSetToExercise(
               reps: reps,
               weight: weight,
               restTime: restTime,
               note: note,
-              timeUnitId: timeUnitId,
+              restTimeUnitId: restTimeUnitId,
+              durationTimeUnitId: durationTimeUnitId,
               weightUnitId: weightUnitId,
+              // onLogCreated: (logData) =>
+              //     navigateToLogger(logData as ApiLoggerModel),
             );
           } else if (duration != null) {
             _workoutsCubit.addDurationSetToExercise(
@@ -75,8 +97,11 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
               weight: weight,
               restTime: restTime,
               note: note,
-              timeUnitId: timeUnitId,
+              restTimeUnitId: restTimeUnitId,
+              durationTimeUnitId: durationTimeUnitId,
               weightUnitId: weightUnitId,
+              // onLogCreated: (logData) =>
+              //     navigateToLogger(logData as ApiLoggerModel),
             );
           }
         },
@@ -113,7 +138,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                 children: [
                   Text(
                     'workouts.no_sets_added_yet'.tr(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white70,
                     ),
@@ -192,18 +217,12 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                             horizontal: 24,
                             vertical: 16,
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.add,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                              SizedBox(width: 12),
                               Text(
-                                'Add Set',
-                                style: TextStyle(
+                                'workouts.add_set'.tr(),
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -235,8 +254,10 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
     // Initialize unit selections based on set data
     bool isWeightInKg = set.weightUnitId == null ||
         UnitsService().getWeightUnitById(set.weightUnitId!)?.title == 'Kg';
-    bool isDurationInMinutes = set.timeUnitId != null &&
-        UnitsService().getTimeUnitById(set.timeUnitId!)?.title == 'Min';
+    bool isDurationInMinutes = set.durationTimeUnitId != null &&
+        UnitsService().getTimeUnitById(set.durationTimeUnitId!)?.title == 'Min';
+    bool isRestTimeInMinutes = set.restTimeUnitId != null &&
+        UnitsService().getTimeUnitById(set.restTimeUnitId!)?.title == 'Min';
     bool isRepsBased = set.repetitions != null;
 
     showDialog(
@@ -303,9 +324,9 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        const Text(
-                          'Edit Set',
-                          style: TextStyle(
+                        Text(
+                          'workouts.edit_set'.tr(),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -328,7 +349,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                         children: [
                           // Weight Section
                           _buildSectionCard(
-                            title: 'Weight',
+                            title: 'workouts.weight'.tr(),
                             icon: Icons.fitness_center,
                             child: Row(
                               children: [
@@ -359,7 +380,9 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
 
                           // Reps/Duration Section
                           _buildSectionCard(
-                            title: isRepsBased ? 'Repetitions' : 'Duration',
+                            title: isRepsBased
+                                ? 'workouts.repetitions'.tr()
+                                : 'workouts.duration'.tr(),
                             icon: isRepsBased
                                 ? Icons.repeat
                                 : Icons.timer_outlined,
@@ -398,7 +421,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
 
                           // Rest Time Section
                           _buildSectionCard(
-                            title: 'Rest Time',
+                            title: 'workouts.rest_time'.tr(),
                             icon: Icons.timer,
                             child: Row(
                               children: [
@@ -413,10 +436,10 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                 const SizedBox(width: 12),
                                 _buildModernToggle(
                                   values: ['min', 'sec'],
-                                  selectedIndex: isDurationInMinutes ? 0 : 1,
+                                  selectedIndex: isRestTimeInMinutes ? 0 : 1,
                                   onChanged: (index) {
                                     setState(() {
-                                      isDurationInMinutes = index == 0;
+                                      isRestTimeInMinutes = index == 0;
                                     });
                                   },
                                 ),
@@ -427,11 +450,11 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
 
                           // Notes Section
                           _buildSectionCard(
-                            title: 'Notes',
+                            title: 'workouts.notes'.tr(),
                             icon: Icons.note,
                             child: _buildModernTextField(
                               controller: _noteController,
-                              hintText: 'Add a note (optional)',
+                              hintText: 'workouts.notes_hint'.tr(),
                               prefixIcon: Icons.note,
                               maxLines: 3,
                             ),
@@ -452,9 +475,9 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Cancel',
-                                    style: TextStyle(
+                                  child: Text(
+                                    'common.cancel'.tr(),
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -493,6 +516,21 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                             0
                                         : null;
 
+                                    // Validate duration format for duration-based sets
+                                    if (!isRepsBased &&
+                                        (_durationController.text
+                                                .contains('.') ||
+                                            _durationController.text
+                                                .contains(':'))) {
+                                      // Show error and return without closing dialog
+                                      CustomSnackbar.show(
+                                          context,
+                                          'workouts.invalid_duration_format'
+                                              .tr(),
+                                          isError: true);
+                                      return;
+                                    }
+
                                     // Get unit IDs based on selection
                                     final weightUnitId = weight != null
                                         ? (isWeightInKg
@@ -507,16 +545,34 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                                 ?.id)
                                         : null;
 
-                                    final timeUnitId = isDurationInMinutes
-                                        ? UnitsService()
-                                            .timeUnits
-                                            .where(
-                                                (unit) => unit.title == 'Min')
-                                            .firstOrNull
-                                            ?.id
-                                        : UnitsService()
-                                            .getDefaultTimeUnit()
-                                            ?.id;
+                                    // Get rest time unit ID
+                                    final restTimeUnitId = restTime != null
+                                        ? (isRestTimeInMinutes
+                                            ? UnitsService()
+                                                .timeUnits
+                                                .where((unit) =>
+                                                    unit.title == 'Min')
+                                                .firstOrNull
+                                                ?.id
+                                            : UnitsService()
+                                                .getDefaultTimeUnit()
+                                                ?.id)
+                                        : null;
+
+                                    // Get duration unit ID (only for duration-based sets)
+                                    final durationTimeUnitId =
+                                        !isRepsBased && duration != null
+                                            ? (isDurationInMinutes
+                                                ? UnitsService()
+                                                    .timeUnits
+                                                    .where((unit) =>
+                                                        unit.title == 'Min')
+                                                    .firstOrNull
+                                                    ?.id
+                                                : UnitsService()
+                                                    .getDefaultTimeUnit()
+                                                    ?.id)
+                                            : null;
 
                                     final note = _noteController.text.trim();
 
@@ -533,7 +589,8 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                         duration: duration,
                                         restTime: restTime,
                                         note: note.isNotEmpty ? note : null,
-                                        timeUnitId: timeUnitId,
+                                        restTimeUnitId: restTimeUnitId,
+                                        durationTimeUnitId: durationTimeUnitId,
                                         weightUnitId: weightUnitId,
                                       );
                                       Navigator.pop(context);
@@ -549,9 +606,9 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Save Changes',
-                                    style: TextStyle(
+                                  child: Text(
+                                    'workouts.save_changes'.tr(),
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -581,23 +638,23 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
-        title: const Text(
-          'Delete Set',
-          style: TextStyle(
+        title: Text(
+          'workouts.delete_set'.tr(),
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: const Text(
-          'Are you sure you want to delete this set?',
-          style: TextStyle(color: Colors.white70),
+        content: Text(
+          'workouts.delete_set_confirmation'.tr(),
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white70),
+            child: Text(
+              'common.cancel'.tr(),
+              style: const TextStyle(color: Colors.white70),
             ),
           ),
           TextButton(
@@ -605,9 +662,9 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
               cubit.deleteSet(set.id);
               Navigator.pop(context);
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              'workouts.delete'.tr(),
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -717,7 +774,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                value,
+                value.tr(),
                 style: TextStyle(
                   color:
                       isSelected ? Colors.white : Colors.white.withOpacity(0.7),

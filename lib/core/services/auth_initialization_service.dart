@@ -30,13 +30,13 @@ class AuthInitializationService {
     try {
       log('Starting auth initialization...');
 
-      // Check if app version has changed
-      final storedVersion = await _storage.read<String>(key: _appVersionKey);
-      if (storedVersion != _currentAppVersion) {
-        log('App version changed from $storedVersion to $_currentAppVersion');
-        await _handleVersionChange();
-        await _storage.write(key: _appVersionKey, value: _currentAppVersion);
-      }
+      // // Check if app version has changed
+      // final storedVersion = await _storage.read<String>(key: _appVersionKey);
+      // if (storedVersion != _currentAppVersion) {
+      //   log('App version changed from $storedVersion to $_currentAppVersion');
+      //   await _handleVersionChange();
+      //   await _storage.write(key: _appVersionKey, value: _currentAppVersion);
+      // }
 
       // Check if registration is in progress
       final isRegistrationInProgress =

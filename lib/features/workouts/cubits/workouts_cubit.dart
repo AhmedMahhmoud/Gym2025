@@ -5,6 +5,7 @@ import 'package:trackletics/features/workouts/data/models/plan_response.dart';
 import 'package:trackletics/features/workouts/data/models/set_model.dart';
 import 'package:trackletics/features/workouts/data/models/workout_model.dart';
 import 'package:trackletics/features/workouts/data/workouts_repository.dart';
+import 'package:trackletics/core/debug/api_logger_model.dart';
 
 class WorkoutsCubit extends Cubit<WorkoutsState> {
   final WorkoutsRepository _repository;
@@ -118,10 +119,18 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   }
 
   // Create a new plan
-  Future<void> createPlan(String title, {String? notes}) async {
+  Future<void> createPlan(
+    String title, {
+    String? notes,
+    Function(ApiLoggerModel)? onLogCreated,
+  }) async {
     emit(state.copyWith(status: WorkoutsStatus.creatingPlan, clearError: true));
 
-    final result = await _repository.createPlan(title, notes: notes);
+    final result = await _repository.createPlan(
+      title,
+      notes: notes,
+      onLogCreated: onLogCreated,
+    );
 
     result.fold(
       (failure) {
@@ -327,7 +336,11 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   }
 
   // Create a new workout
-  Future<void> createWorkout(String title, {String? notes}) async {
+  Future<void> createWorkout(
+    String title, {
+    String? notes,
+    Function(ApiLoggerModel)? onLogCreated,
+  }) async {
     if (state.currentPlan == null) {
       emit(state.copyWith(
         status: WorkoutsStatus.error,
@@ -342,7 +355,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     final result = await _repository.createWorkout(
       state.currentPlan!.id,
       title,
-      notes: notes, // Pass notes parameter
+      notes: notes,
+      onLogCreated: onLogCreated,
     );
 
     result.fold(
@@ -461,19 +475,80 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   }
 
   // Set current exercise
-  void setCurrentExercise(Exercise exercise) {
-    if (state.currentWorkout == null) return;
+  // Returns true if successful, false if workout exercise has temp ID
+  Future<bool> setCurrentExercise(Exercise exercise) async {
+    if (state.currentWorkout == null) return false;
 
-    // Find the corresponding WorkoutExercise
+    // Find the corresponding WorkoutExercise - check both regular and custom exercises
     final workoutExercise = state.currentWorkout!.workoutExercises.firstWhere(
-      (we) => we.exercise?.id == exercise.id,
+      (we) =>
+          we.exercise?.id == exercise.id ||
+          we.customExercise?.id == exercise.id,
       orElse: () => throw Exception('WorkoutExercise not found'),
     );
-    if (exercise.category == "" &&
-        workoutExercise.id.startsWith('temp')) // custom
-    {
-      workoutExercise.id = exercise.workoutExerciseID!;
+
+    // Check if workout exercise ID is temp
+    String workoutExerciseId = workoutExercise.id;
+    if (workoutExerciseId.startsWith('temp_')) {
+      // If exercise has real workoutExerciseID, use it
+      if (exercise.workoutExerciseID != null &&
+          !exercise.workoutExerciseID!.startsWith('temp_')) {
+        workoutExerciseId = exercise.workoutExerciseID!;
+
+        // Update the workout exercise ID
+        final updatedWorkoutExercise = WorkoutExercise(
+          id: workoutExerciseId,
+          workoutId: workoutExercise.workoutId,
+          exerciseId: workoutExercise.exerciseId,
+          exercise: workoutExercise.exercise,
+          customExerciseId: workoutExercise.customExerciseId,
+          customExercise: workoutExercise.customExercise,
+          sets: workoutExercise.sets,
+        );
+
+        // Update the workout with the corrected exercise
+        final updatedWorkoutExercises =
+            state.currentWorkout!.workoutExercises.map((we) {
+          if (we.exercise?.id == exercise.id ||
+              we.customExercise?.id == exercise.id) {
+            return updatedWorkoutExercise;
+          }
+          return we;
+        }).toList();
+
+        final updatedWorkout = WorkoutModel(
+          id: state.currentWorkout!.id,
+          planId: state.currentWorkout!.planId,
+          userId: state.currentWorkout!.userId,
+          title: state.currentWorkout!.title,
+          notes: state.currentWorkout!.notes,
+          date: state.currentWorkout!.date,
+          workoutExercises: updatedWorkoutExercises,
+        );
+
+        // Get sets from the workout exercise
+        final sets = updatedWorkoutExercise.sets
+            .map((set) => SetModel.fromJson(set.toJson()))
+            .toList();
+
+        emit(state.copyWith(
+          currentExercise: exercise,
+          currentWorkoutExercise: updatedWorkoutExercise,
+          currentWorkout: updatedWorkout,
+          sets: sets,
+        ));
+        return true;
+      } else {
+        // Exercise not saved to backend yet - cannot navigate to sets page
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage:
+              'Cannot open sets: Exercise must be saved to backend first',
+        ));
+        return false;
+      }
     }
+
     // Get sets from the workout exercise
     final sets = workoutExercise.sets
         .map((set) => SetModel.fromJson(set.toJson()))
@@ -484,6 +559,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       currentWorkoutExercise: workoutExercise,
       sets: sets,
     ));
+    return true;
   }
 
   // Add set to exercise
@@ -492,8 +568,10 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     double? weight,
     int? restTime,
     String? note,
-    String? timeUnitId,
+    String? restTimeUnitId,
+    String? durationTimeUnitId,
     String? weightUnitId,
+    Function(dynamic)? onLogCreated,
   }) async {
     if (state.currentWorkout == null || state.currentWorkoutExercise == null) {
       emit(state.copyWith(
@@ -501,6 +579,105 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         errorMessage: 'No workout or exercise selected',
       ));
       return;
+    }
+
+    // Check if workout exercise ID is temp and handle it
+    String workoutExerciseId = state.currentWorkoutExercise!.id;
+    if (workoutExerciseId.startsWith('temp_')) {
+      // If workout exercise has temp ID, check if exercise has real workoutExerciseID
+      if (state.currentExercise != null &&
+          state.currentExercise!.workoutExerciseID != null &&
+          !state.currentExercise!.workoutExerciseID!.startsWith('temp_')) {
+        // Use the real workout exercise ID from the exercise
+        workoutExerciseId = state.currentExercise!.workoutExerciseID!;
+
+        // Update the current workout exercise ID
+        final updatedWorkoutExercise = WorkoutExercise(
+          id: workoutExerciseId,
+          workoutId: state.currentWorkoutExercise!.workoutId,
+          exerciseId: state.currentWorkoutExercise!.exerciseId,
+          exercise: state.currentWorkoutExercise!.exercise,
+          customExerciseId: state.currentWorkoutExercise!.customExerciseId,
+          customExercise: state.currentWorkoutExercise!.customExercise,
+          sets: state.currentWorkoutExercise!.sets,
+        );
+
+        // Update the workout with the corrected exercise
+        final updatedWorkoutExercises =
+            state.currentWorkout!.workoutExercises.map((we) {
+          if (we.exercise?.id == state.currentExercise!.id ||
+              we.customExercise?.id == state.currentExercise!.id) {
+            return updatedWorkoutExercise;
+          }
+          return we;
+        }).toList();
+
+        final updatedWorkout = WorkoutModel(
+          id: state.currentWorkout!.id,
+          planId: state.currentWorkout!.planId,
+          userId: state.currentWorkout!.userId,
+          title: state.currentWorkout!.title,
+          notes: state.currentWorkout!.notes,
+          date: state.currentWorkout!.date,
+          workoutExercises: updatedWorkoutExercises,
+        );
+
+        emit(state.copyWith(
+          currentWorkout: updatedWorkout,
+          currentWorkoutExercise: updatedWorkoutExercise,
+        ));
+      } else {
+        // Need to save exercises first to get real IDs
+        // Get all exercises with temp IDs
+        final tempExercises = state.currentWorkout!.workoutExercises
+            .where((we) => we.id.startsWith('temp_'))
+            .toList();
+
+        if (tempExercises.isNotEmpty) {
+          // Collect exercise IDs
+          final exerciseIds = <String>[];
+          final customExerciseIds = <String>[];
+
+          for (final we in tempExercises) {
+            if (we.exerciseId != null && we.exerciseId!.isNotEmpty) {
+              exerciseIds.add(we.exerciseId!);
+            }
+            if (we.customExerciseId != null &&
+                we.customExerciseId!.isNotEmpty) {
+              customExerciseIds.add(we.customExerciseId!);
+            }
+          }
+
+          // Save exercises to get real IDs
+          await addExercisesToWorkout(
+            exerciseIds,
+            customExerciseIds: customExerciseIds,
+          );
+
+          // After saving, find the updated workout exercise with real ID
+          final updatedWorkoutExercise =
+              state.currentWorkout!.workoutExercises.firstWhere(
+            (we) =>
+                (we.exercise?.id == state.currentExercise?.id ||
+                    we.customExercise?.id == state.currentExercise?.id) &&
+                !we.id.startsWith('temp_'),
+            orElse: () => state.currentWorkoutExercise!,
+          );
+
+          workoutExerciseId = updatedWorkoutExercise.id;
+
+          // Update current workout exercise
+          emit(state.copyWith(
+            currentWorkoutExercise: updatedWorkoutExercise,
+          ));
+        } else {
+          emit(state.copyWith(
+            status: WorkoutsStatus.error,
+            errorMessage: 'Cannot add set: Exercise not saved to backend yet',
+          ));
+          return;
+        }
+      }
     }
 
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
@@ -511,13 +688,15 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       'duration': null,
       if (restTime != null) 'restTime': restTime,
       if (note != null && note.isNotEmpty) 'note': note,
-      if (timeUnitId != null) 'timeUnitId': timeUnitId,
+      if (restTimeUnitId != null) 'restTimeUnitId': restTimeUnitId,
+      if (durationTimeUnitId != null) 'durationTimeUnitId': durationTimeUnitId,
       if (weightUnitId != null) 'weightUnitId': weightUnitId,
     };
 
     final result = await _repository.addSetToExercise(
-      state.currentWorkoutExercise!.id,
+      workoutExerciseId,
       setData,
+      onLogCreated: onLogCreated,
     );
 
     result.fold(
@@ -599,8 +778,10 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     double? weight,
     int? restTime,
     String? note,
-    String? timeUnitId,
+    String? restTimeUnitId,
+    String? durationTimeUnitId,
     String? weightUnitId,
+    Function(dynamic)? onLogCreated,
   }) async {
     if (state.currentWorkout == null || state.currentWorkoutExercise == null) {
       emit(state.copyWith(
@@ -608,6 +789,105 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         errorMessage: 'No workout or exercise selected',
       ));
       return;
+    }
+
+    // Check if workout exercise ID is temp and handle it
+    String workoutExerciseId = state.currentWorkoutExercise!.id;
+    if (workoutExerciseId.startsWith('temp_')) {
+      // If workout exercise has temp ID, check if exercise has real workoutExerciseID
+      if (state.currentExercise != null &&
+          state.currentExercise!.workoutExerciseID != null &&
+          !state.currentExercise!.workoutExerciseID!.startsWith('temp_')) {
+        // Use the real workout exercise ID from the exercise
+        workoutExerciseId = state.currentExercise!.workoutExerciseID!;
+
+        // Update the current workout exercise ID
+        final updatedWorkoutExercise = WorkoutExercise(
+          id: workoutExerciseId,
+          workoutId: state.currentWorkoutExercise!.workoutId,
+          exerciseId: state.currentWorkoutExercise!.exerciseId,
+          exercise: state.currentWorkoutExercise!.exercise,
+          customExerciseId: state.currentWorkoutExercise!.customExerciseId,
+          customExercise: state.currentWorkoutExercise!.customExercise,
+          sets: state.currentWorkoutExercise!.sets,
+        );
+
+        // Update the workout with the corrected exercise
+        final updatedWorkoutExercises =
+            state.currentWorkout!.workoutExercises.map((we) {
+          if (we.exercise?.id == state.currentExercise!.id ||
+              we.customExercise?.id == state.currentExercise!.id) {
+            return updatedWorkoutExercise;
+          }
+          return we;
+        }).toList();
+
+        final updatedWorkout = WorkoutModel(
+          id: state.currentWorkout!.id,
+          planId: state.currentWorkout!.planId,
+          userId: state.currentWorkout!.userId,
+          title: state.currentWorkout!.title,
+          notes: state.currentWorkout!.notes,
+          date: state.currentWorkout!.date,
+          workoutExercises: updatedWorkoutExercises,
+        );
+
+        emit(state.copyWith(
+          currentWorkout: updatedWorkout,
+          currentWorkoutExercise: updatedWorkoutExercise,
+        ));
+      } else {
+        // Need to save exercises first to get real IDs
+        // Get all exercises with temp IDs
+        final tempExercises = state.currentWorkout!.workoutExercises
+            .where((we) => we.id.startsWith('temp_'))
+            .toList();
+
+        if (tempExercises.isNotEmpty) {
+          // Collect exercise IDs
+          final exerciseIds = <String>[];
+          final customExerciseIds = <String>[];
+
+          for (final we in tempExercises) {
+            if (we.exerciseId != null && we.exerciseId!.isNotEmpty) {
+              exerciseIds.add(we.exerciseId!);
+            }
+            if (we.customExerciseId != null &&
+                we.customExerciseId!.isNotEmpty) {
+              customExerciseIds.add(we.customExerciseId!);
+            }
+          }
+
+          // Save exercises to get real IDs
+          await addExercisesToWorkout(
+            exerciseIds,
+            customExerciseIds: customExerciseIds,
+          );
+
+          // After saving, find the updated workout exercise with real ID
+          final updatedWorkoutExercise =
+              state.currentWorkout!.workoutExercises.firstWhere(
+            (we) =>
+                (we.exercise?.id == state.currentExercise?.id ||
+                    we.customExercise?.id == state.currentExercise?.id) &&
+                !we.id.startsWith('temp_'),
+            orElse: () => state.currentWorkoutExercise!,
+          );
+
+          workoutExerciseId = updatedWorkoutExercise.id;
+
+          // Update current workout exercise
+          emit(state.copyWith(
+            currentWorkoutExercise: updatedWorkoutExercise,
+          ));
+        } else {
+          emit(state.copyWith(
+            status: WorkoutsStatus.error,
+            errorMessage: 'Cannot add set: Exercise not saved to backend yet',
+          ));
+          return;
+        }
+      }
     }
 
     emit(state.copyWith(status: WorkoutsStatus.loading, clearError: true));
@@ -618,13 +898,15 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       'duration': duration,
       if (restTime != null) 'restTime': restTime,
       if (note != null && note.isNotEmpty) 'note': note,
-      if (timeUnitId != null) 'timeUnitId': timeUnitId,
+      if (restTimeUnitId != null) 'restTimeUnitId': restTimeUnitId,
+      if (durationTimeUnitId != null) 'durationTimeUnitId': durationTimeUnitId,
       if (weightUnitId != null) 'weightUnitId': weightUnitId,
     };
 
-    final result = await _repository.addSetToExercise(
-      state.currentWorkoutExercise!.id,
-      setData,
+    final result = await _repository.addDurationSetToExercise(
+      workoutExerciseId: workoutExerciseId,
+      setData: setData,
+      onLogCreated: onLogCreated,
     );
 
     result.fold(
@@ -649,7 +931,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           exercise: state.currentWorkoutExercise!.exercise,
           customExerciseId: state.currentWorkoutExercise!.customExerciseId,
           customExercise: state.currentWorkoutExercise!.customExercise,
-          sets: newSets,
+          sets: updatedSets,
         );
 
         // Update the workout with the updated exercise
@@ -703,7 +985,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     required int? duration,
     int? restTime,
     String? note,
-    String? timeUnitId,
+    String? restTimeUnitId,
+    String? durationTimeUnitId,
     String? weightUnitId,
   }) async {
     if (state.currentWorkout == null || state.currentWorkoutExercise == null) {
@@ -722,7 +1005,8 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       if (duration != null) 'duration': duration,
       if (restTime != null) 'restTime': restTime,
       if (note != null) 'note': note,
-      if (timeUnitId != null) 'timeUnitId': timeUnitId,
+      if (restTimeUnitId != null) 'restTimeUnitId': restTimeUnitId,
+      if (durationTimeUnitId != null) 'durationTimeUnitId': durationTimeUnitId,
       if (weightUnitId != null) 'weightUnitId': weightUnitId,
     };
 
@@ -1000,6 +1284,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
   Future<void> addExercisesToWorkout(
     List<String> exerciseIds, {
     List<String>? customExerciseIds,
+    Function(ApiLoggerModel)? onLogCreated,
   }) async {
     if (state.currentWorkout == null) {
       emit(state.copyWith(
@@ -1015,6 +1300,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
       state.currentWorkout!.id,
       exerciseIds,
       customExerciseIds: customExerciseIds ?? [],
+      onLogCreated: onLogCreated,
     );
 
     result.fold(
@@ -1025,6 +1311,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         ));
       },
       (updatedWorkoutExercises) {
+        // Only add exercises AFTER successful backend response
         // Convert workout exercises to Exercise models
         final newExercises = updatedWorkoutExercises
             .map((we) {
@@ -1049,53 +1336,54 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
         // Add only new exercises that don't already exist
         for (final newExercise in newExercises) {
+          final exerciseWithWorkoutId = newExercise.copyWith(
+            workoutExerciseID: updatedWorkoutExercises
+                .firstWhere(
+                  (we) =>
+                      (we.exercise?.id == newExercise.id ||
+                          we.customExercise?.id == newExercise.id),
+                  orElse: () => updatedWorkoutExercises.first,
+                )
+                .id,
+          );
+
           if (!allExercises.any((e) => e.id == newExercise.id)) {
-            allExercises.add(newExercise);
+            allExercises.add(exerciseWithWorkoutId);
           } else {
             allExercises.removeWhere(
               (element) => element.id == newExercise.id,
             );
-            allExercises.add(newExercise);
+            allExercises.add(exerciseWithWorkoutId);
           }
         }
 
         // Combine existing workout exercises with new ones
+        // Remove any temp exercises that match the new ones (safety check)
         final existingWorkoutExercises =
-            List<WorkoutExercise>.from(state.currentWorkout!.workoutExercises);
+            List<WorkoutExercise>.from(state.currentWorkout!.workoutExercises)
+                .where((we) =>
+                    !we.id.startsWith('temp_') ||
+                    !updatedWorkoutExercises.any((newWe) =>
+                        (newWe.exerciseId != null &&
+                            newWe.exerciseId == we.exerciseId) ||
+                        (newWe.customExerciseId != null &&
+                            newWe.customExerciseId == we.customExerciseId)))
+                .toList();
+
         final allWorkoutExercises = [...existingWorkoutExercises];
 
-        // Add new workout exercises, replacing any that have the same exerciseId
+        // Add new workout exercises directly (no temp replacement needed since we don't add locally first)
         for (final newWorkoutExercise in updatedWorkoutExercises) {
-          // Find and replace temporary exercises with real ones
-          final existingIndex = allWorkoutExercises.indexWhere((we) {
-            // Check if this is a temporary exercise that needs to be replaced
-            if (we.id.startsWith('temp_')) {
-              // For regular exercises
-              if (we.exerciseId == newWorkoutExercise.exerciseId) {
-                return true;
-              }
-              // For custom exercises
-              if (we.customExerciseId == newWorkoutExercise.customExerciseId) {
-                return true;
-              }
-            }
-            return false;
-          });
+          // Check if we already have this exercise (by exerciseId or customExerciseId)
+          final exists = allWorkoutExercises.any((we) =>
+              (we.exerciseId != null &&
+                  newWorkoutExercise.exerciseId != null &&
+                  we.exerciseId == newWorkoutExercise.exerciseId) ||
+              (we.customExerciseId != null &&
+                  newWorkoutExercise.customExerciseId != null &&
+                  we.customExerciseId == newWorkoutExercise.customExerciseId));
 
-          if (existingIndex != -1) {
-            // Replace the temporary workout exercise with the real one
-            allWorkoutExercises[existingIndex] = newWorkoutExercise;
-
-            // Update the exercise's workoutExerciseID in the selectedExercises list
-            final exerciseIndex = allExercises.indexWhere((e) =>
-                e.id ==
-                (newWorkoutExercise.exercise?.id ??
-                    newWorkoutExercise.customExercise?.id));
-            if (exerciseIndex != -1) {
-              allExercises[exerciseIndex] = allExercises[exerciseIndex]
-                  .copyWith(workoutExerciseID: newWorkoutExercise.id);
-            }
-          } else {
+          if (!exists) {
             allWorkoutExercises.add(newWorkoutExercise);
           }
         }

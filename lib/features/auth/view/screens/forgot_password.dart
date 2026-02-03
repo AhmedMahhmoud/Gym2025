@@ -1,7 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:trackletics/Shared/ui/custom_back_btn.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/Shared/ui/custom_text_form_field.dart';
@@ -35,6 +34,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return BlocProvider(
       create: (context) => OtpCubit(otpRepository: OtpRepository()),
       child: Scaffold(
@@ -51,9 +53,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(
                   height: 15,
                 ),
-                const Text(
-                  'Reset your password ',
-                  style: TextStyle(
+                Text(
+                  'auth.reset_password_title'.tr(),
+                  style: const TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -63,7 +65,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   height: 15,
                 ),
                 AppTextField(
-                  hintText: 'Enter your email',
+                  hintText: 'auth.enter_your_email'.tr(),
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   validator: (p0) => AppValidator.validateEmail(p0),
@@ -85,7 +87,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   builder: (context, state) => Center(
                       child: PrimaryRoundedButton(
                     isLoading: state is VerifyResetPasswordLoading,
-                    text: 'Verify',
+                    text: 'auth.verify'.tr(),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         context.read<OtpCubit>().verifyResetPassword(

@@ -28,9 +28,11 @@ class AuthCubit extends Cubit<AuthState> {
         log(failure.message);
       },
       (_) async {
-        // Cache registration state and email for recovery
+        // Cache registration state, email, and password for auto-login after verification
         await _storageService.setRegistrationInProgress(true);
         await _storageService.setPendingVerificationEmail(signUpModel.mail);
+        await _storageService
+            .setPendingVerificationPassword(signUpModel.password);
         emit(const AuthNeedsValidation());
       },
     );
@@ -52,6 +54,31 @@ class AuthCubit extends Cubit<AuthState> {
         // Clear any pending registration state on successful login
         await _storageService.clearRegistrationState();
         emit(AuthAuthenticated(token: token));
+      },
+    );
+  }
+
+  Future<void> signInWithGoogle() async {
+    emit(const AuthLoading());
+    final result = await authRepository.signInWithGoogle();
+
+    result.fold(
+      (failure) {
+        emit(AuthUnauthenticated(errorMessage: failure.message));
+        log(failure.message);
+      },
+      (googleAccount) async {
+        // TODO: When backend is linked, call API with Google account info
+        // For now, we'll just log the account info
+        log('Google Sign-In successful: ${googleAccount.email}');
+        // Clear any pending registration state
+        await _storageService.clearRegistrationState();
+        // TODO: Replace with actual token from backend API
+        // emit(AuthAuthenticated(token: token));
+        // For now, emit unauthenticated with a message indicating backend needs to be linked
+        emit(AuthUnauthenticated(
+          errorMessage: 'Backend integration pending. Google account: ${googleAccount.email}',
+        ));
       },
     );
   }

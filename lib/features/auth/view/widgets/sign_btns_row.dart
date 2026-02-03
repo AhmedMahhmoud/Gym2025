@@ -1,4 +1,4 @@
-import 'package:animate_do/animate_do.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -6,10 +6,9 @@ import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/Shared/ui/rounded_primary_btn.dart';
 import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
 import 'package:trackletics/features/auth/view/widgets/auth_toggle_btns.dart';
-import 'package:trackletics/features/auth/view/widgets/social_sign_btn.dart';
 import 'package:trackletics/routes/route_names.dart';
 
-class LoginButtonsRow extends StatelessWidget {
+class LoginButtonsRow extends StatefulWidget {
   const LoginButtonsRow({
     super.key,
     required this.authtype,
@@ -17,7 +16,15 @@ class LoginButtonsRow extends StatelessWidget {
   final AuthType authtype;
 
   @override
+  State<LoginButtonsRow> createState() => _LoginButtonsRowState();
+}
+
+class _LoginButtonsRowState extends State<LoginButtonsRow> {
+  @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -43,10 +50,12 @@ class LoginButtonsRow extends StatelessWidget {
               width: 300,
               borderRadius: 18,
               isLoading: state is AuthLoading,
-              text: authtype == AuthType.login ? 'Login' : 'Sign up',
+              text: widget.authtype == AuthType.login
+                  ? 'auth.login'.tr()
+                  : 'auth.signup'.tr(),
               icon: FontAwesomeIcons.arrowRight,
               onPressed: () {
-                if (authtype == AuthType.signup) {
+                if (widget.authtype == AuthType.signup) {
                   context.read<AuthCubit>().register();
                 } else {
                   context.read<AuthCubit>().login();

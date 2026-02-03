@@ -13,8 +13,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.trackletics.app"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 36
+    ndkVersion = "28.0.12674087"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -25,13 +25,28 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8
     }
 
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+        // Ensure proper alignment for 16KB page size support
+        resources {
+            excludes += ['META-INF/*']
+        }
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
     defaultConfig {  
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.trackletics.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdkVersion = flutter.minSdkVersion
-        targetSdk = 34
+        targetSdk = 36  // Required for 16KB page size support (Android 15+)
+        multiDexEnabled = true
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

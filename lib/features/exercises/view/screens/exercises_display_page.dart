@@ -50,7 +50,11 @@ class _ExercisesScreenState extends State<ExercisesScreen>
       backgroundColor: Colors.transparent,
       builder: (context) => BlocProvider.value(
         value: context.read<ExercisesCubit>(),
-        child: const ExerciseFilterBottomSheet(),
+        child: SizedBox(
+          height:
+              MediaQuery.of(context).size.height * 0.75, // 75% of screen height
+          child: const ExerciseFilterBottomSheet(),
+        ),
       ),
     );
   }
@@ -80,8 +84,10 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
                   children: [
-                    const Expanded(
-                      child: ExerciseSearchField(),
+                    Expanded(
+                      child: ExerciseSearchField(
+                        key: const Key('search_field'),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     // Filter icon button

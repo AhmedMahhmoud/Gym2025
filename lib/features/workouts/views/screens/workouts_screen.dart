@@ -10,6 +10,8 @@ import 'package:trackletics/features/workouts/views/screens/workout_details_scre
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
+// import 'package:trackletics/core/debug/api_logger_model.dart';
+// import 'package:trackletics/routes/route_names.dart';
 
 class WorkoutsScreen extends StatefulWidget {
   const WorkoutsScreen({Key? key}) : super(key: key);
@@ -68,16 +70,26 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         _isAddingWorkout = true;
       });
 
+      // Logger navigation commented out
+      // void navigateToLogger(ApiLoggerModel logData) {
+      //   Navigator.pushNamed(
+      //     context,
+      //     RouteNames.api_logger_route,
+      //     arguments: [logData],
+      //   );
+      // }
+
       _workoutsCubit
           .createWorkout(
         _titleController.text,
         notes: _notesController.text.isNotEmpty
             ? _notesController.text
-            : null, // Pass notes
+            : null,
+        // onLogCreated: navigateToLogger,
       )
           .then((newWorkout) {
         _titleController.clear();
-        _notesController.clear(); // Clear notes
+        _notesController.clear();
         setState(() {
           _isAddingWorkout = false;
         });

@@ -41,17 +41,34 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
     _workoutsCubit.loadExercisesForWorkout();
   }
 
-  void _navigateToExerciseSets(Exercise exercise) {
-    _workoutsCubit.setCurrentExercise(exercise);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (ctx) => BlocProvider.value(
-          value: _workoutsCubit,
-          child: const ExerciseSetsScreen(),
+  Future<void> _navigateToExerciseSets(Exercise exercise) async {
+    // Check if exercise has valid workout exercise ID (not temp)
+    final success = await _workoutsCubit.setCurrentExercise(exercise);
+
+    if (!success) {
+      // Error message already shown by cubit
+      return;
+    }
+
+    // Only navigate if workout exercise has real ID (not temp)
+    final workoutExercise = _workoutsCubit.state.currentWorkoutExercise;
+    if (workoutExercise != null && !workoutExercise.id.startsWith('temp_')) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (ctx) => BlocProvider.value(
+            value: _workoutsCubit,
+            child: const ExerciseSetsScreen(),
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      CustomSnackbar.show(
+        context,
+        'Cannot open sets: Exercise must be saved to backend first',
+        isError: true,
+      );
+    }
   }
 
   void _showDeleteConfirmationDialog(Exercise exercise) {
@@ -145,6 +162,9 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: false,
       builder: (context) => BlocProvider.value(
         value: _workoutsCubit,
         child: const AddExerciseBottomSheet(),

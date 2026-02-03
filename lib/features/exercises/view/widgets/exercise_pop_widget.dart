@@ -100,7 +100,6 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 20),
                       // Exercise name
                       Text(
                         widget.exercise.name,

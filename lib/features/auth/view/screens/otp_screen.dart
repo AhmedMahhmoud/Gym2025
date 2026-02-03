@@ -11,6 +11,7 @@ import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/auth/data/repositories/otp_repository.dart';
 import 'package:trackletics/features/auth/view/cubit/otp_cubit.dart';
 import 'package:trackletics/features/auth/view/screens/auth_screen.dart';
+import 'package:trackletics/routes/route_names.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen(
@@ -78,7 +79,24 @@ class _OtpScreenState extends State<OtpScreen> {
           }
 
           switch (state) {
+            case AutoLoginSuccessState():
+              // Auto-login successful, navigate to home
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                RouteNames.home_route,
+                (route) => false,
+              );
+              break;
+            case AutoLoginErrorState(errorMessage: var errorMsg):
+              // Auto-login failed, show error and navigate to login
+              showSnackbar(errorMsg, isError: true);
+              navigateToAuthScreen();
+              break;
             case OtpSuccessState(successMsg: var msg):
+              // OTP verified but no auto-login (shouldn't happen, but handle it)
+              showSnackbar(msg);
+              navigateToAuthScreen();
+              break;
             case ResetPasswordLoaded(successMsg: var msg):
             case VerifyResetPasswordLoaded(successMsg: var msg?):
               showSnackbar(msg);
@@ -268,7 +286,8 @@ class _OtpScreenState extends State<OtpScreen> {
                           );
                         }
                       },
-                      isLoading: state is OtpLoadingState,
+                      isLoading: state is OtpLoadingState ||
+                          state is AutoLoginLoadingState,
                       width: 220,
                     ),
                   ),

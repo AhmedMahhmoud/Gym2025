@@ -6,7 +6,10 @@ abstract class IWorkoutSet {
   int? get restTime;
   String get workoutExerciseId;
   String? get note;
-  String? get timeUnitId;
+  String?
+      get timeUnitId; // Deprecated: use restTimeUnitId and durationTimeUnitId
+  String? get restTimeUnitId;
+  String? get durationTimeUnitId;
   String? get weightUnitId;
   Map<String, dynamic> toJson();
 }
@@ -27,7 +30,11 @@ class SetModel implements IWorkoutSet {
   @override
   final String? note;
   @override
-  final String? timeUnitId;
+  final String? timeUnitId; // Deprecated: kept for backward compatibility
+  @override
+  final String? restTimeUnitId;
+  @override
+  final String? durationTimeUnitId;
   @override
   final String? weightUnitId;
 
@@ -40,6 +47,8 @@ class SetModel implements IWorkoutSet {
     required this.workoutExerciseId,
     this.note,
     this.timeUnitId,
+    this.restTimeUnitId,
+    this.durationTimeUnitId,
     this.weightUnitId,
   });
 
@@ -52,7 +61,9 @@ class SetModel implements IWorkoutSet {
       restTime: json['restTime'],
       workoutExerciseId: json['workoutExerciseId'] ?? '',
       note: json['note'],
-      timeUnitId: json['timeUnitId'],
+      timeUnitId: json['timeUnitId'], // Kept for backward compatibility
+      restTimeUnitId: json['restTimeUnitId'],
+      durationTimeUnitId: json['durationTimeUnitId'],
       weightUnitId: json['weightUnitId'],
     );
   }
@@ -67,7 +78,10 @@ class SetModel implements IWorkoutSet {
       'restTime': restTime,
       'workoutExerciseId': workoutExerciseId,
       if (note != null) 'note': note,
-      if (timeUnitId != null) 'timeUnitId': timeUnitId,
+      if (timeUnitId != null)
+        'timeUnitId': timeUnitId, // Kept for backward compatibility
+      if (restTimeUnitId != null) 'restTimeUnitId': restTimeUnitId,
+      if (durationTimeUnitId != null) 'durationTimeUnitId': durationTimeUnitId,
       if (weightUnitId != null) 'weightUnitId': weightUnitId,
     };
   }

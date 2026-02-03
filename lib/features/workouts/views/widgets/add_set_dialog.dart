@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
-import 'package:trackletics/core/widgets/dialogs/input_dialog_container.dart';
 import 'package:trackletics/features/workouts/data/units_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -13,7 +11,8 @@ class AddSetDialog extends StatefulWidget {
     required int? duration,
     int? restTime,
     String? note,
-    String? timeUnitId,
+    String? restTimeUnitId,
+    String? durationTimeUnitId,
     String? weightUnitId,
   }) onAdd;
 
@@ -35,7 +34,10 @@ class _AddSetDialogState extends State<AddSetDialog> {
   bool _isRepsBased = true;
   bool _isWeightInKg = true;
   bool _isDurationInMinutes = true;
+  bool _isRestTimeInMinutes = true;
   bool _isLoading = false;
+  bool _hasDurationError = false;
+  bool _hasRestTimeError = false;
 
   // Units service
   final _unitsService = UnitsService();
@@ -59,6 +61,12 @@ class _AddSetDialogState extends State<AddSetDialog> {
     });
 
     try {
+      // Ensure units are loaded before proceeding
+      if (_unitsService.timeUnits.isEmpty ||
+          _unitsService.weightUnits.isEmpty) {
+        await _unitsService.initialize();
+      }
+
       final weight = _weightController.text.trim().isEmpty
           ? null
           : double.tryParse(_weightController.text);
@@ -78,24 +86,117 @@ class _AddSetDialogState extends State<AddSetDialog> {
         return;
       }
 
-      // Get unit IDs based on selection without conversion
-      final weightUnitId = weight != null
-          ? (_isWeightInKg
-              ? _unitsService.getDefaultWeightUnit()?.id
-              : _unitsService.weightUnits
-                  .where((unit) => unit.title == 'Lbs')
-                  .firstOrNull
-                  ?.id)
-          : null;
+      // Get unit IDs based on selection - with case-insensitive matching and fallbacks
+      // MUST be set if weight is provided
+      String? weightUnitId;
+      if (weight != null && _unitsService.weightUnits.isNotEmpty) {
+        if (_isWeightInKg) {
+          // Try to find 'kg' (case-insensitive)
+          final unit = _unitsService.weightUnits
+              .where((unit) => unit.title.toLowerCase() == 'kg')
+              .firstOrNull;
+          weightUnitId = unit?.id;
 
-      final timeUnitId = _isDurationInMinutes
-          ? _unitsService.timeUnits
-              .where((unit) => unit.title == 'Min')
-              .firstOrNull
-              ?.id
-          : _unitsService.getDefaultTimeUnit()?.id;
+          // Fallback to default weight unit (Kg) if not found
+          if (weightUnitId == null) {
+            final defaultUnit = _unitsService.getDefaultWeightUnit();
+            weightUnitId = defaultUnit?.id;
+
+            // Final fallback to first weight unit
+            if (weightUnitId == null && _unitsService.weightUnits.isNotEmpty) {
+              weightUnitId = _unitsService.weightUnits.first.id;
+            }
+          }
+        } else {
+          // Try to find 'lbs' (case-insensitive)
+          final unit = _unitsService.weightUnits
+              .where((unit) => unit.title.toLowerCase() == 'lbs')
+              .firstOrNull;
+          weightUnitId = unit?.id;
+
+          // Fallback to first weight unit if 'lbs' not found
+          if (weightUnitId == null && _unitsService.weightUnits.isNotEmpty) {
+            weightUnitId = _unitsService.weightUnits.first.id;
+          }
+        }
+      }
+
+      // Get rest time unit ID - MUST be set if restTime is provided
+      String? restTimeUnitId;
+      if (restTime != null && _unitsService.timeUnits.isNotEmpty) {
+        if (_isRestTimeInMinutes) {
+          // Try to find 'min' (case-insensitive)
+          final unit = _unitsService.timeUnits
+              .where((unit) =>
+                  unit.title.toLowerCase() == 'min' ||
+                  unit.title.toLowerCase().contains('min'))
+              .firstOrNull;
+          restTimeUnitId = unit?.id;
+
+          // Fallback to first time unit if not found
+          if (restTimeUnitId == null && _unitsService.timeUnits.isNotEmpty) {
+            restTimeUnitId = _unitsService.timeUnits.first.id;
+          }
+        } else {
+          // Use default time unit (usually 'Sec')
+          final unit = _unitsService.getDefaultTimeUnit();
+          restTimeUnitId = unit?.id;
+
+          // Fallback to first time unit if default not found
+          if (restTimeUnitId == null && _unitsService.timeUnits.isNotEmpty) {
+            restTimeUnitId = _unitsService.timeUnits.first.id;
+          }
+        }
+      }
+
+      // Get duration unit ID (only for duration-based sets) - MUST be set if duration is provided
+      String? durationTimeUnitId;
+      if (!_isRepsBased &&
+          duration != null &&
+          _unitsService.timeUnits.isNotEmpty) {
+        if (_isDurationInMinutes) {
+          // Try to find 'min' (case-insensitive)
+          final unit = _unitsService.timeUnits
+              .where((unit) =>
+                  unit.title.toLowerCase() == 'min' ||
+                  unit.title.toLowerCase().contains('min'))
+              .firstOrNull;
+          durationTimeUnitId = unit?.id;
+
+          // Fallback to first time unit if not found
+          if (durationTimeUnitId == null &&
+              _unitsService.timeUnits.isNotEmpty) {
+            durationTimeUnitId = _unitsService.timeUnits.first.id;
+          }
+        } else {
+          // Use default time unit (usually 'Sec')
+          final unit = _unitsService.getDefaultTimeUnit();
+          durationTimeUnitId = unit?.id;
+
+          // Fallback to first time unit if default not found
+          if (durationTimeUnitId == null &&
+              _unitsService.timeUnits.isNotEmpty) {
+            durationTimeUnitId = _unitsService.timeUnits.first.id;
+          }
+        }
+      }
 
       if (_isRepsBased) {
+        // Validate rest time format - must be a whole number (for reps-based sets too)
+        bool hasRestTimeFormatError = _restTimeController.text.isNotEmpty &&
+            (_restTimeController.text.contains('.') ||
+                _restTimeController.text.contains(':'));
+
+        if (hasRestTimeFormatError) {
+          CustomSnackbar.show(context, 'workouts.invalid_duration_format'.tr(),
+              isError: true);
+          setState(() {
+            _isLoading = false;
+            _hasRestTimeError = true;
+          });
+          return;
+        }
+
         if (reps == null || reps <= 0) {
           CustomSnackbar.show(context, 'workouts.valid_reps_required'.tr(),
               isError: true);
@@ -104,40 +205,77 @@ class _AddSetDialogState extends State<AddSetDialog> {
           });
           return;
         }
+        // Clear errors on successful validation
+        setState(() {
+          _hasDurationError = false;
+          _hasRestTimeError = false;
+        });
+
         widget.onAdd(
           weight: weight,
           reps: reps,
           duration: null,
           restTime: restTime,
           note: note.isNotEmpty ? note : null,
-          timeUnitId: timeUnitId,
+          restTimeUnitId: restTimeUnitId,
+          durationTimeUnitId: null,
           weightUnitId: weightUnitId,
         );
       } else {
+        // Validate duration format - must be a whole number
+        bool hasDurationFormatError = _durationController.text.contains('.') ||
+            _durationController.text.contains(':');
+
+        // Validate rest time format - must be a whole number
+        bool hasRestTimeFormatError = _restTimeController.text.isNotEmpty &&
+            (_restTimeController.text.contains('.') ||
+                _restTimeController.text.contains(':'));
+
+        if (hasDurationFormatError || hasRestTimeFormatError) {
+          CustomSnackbar.show(context, 'workouts.invalid_duration_format'.tr(),
+              isError: true);
+          setState(() {
+            _isLoading = false;
+            _hasDurationError = hasDurationFormatError;
+            _hasRestTimeError = hasRestTimeFormatError;
+          });
+          return;
+        }
         if (duration == null || duration <= 0) {
           CustomSnackbar.show(context, 'workouts.valid_duration_required'.tr(),
               isError: true);
           setState(() {
             _isLoading = false;
+            _hasDurationError = true;
           });
           return;
         }
+        // Clear errors on successful validation
+        setState(() {
+          _hasDurationError = false;
+          _hasRestTimeError = false;
+        });
+
         widget.onAdd(
           weight: weight,
           reps: null,
           duration: duration,
           restTime: restTime,
           note: note.isNotEmpty ? note : null,
-          timeUnitId: timeUnitId,
+          restTimeUnitId: restTimeUnitId,
+          durationTimeUnitId: durationTimeUnitId,
           weightUnitId: weightUnitId,
         );
       }
 
-      // Add a small delay to show the loading indicator
+      // Don't close the dialog automatically - let the logger callback handle it
+      // The logger callback will close the dialog before navigating
+      // If no logger callback is provided, close after a delay
       await Future.delayed(const Duration(milliseconds: 300));
 
       if (mounted) {
-        Navigator.pop(context);
+        // Only close if we're still mounted (logger callback might have already closed it)
+        Navigator.maybePop(context);
       }
     } catch (error) {
       setState(() {
@@ -307,6 +445,14 @@ class _AddSetDialogState extends State<AddSetDialog> {
                                     hintText: 'workouts.duration_hint'.tr(),
                                     keyboardType: TextInputType.number,
                                     prefixIcon: Icons.timer_outlined,
+                                    hasError: _hasDurationError,
+                                    onChanged: () {
+                                      if (_hasDurationError) {
+                                        setState(() {
+                                          _hasDurationError = false;
+                                        });
+                                      }
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -336,15 +482,23 @@ class _AddSetDialogState extends State<AddSetDialog> {
                               hintText: 'workouts.rest_time_hint'.tr(),
                               keyboardType: TextInputType.number,
                               prefixIcon: Icons.timer,
+                              hasError: _hasRestTimeError,
+                              onChanged: () {
+                                if (_hasRestTimeError) {
+                                  setState(() {
+                                    _hasRestTimeError = false;
+                                  });
+                                }
+                              },
                             ),
                           ),
                           const SizedBox(width: 12),
                           _buildModernToggle(
                             values: ['min', 'sec'],
-                            selectedIndex: _isDurationInMinutes ? 0 : 1,
+                            selectedIndex: _isRestTimeInMinutes ? 0 : 1,
                             onChanged: (index) {
                               setState(() {
-                                _isDurationInMinutes = index == 0;
+                                _isRestTimeInMinutes = index == 0;
                               });
                             },
                           ),
@@ -580,29 +734,50 @@ class _AddSetDialogState extends State<AddSetDialog> {
     required IconData prefixIcon,
     TextInputType? keyboardType,
     int? maxLines,
+    bool hasError = false,
+    VoidCallback? onChanged,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines ?? 1,
       style: const TextStyle(color: Colors.white, fontSize: 16),
+      onChanged: (_) => onChanged?.call(),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-        prefixIcon: Icon(prefixIcon, color: AppColors.primary.withOpacity(0.7)),
+        prefixIcon: Icon(
+          prefixIcon,
+          color: hasError
+              ? Colors.red.withOpacity(0.7)
+              : AppColors.primary.withOpacity(0.7),
+        ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: hasError
+            ? Colors.red.withOpacity(0.05)
+            : Colors.white.withOpacity(0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(
+            color: hasError
+                ? Colors.red.withOpacity(0.5)
+                : Colors.white.withOpacity(0.1),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(
+            color: hasError
+                ? Colors.red.withOpacity(0.5)
+                : Colors.white.withOpacity(0.1),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(
+            color: hasError ? Colors.red : AppColors.primary,
+            width: 2,
+          ),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -637,7 +812,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                value,
+                value.tr(),
                 style: TextStyle(
                   color:
                       isSelected ? Colors.white : Colors.white.withOpacity(0.7),

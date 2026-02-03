@@ -37,7 +37,7 @@ class SocialSignBtn extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

@@ -4,7 +4,7 @@ import 'package:trackletics/core/theme/app_colors.dart';
 
 enum AuthType { login, signup }
 
-class AuthToggleTabs extends StatelessWidget {
+class AuthToggleTabs extends StatefulWidget {
   const AuthToggleTabs({
     super.key,
     required this.selectedType,
@@ -14,7 +14,15 @@ class AuthToggleTabs extends StatelessWidget {
   final ValueChanged<AuthType> onSelect;
 
   @override
+  State<AuthToggleTabs> createState() => _AuthToggleTabsState();
+}
+
+class _AuthToggleTabsState extends State<AuthToggleTabs> {
+  @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     return Row(
       children: AuthType.values.map((type) {
         return Padding(
@@ -22,8 +30,8 @@ class AuthToggleTabs extends StatelessWidget {
           child: AuthTabButton(
             label:
                 type == AuthType.login ? 'auth.login'.tr() : 'auth.signup'.tr(),
-            isSelected: selectedType == type,
-            onTap: () => onSelect(type),
+            isSelected: widget.selectedType == type,
+            onTap: () => widget.onSelect(type),
           ),
         );
       }).toList(),

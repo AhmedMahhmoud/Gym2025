@@ -9,6 +9,7 @@ import 'package:trackletics/features/workouts/data/models/set_model.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
+import 'package:trackletics/features/workouts/data/units_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class SetsScreen extends StatefulWidget {
@@ -35,8 +36,9 @@ class _SetsScreenState extends State<SetsScreen> {
     _repsController.clear();
     _weightController.clear();
     _restTimeController.clear();
-    bool isDurationInMinutes = true;
     bool isWeightInKg = true;
+    bool isRestTimeInMinutes = true;
+    final _unitsService = UnitsService();
 
     showGeneralDialog(
       context: context,
@@ -152,7 +154,7 @@ class _SetsScreenState extends State<SetsScreen> {
                                 labelText: 'Rest Time',
                                 labelStyle:
                                     const TextStyle(color: Colors.white70),
-                                hintText: isDurationInMinutes
+                                hintText: isRestTimeInMinutes
                                     ? 'e.g., 2'
                                     : 'e.g., 120',
                                 filled: true,
@@ -176,12 +178,12 @@ class _SetsScreenState extends State<SetsScreen> {
                             ),
                             child: ToggleButtons(
                               isSelected: [
-                                isDurationInMinutes,
-                                !isDurationInMinutes
+                                isRestTimeInMinutes,
+                                !isRestTimeInMinutes
                               ],
                               onPressed: (index) {
                                 setState(() {
-                                  isDurationInMinutes = index == 0;
+                                  isRestTimeInMinutes = index == 0;
                                 });
                               },
                               borderRadius: BorderRadius.circular(12),
@@ -239,11 +241,32 @@ class _SetsScreenState extends State<SetsScreen> {
 
                                 var restTime =
                                     int.tryParse(_restTimeController.text);
-                                // Convert rest time if needed
-                                if (restTime != null && isDurationInMinutes) {
-                                  restTime = restTime *
-                                      60; // Convert minutes to seconds
-                                }
+
+                                // Get unit IDs based on selection
+                                final weightUnitId = weight != null
+                                    ? (isWeightInKg
+                                        ? _unitsService
+                                            .getDefaultWeightUnit()
+                                            ?.id
+                                        : _unitsService.weightUnits
+                                            .where(
+                                                (unit) => unit.title == 'Lbs')
+                                            .firstOrNull
+                                            ?.id)
+                                    : null;
+
+                                // Get rest time unit ID (no conversion needed - backend handles it)
+                                final restTimeUnitId = restTime != null
+                                    ? (isRestTimeInMinutes
+                                        ? _unitsService.timeUnits
+                                            .where(
+                                                (unit) => unit.title == 'Min')
+                                            .firstOrNull
+                                            ?.id
+                                        : _unitsService
+                                            .getDefaultTimeUnit()
+                                            ?.id)
+                                    : null;
 
                                 if (reps > 0) {
                                   context
@@ -252,6 +275,9 @@ class _SetsScreenState extends State<SetsScreen> {
                                         reps: reps,
                                         weight: weight,
                                         restTime: restTime,
+                                        restTimeUnitId: restTimeUnitId,
+                                        durationTimeUnitId: null,
+                                        weightUnitId: weightUnitId,
                                       );
                                   Navigator.pop(context);
                                 }
@@ -409,6 +435,10 @@ class _SetsScreenState extends State<SetsScreen> {
                                         weight: weight,
                                         duration: null,
                                         restTime: restTime,
+                                        restTimeUnitId: set.restTimeUnitId,
+                                        durationTimeUnitId:
+                                            set.durationTimeUnitId,
+                                        weightUnitId: set.weightUnitId,
                                       );
                                   Navigator.pop(context);
                                 }
@@ -669,7 +699,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               color: Colors.white70, size: 16),
                           const SizedBox(width: 4),
                           Text(
-                            '${set.duration}s',
+                            '${set.duration} ${set.durationTimeUnitId == "841dce21-5995-4078-801c-59cfc1b070b9" ? 'workouts.sec'.tr() : 'workouts.min'.tr()}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w500,
@@ -699,7 +729,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               color: Colors.white54, size: 14),
                           const SizedBox(width: 4),
                           Text(
-                            '${'workouts.rest'.tr()}: ${set.restTime}s',
+                            '${'workouts.rest'.tr()}: ${set.restTime} ${set.restTimeUnitId == "841dce21-5995-4078-801c-59cfc1b070b9" ? 'workouts.sec'.tr() : 'workouts.min'.tr()}',
                             style: const TextStyle(
                               color: Colors.white54,
                               fontSize: 12,

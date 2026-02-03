@@ -9,6 +9,8 @@ import 'package:trackletics/features/exercises/view/screens/admin_missing_videos
 import 'package:trackletics/features/exercises/view/screens/admin_exercise_edit_screen.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:trackletics/shared/widgets/main_scaffold.dart';
+import 'package:trackletics/core/debug/api_logger_page.dart';
+import 'package:trackletics/core/debug/api_logger_model.dart';
 
 class OnPageRoute {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -31,6 +33,10 @@ class OnPageRoute {
           (args) => AdminExerciseEditScreen(exercise: args[0]),
         ),
       RouteNames.admin_missing_videos_route => const AdminMissingVideosScreen(),
+      RouteNames.api_logger_route => _createPage<ApiLoggerPage>(
+          settings.arguments,
+          (args) => ApiLoggerPage(logData: args[0] as ApiLoggerModel),
+        ),
       _ => _errorPage(settings.name),
     };
 

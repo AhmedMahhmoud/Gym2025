@@ -13,6 +13,8 @@ import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
+// import 'package:trackletics/core/debug/api_logger_model.dart';
+// import 'package:trackletics/routes/route_names.dart';
 
 class PlansScreen extends StatefulWidget {
   const PlansScreen({Key? key}) : super(key: key);
@@ -70,10 +72,21 @@ class _PlansScreenState extends State<PlansScreen>
       setState(() {
         _isAddingPlan = true;
       });
+      
+      // Logger navigation commented out
+      // void navigateToLogger(ApiLoggerModel logData) {
+      //   Navigator.pushNamed(
+      //     context,
+      //     RouteNames.api_logger_route,
+      //     arguments: [logData],
+      //   );
+      // }
+      
       _workoutsCubit
           .createPlan(
         _titleController.text,
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+        // onLogCreated: navigateToLogger,
       )
           .then((_) {
         _titleController.clear();

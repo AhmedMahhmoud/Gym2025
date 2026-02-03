@@ -45,19 +45,37 @@ class UnitsService {
 
   // Helper methods to get specific units
   UnitModel? getTimeUnitById(String id) {
-    return _timeUnits?.firstWhere((unit) => unit.id == id);
+    try {
+      return _timeUnits?.firstWhere((unit) => unit.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   UnitModel? getWeightUnitById(String id) {
-    return _weightUnits?.firstWhere((unit) => unit.id == id);
+    try {
+      return _weightUnits?.firstWhere((unit) => unit.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   // Helper methods to get default units
   UnitModel? getDefaultTimeUnit() {
-    return _timeUnits?.firstWhere((unit) => unit.title == 'Sec');
+    try {
+      return _timeUnits?.firstWhere((unit) => unit.title == 'Sec');
+    } catch (e) {
+      // If no 'Sec' unit found, return the first available time unit or null
+      return _timeUnits?.isNotEmpty == true ? _timeUnits!.first : null;
+    }
   }
 
   UnitModel? getDefaultWeightUnit() {
-    return _weightUnits?.firstWhere((unit) => unit.title == 'Kg');
+    try {
+      return _weightUnits?.firstWhere((unit) => unit.title == 'Kg');
+    } catch (e) {
+      // If no 'Kg' unit found, return the first available weight unit or null
+      return _weightUnits?.isNotEmpty == true ? _weightUnits!.first : null;
+    }
   }
 }

@@ -8,4 +8,5 @@ abstract class RouteNames {
   static const String exercise_details_route = 'exercise_details';
   static const String admin_exercise_edit_route = 'admin_exercise_edit';
   static const String admin_missing_videos_route = 'admin_missing_videos';
+  static const String api_logger_route = 'api_logger';
 }

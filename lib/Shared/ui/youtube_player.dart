@@ -12,7 +12,7 @@ class YoutubeIframeWidget extends StatefulWidget {
 
 class _YoutubeIframeWidgetState extends State<YoutubeIframeWidget>
     with AutomaticKeepAliveClientMixin {
-  late YoutubePlayerController? _controller;
+  YoutubePlayerController? _controller;
   String? _validVideoId;
   bool _hasValidVideo = false;
 
@@ -143,8 +143,8 @@ class _YoutubeIframeWidgetState extends State<YoutubeIframeWidget>
         child: YoutubePlayer(
           controller: _controller!,
           bottomActions: [
-            CurrentPosition(),
-            ProgressBar(isExpanded: true),
+            const CurrentPosition(),
+            const ProgressBar(isExpanded: true),
             IconButton(
               color: Colors.white,
               icon: const Icon(
@@ -178,7 +178,7 @@ class FullScreenVideoPlayer extends StatefulWidget {
 }
 
 class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
-  late YoutubePlayerController? _controller;
+  YoutubePlayerController? _controller;
   String? _validVideoId;
   bool _hasValidVideo = false;
 
@@ -276,8 +276,8 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
           aspectRatio: MediaQuery.sizeOf(context).width /
               MediaQuery.sizeOf(context).height,
           bottomActions: [
-            CurrentPosition(),
-            ProgressBar(isExpanded: true),
+            const CurrentPosition(),
+            const ProgressBar(isExpanded: true),
             IconButton(
               icon: const Icon(
                 Icons.fullscreen_exit,

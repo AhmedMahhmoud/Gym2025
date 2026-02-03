@@ -1,4 +1,5 @@
 import 'package:trackletics/core/network/dio_service.dart';
+import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/features/exercises/data/models/missing_video_exercise.dart';
 
@@ -11,6 +12,7 @@ class ExercisesService {
     String? gender,
     String? filterOn,
     String? filterQuery,
+    String? language,
   }) async {
     final query = <String, dynamic>{};
     if (role != null && role.isNotEmpty) query['role'] = role;
@@ -19,10 +21,12 @@ class ExercisesService {
     if (filterQuery != null && filterQuery.isNotEmpty) {
       query['filterQuery'] = filterQuery;
     }
+    // Add language parameter - default to 'en' if not provided
+    query['language'] = language ?? 'en';
 
     final res = await dioService.get(
       '/api/Exercises/GetAllExercises',
-      queryParameters: query.isEmpty ? null : query,
+      queryParameters: query,
     );
     return Exercise.parseExercises(res.data, gender!, false);
   }

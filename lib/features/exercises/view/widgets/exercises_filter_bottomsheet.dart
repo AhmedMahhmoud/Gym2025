@@ -285,13 +285,14 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  'exercises.Apply Filter'.tr(),
+                  'exercises.apply_filter'.tr(),
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
             ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );

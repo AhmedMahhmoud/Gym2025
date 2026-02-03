@@ -46,3 +46,17 @@ final class ResetPasswordLoaded extends OtpState {
   const ResetPasswordLoaded({required this.successMsg});
   final String successMsg;
 }
+
+final class AutoLoginLoadingState extends OtpState {
+  const AutoLoginLoadingState();
+}
+
+final class AutoLoginSuccessState extends OtpState {
+  const AutoLoginSuccessState({required this.token});
+  final String token;
+}
+
+final class AutoLoginErrorState extends OtpState {
+  const AutoLoginErrorState({required this.errorMessage});
+  final String errorMessage;
+}

@@ -13,6 +13,7 @@ class ExercisesRepository {
     String? gender,
     String? filterOn,
     String? filterQuery,
+    String? language,
   }) async {
     try {
       final exercises = await exercisesService.fetchExercises(
@@ -20,6 +21,7 @@ class ExercisesRepository {
         gender: gender,
         filterOn: filterOn,
         filterQuery: filterQuery,
+        language: language,
       );
       return Right(exercises);
     } catch (e) {

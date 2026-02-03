@@ -33,6 +33,8 @@ class StorageService {
   static const String _registrationInProgressKey = 'registration_in_progress';
   static const String _pendingVerificationEmailKey =
       'pending_verification_email';
+  static const String _pendingVerificationPasswordKey =
+      'pending_verification_password';
 
   // Write Methods
   Future<void> write({
@@ -220,9 +222,23 @@ class StorageService {
     return await read<String>(key: _pendingVerificationEmailKey);
   }
 
+  Future<void> setPendingVerificationPassword(String password) async {
+    await write(
+        key: _pendingVerificationPasswordKey,
+        value: password,
+        type: StorageType.secure);
+  }
+
+  Future<String?> getPendingVerificationPassword() async {
+    return await read<String>(
+        key: _pendingVerificationPasswordKey, type: StorageType.secure);
+  }
+
   Future<void> clearRegistrationState() async {
     await delete(key: _registrationInProgressKey);
     await delete(key: _pendingVerificationEmailKey);
+    await delete(
+        key: _pendingVerificationPasswordKey, type: StorageType.secure);
   }
 
   // Clear User Data

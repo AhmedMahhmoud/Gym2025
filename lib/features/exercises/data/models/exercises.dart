@@ -7,7 +7,9 @@ class Exercise {
         name: json['title'] ?? json['name'] ?? '',
         description: json['description'] ?? '',
         videoUrl: isCustom
-            ? json['videoUrl']
+            ? json['videoURl'] != null
+                ? json['videoURl']
+                : ''
             : gender == 'male'
                 ? json['videoUrl'] ?? ''
                 : json['femaleVideoUrl'] ?? '',

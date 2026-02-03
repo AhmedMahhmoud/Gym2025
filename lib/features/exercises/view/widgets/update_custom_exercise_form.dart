@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
@@ -138,7 +139,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Update Custom Exercise'),
+          title: Text('workouts.edit_workout'.tr()),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -207,7 +208,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                       maxLines: 3,
                       onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
-                        hintText: 'Description',
+                        hintText: 'workouts.workout_description'.tr(),
                         filled: true,
                         fillColor: AppColors.background,
                         border: OutlineInputBorder(
@@ -237,7 +238,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                       controller: _videoUrlController,
                       onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
-                        hintText: 'YouTube Video URL (Optional)',
+                        hintText: 'workouts.youtube_video_url_optional'.tr(),
                         filled: true,
                         fillColor: AppColors.background,
                         border: OutlineInputBorder(
@@ -267,7 +268,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                       controller: _categoryController,
                       onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
-                        hintText: 'Muscle Group (e.g., Chest)',
+                        hintText: 'workouts.muscle_group'.tr(),
                         filled: true,
                         fillColor: AppColors.background,
                         border: OutlineInputBorder(
@@ -308,8 +309,8 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                         ),
                         child: Text(
                           state.status == ExerciseStatus.loading
-                              ? 'Updating Exercise...'
-                              : 'Update Custom Exercise',
+                              ? 'workouts.updating_exercise'.tr()
+                              : 'common.edit'.tr(),
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),

@@ -224,7 +224,6 @@ class _MyAppState extends State<MyApp> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     shape: BoxShape.rectangle,
-                    color: Colors.red[600],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(

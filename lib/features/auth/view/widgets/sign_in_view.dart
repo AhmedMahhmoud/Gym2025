@@ -8,15 +8,24 @@ import 'package:trackletics/core/utils/validators/validations.dart';
 import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
 import 'package:trackletics/features/auth/view/widgets/auth_toggle_btns.dart';
 import 'package:trackletics/features/auth/view/widgets/sign_btns_row.dart';
+import 'package:trackletics/features/auth/view/widgets/social_sign_btn.dart';
 import 'package:trackletics/routes/route_names.dart';
 
-class SignInView extends StatelessWidget {
+class SignInView extends StatefulWidget {
   const SignInView({
     super.key,
   });
 
   @override
+  State<SignInView> createState() => _SignInViewState();
+}
+
+class _SignInViewState extends State<SignInView> {
+  @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     final AuthCubit authCubit = context.read<AuthCubit>();
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -57,7 +66,54 @@ class SignInView extends StatelessWidget {
             ),
           ),
           const SizedBox(
-            height: 40,
+            height: 30,
+          ),
+          // Google Sign-In Button
+          BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              return SocialSignBtn(
+                text: 'auth.sign_in_with_google'.tr(),
+                icon: FontAwesomeIcons.google,
+                onPressed: state is AuthLoading
+                    ? () {}
+                    : () {
+                        context.read<AuthCubit>().signInWithGoogle();
+                      },
+              );
+            },
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          // Divider with "OR" text
+          Row(
+            children: [
+              Expanded(
+                child: Divider(
+                  color: AppColors.divider.withOpacity(0.3),
+                  thickness: 1,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'auth.or'.tr(),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Divider(
+                  color: AppColors.divider.withOpacity(0.3),
+                  thickness: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 20,
           ),
           const LoginButtonsRow(
             authtype: AuthType.login,

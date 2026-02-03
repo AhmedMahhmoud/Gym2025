@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:trackletics/core/theme/app_theme.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AppDropdown<T> extends StatefulWidget {
@@ -38,7 +40,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
       onSaved: widget.onSaved,
       validator: (value) {
         if (widget.isRequired && (value == null)) {
-          return 'Required';
+          return 'validation.required'.tr();
         }
         if (widget.validator != null) {
           return widget.validator!(value);
@@ -46,9 +48,10 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         return null;
       },
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      style: const TextStyle(
+      style: TextStyle(
         color: AppColors.textPrimary,
         fontSize: 16,
+        fontFamily: context.locale.languageCode == 'ar' ? 'Cairo' : 'Quicksand',
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/core/services/token_manager.dart';
@@ -78,11 +79,18 @@ class ExercisesCubit extends Cubit<ExercisesState> {
         filterQuery = state.selectedChip;
       }
 
+      // Get current language from context if available
+      String? language;
+      if (context != null) {
+        language = EasyLocalization.of(context)?.locale.languageCode;
+      }
+
       final data = await exerciseRepository.fetchExercises(
         role: role,
         gender: gender,
         filterOn: filterOn,
         filterQuery: filterQuery,
+        language: language,
       );
       data.fold(
         (failure) {

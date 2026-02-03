@@ -140,14 +140,6 @@ class _PrimaryRoundedButtonState extends State<PrimaryRoundedButton>
                             letterSpacing: 0.5,
                           ),
                         ),
-                        if (widget.icon != null) ...[
-                          const SizedBox(width: 10),
-                          Icon(
-                            widget.icon,
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                        ],
                       ],
                     ),
             ),

@@ -10,13 +10,21 @@ import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
 import 'package:trackletics/features/auth/view/widgets/auth_toggle_btns.dart';
 import 'package:trackletics/features/auth/view/widgets/sign_btns_row.dart';
 
-class SignupView extends StatelessWidget {
+class SignupView extends StatefulWidget {
   const SignupView({
     super.key,
   });
 
   @override
+  State<SignupView> createState() => _SignupViewState();
+}
+
+class _SignupViewState extends State<SignupView> {
+  @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild on language change
+    context.locale;
+
     final AuthCubit authCubit = context.read<AuthCubit>();
     return Padding(
       padding: const EdgeInsets.symmetric(

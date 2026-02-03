@@ -5,7 +5,6 @@ import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/core/utils/shared_utils.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/features/exercises/view/widgets/custom_exercise_form.dart';
-import 'package:trackletics/features/exercises/view/widgets/exercises_filter_bottomsheet.dart';
 import 'package:trackletics/features/exercises/view/widgets/update_custom_exercise_form.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
@@ -14,6 +13,7 @@ import 'package:trackletics/routes/route_names.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
+// import 'package:trackletics/core/debug/api_logger_model.dart';
 
 class AddExerciseBottomSheet extends StatefulWidget {
   const AddExerciseBottomSheet({super.key});
@@ -47,8 +47,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       setState(() {
         _isCustomExercise = _tabController.index == 1;
       });
-      // Clear search when switching tabs to maintain independent search states
-      context.read<ExercisesCubit>().setSearchQuery('');
+      // Clear search controllers when switching tabs to maintain independent search states
       if (_isCustomExercise) {
         _allExercisesSearchController.clear();
       } else {
@@ -65,21 +64,6 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     super.dispose();
   }
 
-  void _syncSearchControllers(ExercisesState state) {
-    // Sync the search controllers with the current ExercisesCubit state
-    if (!_isCustomExercise) {
-      // For All Exercises tab
-      if (_allExercisesSearchController.text != state.searchQuery) {
-        _allExercisesSearchController.text = state.searchQuery;
-      }
-    } else {
-      // For Custom Exercises tab
-      if (_customExercisesSearchController.text != state.searchQuery) {
-        _customExercisesSearchController.text = state.searchQuery;
-      }
-    }
-  }
-
   String _getFilterButtonText(ExercisesState state) {
     if (_localFilterType == FilterType.both) {
       if (_localSelectedMuscle != null && _localSelectedCategory != null) {
@@ -93,31 +77,44 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         _localSelectedChip != null) {
       return '${_localFilterType.name}: $_localSelectedChip';
     }
-    return 'workouts.filter_by_category'.tr();
+    return 'workouts.filter'.tr();
   }
 
   List<Exercise> _getLocallyFilteredExercises(List<Exercise> exercises) {
     var filteredExercises = exercises;
 
     // Apply local dual filtering (both muscle and category)
-    if (_localFilterType == FilterType.both &&
-        _localSelectedMuscle != null &&
-        _localSelectedCategory != null) {
-      // Filter by both muscle and category
-      final muscleExercises = exercises
-          .where((exercise) => exercise.primaryMuscle == _localSelectedMuscle)
-          .toList();
-      final categoryExercises = exercises
-          .where((exercise) => exercise.category == _localSelectedCategory)
-          .toList();
+    if (_localFilterType == FilterType.both) {
+      // If both are selected, filter by both
+      if (_localSelectedMuscle != null && _localSelectedCategory != null) {
+        // Filter by both muscle and category
+        final muscleExercises = exercises
+            .where((exercise) => exercise.primaryMuscle == _localSelectedMuscle)
+            .toList();
+        final categoryExercises = exercises
+            .where((exercise) => exercise.category == _localSelectedCategory)
+            .toList();
 
-      // Find intersection of both filters
-      filteredExercises = muscleExercises
-          .where((muscleExercise) => categoryExercises.any(
-              (categoryExercise) => categoryExercise.id == muscleExercise.id))
-          .toList();
+        // Find intersection of both filters
+        filteredExercises = muscleExercises
+            .where((muscleExercise) => categoryExercises.any(
+                (categoryExercise) => categoryExercise.id == muscleExercise.id))
+            .toList();
+      }
+      // If only muscle is selected
+      else if (_localSelectedMuscle != null) {
+        filteredExercises = exercises
+            .where((exercise) => exercise.primaryMuscle == _localSelectedMuscle)
+            .toList();
+      }
+      // If only category is selected
+      else if (_localSelectedCategory != null) {
+        filteredExercises = exercises
+            .where((exercise) => exercise.category == _localSelectedCategory)
+            .toList();
+      }
     }
-    // Apply local single filter (muscle or category)
+    // Apply local single filter (muscle or category using old chip method)
     else if (_localFilterType != FilterType.none &&
         _localSelectedChip != null) {
       switch (_localFilterType) {
@@ -417,7 +414,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                       Navigator.pop(context);
                     },
                     child: Text(
-                      'exercises.Apply Filter'.tr(),
+                      'exercises.apply_filter'.tr(),
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 18),
                     ),
@@ -448,10 +445,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       }
     }
 
-    // Check if exercise already exists in the workout
-    final exerciseExists = selectedExercises.any((e) => e.id == exercise.id);
+    // Check if exercise already exists in the workout (already saved to backend)
+    final exerciseExistsInWorkout =
+        selectedExercises.any((e) => e.id == exercise.id);
 
-    if (exerciseExists) {
+    if (exerciseExistsInWorkout) {
       CustomSnackbar.show(
         context,
         'workouts.exercise_already_added'
@@ -462,21 +460,39 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     }
 
     try {
-      workoutsCubit.addExerciseToWorkoutLocally(exercise);
-
-      // Track the exercise ID based on whether it's a custom exercise
+      // Check if exercise is already in the selection list (toggle off)
+      bool wasSelected = false;
       if (_isCustomExercise) {
-        _selectedCustomExerciseIds.add(exercise.id);
+        if (_selectedCustomExerciseIds.contains(exercise.id)) {
+          _selectedCustomExerciseIds.remove(exercise.id);
+          wasSelected = true;
+        } else {
+          _selectedCustomExerciseIds.add(exercise.id);
+        }
       } else {
-        _selectedExerciseIds.add(exercise.id);
+        if (_selectedExerciseIds.contains(exercise.id)) {
+          _selectedExerciseIds.remove(exercise.id);
+          wasSelected = true;
+        } else {
+          _selectedExerciseIds.add(exercise.id);
+        }
       }
 
-      CustomSnackbar.show(
-        context,
-        'workouts.exercise_added_to_workout'
-            .tr(namedArgs: {'name': exercise.name}),
-        isError: false,
-      );
+      if (wasSelected) {
+        CustomSnackbar.show(
+          context,
+          'workouts.exercise_removed_from_selection'
+              .tr(namedArgs: {'name': exercise.name}),
+          isError: false,
+        );
+      } else {
+        CustomSnackbar.show(
+          context,
+          'workouts.exercise_added_to_workout'
+              .tr(namedArgs: {'name': exercise.name}),
+          isError: false,
+        );
+      }
       // Force rebuild of the bottom sheet
       setState(() {});
     } catch (e) {
@@ -488,10 +504,24 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     }
   }
 
-  Future<void> _handleClose() async {
+  Future<void> _saveAndClose() async {
+    // Clear search controllers
+    _allExercisesSearchController.clear();
+    _customExercisesSearchController.clear();
+
+    // Reset search query in ExercisesCubit
+    context.read<ExercisesCubit>().setSearchQuery('');
+
+    // Clear local filters
+    _localFilterType = FilterType.none;
+    _localSelectedChip = null;
+    _localSelectedMuscle = null;
+    _localSelectedCategory = null;
+
     if (_selectedExerciseIds.isNotEmpty ||
         _selectedCustomExerciseIds.isNotEmpty) {
       final workoutsCubit = context.read<WorkoutsCubit>();
+
       await workoutsCubit.addExercisesToWorkout(
         _selectedExerciseIds,
         customExerciseIds: _selectedCustomExerciseIds,
@@ -499,7 +529,15 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       _selectedExerciseIds.clear();
       _selectedCustomExerciseIds.clear();
     }
-    Navigator.pop(context);
+
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _handleClose() async {
+    // Save and close (same behavior as before)
+    await _saveAndClose();
   }
 
   List<Exercise> _getFilteredExercises(ExercisesState state) {
@@ -516,97 +554,233 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     // Access locale to trigger rebuild on language change
     context.locale;
 
-    return BlocBuilder<ExercisesCubit, ExercisesState>(
-      builder: (context, state) {
-        // Sync search controllers with the current state
-        _syncSearchControllers(state);
+    return BlocConsumer<WorkoutsCubit, WorkoutsState>(
+      listener: (context, workoutsState) {
+        // Show error if adding exercises failed
+        if (workoutsState.status == WorkoutsStatus.error &&
+            workoutsState.errorMessage != null &&
+            workoutsState.errorMessage!.contains('Failed to add exercises')) {
+          CustomSnackbar.show(
+            context,
+            workoutsState.errorMessage!,
+            isError: true,
+          );
+        }
+      },
+      builder: (context, workoutsState) {
+        return BlocBuilder<ExercisesCubit, ExercisesState>(
+          builder: (context, state) {
+            return StatefulBuilder(
+              builder: (context, setState) {
+                final isAddingExercises =
+                    workoutsState.status == WorkoutsStatus.loading;
 
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return WillPopScope(
-              onWillPop: () async {
-                await _handleClose();
-                return true;
-              },
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.7,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                return WillPopScope(
+                  onWillPop: () async {
+                    if (!isAddingExercises) {
+                      await _saveAndClose();
+                    }
+                    return !isAddingExercises;
+                  },
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.9,
+                    decoration: const BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: Column(
                       children: [
-                        Text(
-                          'workouts.add_workout_exercise'.tr(),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        // Drag handle (non-functional, just visual)
+                        Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[600],
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        IconButton(
-                          onPressed: _handleClose,
-                          icon: const Icon(FontAwesomeIcons.circleXmark),
-                        )
+                        const SizedBox(height: 8),
+
+                        // Header with selected count
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            'workouts.add_workout_exercise'
+                                                .tr(),
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        if (isAddingExercises)
+                                          const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                AppColors.primary,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    if (_selectedExerciseIds.isNotEmpty ||
+                                        _selectedCustomExerciseIds.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text(
+                                          isAddingExercises
+                                              ? 'workouts.adding_exercises'.tr()
+                                              : 'workouts.selected_count'.tr(
+                                                  namedArgs: {
+                                                    'count': (_selectedExerciseIds
+                                                                .length +
+                                                            _selectedCustomExerciseIds
+                                                                .length)
+                                                        .toString(),
+                                                  },
+                                                ),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed:
+                                    isAddingExercises ? null : _handleClose,
+                                icon: const Icon(FontAwesomeIcons.circleXmark),
+                              )
+                            ],
+                          ),
+                        ),
+                        const Divider(),
+                        const SizedBox(height: 16),
+
+                        // Tab Bar
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: TabBar(
+                            controller: _tabController,
+                            indicator: BoxDecoration(
+                              borderRadius: BorderRadius.circular(25),
+                              color: AppColors.primary,
+                            ),
+                            labelColor: Colors.white,
+                            unselectedLabelColor: Colors.grey,
+                            labelStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            unselectedLabelStyle: const TextStyle(
+                              fontWeight: FontWeight.normal,
+                              fontSize: 14,
+                            ),
+                            tabs: [
+                              Tab(
+                                text: 'workouts.all_exercises'.tr(),
+                              ),
+                              Tab(text: 'workouts.custom_exercises'.tr()),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Main content area
+                        Expanded(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              // All Exercises Tab
+                              _buildExerciseSelection(context, state, null),
+                              // Custom Exercises Tab
+                              _buildCustomExerciseSelection(
+                                  context, state, null),
+                            ],
+                          ),
+                        ),
+
+                        // Save button at the bottom
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            border: Border(
+                              top: BorderSide(
+                                color: AppColors.surface.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: SafeArea(
+                            top: false,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed:
+                                    isAddingExercises ? null : _saveAndClose,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: isAddingExercises
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.white),
+                                        ),
+                                      )
+                                    : Text(
+                                        'workouts.save'.tr(),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 5),
-                    const Divider(),
-                    const SizedBox(height: 16),
-
-                    // Tab Bar
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicator: BoxDecoration(
-                          borderRadius: BorderRadius.circular(25),
-                          color: AppColors.primary,
-                        ),
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.grey,
-                        labelStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                        unselectedLabelStyle: const TextStyle(
-                          fontWeight: FontWeight.normal,
-                          fontSize: 14,
-                        ),
-                        tabs: [
-                          Tab(
-                            text: 'workouts.all_exercises'.tr(),
-                          ),
-                          Tab(text: 'workouts.custom_exercises'.tr()),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Main content area
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          // All Exercises Tab
-                          _buildExerciseSelection(context, state),
-                          // Custom Exercises Tab
-                          _buildCustomExerciseSelection(context, state),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           },
         );
@@ -614,7 +788,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     );
   }
 
-  Widget _buildExerciseSelection(BuildContext context, ExercisesState state) {
+  Widget _buildExerciseSelection(BuildContext context, ExercisesState state,
+      ScrollController? scrollController) {
     final filteredExercises = _getFilteredExercises(state);
     final workoutsCubit = context.read<WorkoutsCubit>();
     final selectedExercises = workoutsCubit.state.selectedExercises;
@@ -623,65 +798,72 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Search field
-        TextField(
-          controller: _allExercisesSearchController,
-          onChanged: (value) {
-            // Update local state only, don't affect global ExercisesCubit
-            setState(() {});
-          },
-          decoration: InputDecoration(
-            hintText: 'workouts.search_exercises'.tr(),
-            prefixIcon: const Icon(Icons.search, color: Colors.grey),
-            filled: true,
-            fillColor: AppColors.background,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: TextField(
+            controller: _allExercisesSearchController,
+            onChanged: (value) {
+              // Update local state only, don't affect global ExercisesCubit
+              setState(() {});
+              // Don't call setSearchQuery to avoid affecting the main exercises screen
+            },
+            decoration: InputDecoration(
+              hintText: 'workouts.search_exercises'.tr(),
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              filled: true,
+              fillColor: AppColors.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
           ),
         ),
         const SizedBox(height: 12),
 
         // Filter button and current filter display
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => _showFilterOptions(context, state),
-                icon: const Icon(Icons.filter_list, size: 18),
-                label: Text(
-                  _getFilterButtonText(state),
-                  style: const TextStyle(fontSize: 14),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.background,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _showFilterOptions(context, state),
+                  icon: const Icon(Icons.filter_list, size: 18),
+                  label: Text(
+                    _getFilterButtonText(state),
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.surface,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (_localFilterType != FilterType.none ||
-                _localSelectedMuscle != null ||
-                _localSelectedCategory != null) ...[
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _localFilterType = FilterType.none;
-                    _localSelectedChip = null;
-                    _localSelectedMuscle = null;
-                    _localSelectedCategory = null;
-                  });
-                },
-                icon: const Icon(Icons.clear, color: Colors.red),
-                tooltip: 'workouts.clear_filter'.tr(),
-              ),
+              if (_localFilterType != FilterType.none ||
+                  _localSelectedMuscle != null ||
+                  _localSelectedCategory != null) ...[
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _localFilterType = FilterType.none;
+                      _localSelectedChip = null;
+                      _localSelectedMuscle = null;
+                      _localSelectedCategory = null;
+                    });
+                  },
+                  icon: const Icon(Icons.clear, color: Colors.red),
+                  tooltip: 'workouts.clear_filter'.tr(),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
         const SizedBox(height: 16),
 
@@ -695,17 +877,21 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                   ),
                 )
               : ListView.builder(
+                  controller: scrollController ?? ScrollController(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: filteredExercises.length,
                   itemBuilder: (context, index) {
                     final exercise = filteredExercises[index];
+                    // Check both local selection and already added exercises from cubit
                     final isAdded =
-                        selectedExercises.any((e) => e.id == exercise.id);
+                        _selectedExerciseIds.contains(exercise.id) ||
+                            selectedExercises.any((e) => e.id == exercise.id);
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: isAdded
-                          ? AppColors.background.withOpacity(0.5)
-                          : AppColors.background,
+                          ? AppColors.surface.withOpacity(0.5)
+                          : AppColors.surface,
                       child: ListTile(
                         title: Text(
                           exercise.name,
@@ -757,9 +943,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
     );
   }
 
-  Widget _buildCustomExerciseSelection(
-      BuildContext context, ExercisesState state) {
-    final customExercises = state.filteredCustomExercises;
+  Widget _buildCustomExerciseSelection(BuildContext context,
+      ExercisesState state, ScrollController? scrollController) {
+    final customExercises =
+        _getLocallyFilteredCustomExercises(state.customExercises);
     final workoutsCubit = context.read<WorkoutsCubit>();
     final selectedExercises = workoutsCubit.state.selectedExercises;
 
@@ -767,74 +954,80 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Search field
-        TextField(
-          controller: _customExercisesSearchController,
-          onChanged: (value) {
-            // Update local state only, don't affect global ExercisesCubit
-            setState(() {});
-          },
-          decoration: InputDecoration(
-            hintText: 'workouts.search_custom_exercises'.tr(),
-            prefixIcon: const Icon(Icons.search, color: Colors.grey),
-            filled: true,
-            fillColor: AppColors.background,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: TextField(
+            controller: _customExercisesSearchController,
+            onChanged: (value) {
+              // Update local state only, don't affect global ExercisesCubit
+              setState(() {});
+            },
+            decoration: InputDecoration(
+              hintText: 'workouts.search_custom_exercises'.tr(),
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              filled: true,
+              fillColor: AppColors.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
           ),
         ),
         const SizedBox(height: 12),
 
         // Add custom exercise row (only for admins when viewing static plans)
-        BlocBuilder<WorkoutsCubit, WorkoutsState>(
-          builder: (context, workoutsState) {
-            final isViewingStaticPlans = workoutsState.isViewingStaticPlans;
-            final isAdmin = context.read<ProfileCubit>().state.isAdmin;
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: BlocBuilder<WorkoutsCubit, WorkoutsState>(
+            builder: (context, workoutsState) {
+              final isViewingStaticPlans = workoutsState.isViewingStaticPlans;
+              final isAdmin = context.read<ProfileCubit>().state.isAdmin;
 
-            if (isViewingStaticPlans && !isAdmin) {
-              return const SizedBox.shrink();
-            }
+              if (isViewingStaticPlans && !isAdmin) {
+                return const SizedBox.shrink();
+              }
 
-            return Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'workouts.add_new_custom_exercise'.tr(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+              return Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'workouts.add_new_custom_exercise'.tr(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
-                ),
-                GestureDetector(
-                  onTap: () => _navigateToCustomExerciseForm(context),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primary,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                      size: 18,
+                  GestureDetector(
+                    onTap: () => _navigateToCustomExerciseForm(context),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primary,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
         const SizedBox(height: 16),
 
@@ -848,17 +1041,21 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                   ),
                 )
               : ListView.builder(
+                  controller: scrollController ?? ScrollController(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: customExercises.length,
                   itemBuilder: (context, index) {
                     final exercise = customExercises[index];
+                    // Check both local selection and already added exercises from cubit
                     final isAdded =
-                        selectedExercises.any((e) => e.id == exercise.id);
+                        _selectedCustomExerciseIds.contains(exercise.id) ||
+                            selectedExercises.any((e) => e.id == exercise.id);
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: isAdded
-                          ? AppColors.background.withOpacity(0.5)
-                          : AppColors.background,
+                          ? AppColors.surface.withOpacity(0.5)
+                          : AppColors.surface,
                       child: ListTile(
                         title: Text(
                           exercise.name,

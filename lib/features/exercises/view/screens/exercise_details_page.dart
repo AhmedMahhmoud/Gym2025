@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:trackletics/Shared/ui/cached_network_img.dart';
 import 'package:trackletics/Shared/ui/custom_back_btn.dart';
 import 'package:trackletics/Shared/ui/youtube_player.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
@@ -258,7 +257,7 @@ class ExerciseDetailsPage extends StatelessWidget {
                     // Action buttons for custom exercises
                     if (isCustomExercise) ...[
                       const Divider(),
-                      Spacer(),
+                      const Spacer(),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -290,7 +289,7 @@ class ExerciseDetailsPage extends StatelessWidget {
                                   child: _buildActionButton(
                                     context: context,
                                     icon: Icons.delete_outline,
-                                    label: 'Delete Exercise',
+                                    label: 'workouts.delete_exercise'.tr(),
                                     color: Colors.red,
                                     onTap: () => _showDeleteConfirmation(
                                         context, updatedExercise),
@@ -444,9 +443,9 @@ class ExerciseDetailsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
-              'Delete Exercise',
-              style: TextStyle(
+            Text(
+              'workouts.delete_exercise'.tr(),
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
@@ -459,7 +458,8 @@ class ExerciseDetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Are you sure you want to delete "${exercise.name}"?',
+              'workouts.delete_exercise_confirmation'
+                  .tr(namedArgs: {'name': exercise.name}),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -468,7 +468,7 @@ class ExerciseDetailsPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'This action cannot be undone and will permanently remove this custom exercise.',
+              'workouts.delete_exercise_confirmation_desc'.tr(),
               style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: 14,
@@ -485,9 +485,9 @@ class ExerciseDetailsPage extends StatelessWidget {
                 color: Colors.grey.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(
+              child: Text(
+                'common.cancel'.tr(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
@@ -508,9 +508,9 @@ class ExerciseDetailsPage extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                'Delete',
-                style: TextStyle(
+              child: Text(
+                'workouts.delete'.tr(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),

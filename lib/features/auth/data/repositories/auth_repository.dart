@@ -1,16 +1,21 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/core/services/token_manager.dart';
 import 'package:trackletics/features/auth/data/models/sign_up_model.dart';
+import 'package:trackletics/features/auth/data/models/google_sign_in_model.dart';
+import 'package:trackletics/features/auth/data/services/google_sign_in_service.dart';
+import 'package:trackletics/features/auth/data/utils/google_sign_in_error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/dio_service.dart';
 import '../../../../core/network/error_handler.dart';
 
 class AuthRepository {
-  AuthRepository();
+  AuthRepository({
+    GoogleSignInService? googleSignInService,
+  }) : _googleSignInService = googleSignInService ?? GoogleSignInServiceImpl();
   final DioService _dioService = DioService();
   final TokenManager _tokenManager = TokenManager();
+  final GoogleSignInService _googleSignInService;
 
   Future<Either<Failure, Unit>> signUp(SignUpModel signModel) async {
     try {
@@ -66,14 +71,27 @@ class AuthRepository {
         '/user/profile-picture',
         formData: formData,
         onSendProgress: (sent, total) {
-          final progress = (sent / total) * 100;
-          // Handle upload progress
+          // Handle upload progress if needed
         },
       );
 
       return Right(response.data);
     } catch (e) {
       return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  /// Sign in with Google
+  /// Returns Google account information
+  /// TODO: Link with backend API when ready
+  Future<Either<Failure, GoogleSignInModel>> signInWithGoogle() async {
+    try {
+      final googleAccount = await _googleSignInService.signIn();
+      // TODO: Call backend API with Google account info to get JWT token
+      // For now, just return the Google account info
+      return Right(googleAccount);
+    } catch (e) {
+      return Left(GoogleSignInErrorHandler.handleError(e));
     }
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 
 class LanguageSelectorWidget extends StatelessWidget {
   const LanguageSelectorWidget({Key? key}) : super(key: key);
@@ -131,6 +133,9 @@ class LanguageSelectorWidget extends StatelessWidget {
           await context.setLocale(locale);
           if (context.mounted) {
             Navigator.pop(context);
+            // Refetch exercises with the new language
+            final exercisesCubit = context.read<ExercisesCubit>();
+            exercisesCubit.loadExercises(context, true);
           }
         } else {
           Navigator.pop(context);
