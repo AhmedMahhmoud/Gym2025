@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:trackletics/Shared/ui/cached_network_img.dart';
-import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 
 class PopAnimatedCard extends StatefulWidget {
@@ -54,7 +53,7 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
         scale: _controller,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: Colors.white.withOpacity(0.1),
@@ -103,8 +102,8 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                       // Exercise name
                       Text(
                         widget.exercise.name,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
@@ -129,30 +128,42 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    AppColors.primary.withOpacity(0.3),
-                                    AppColors.primary.withOpacity(0.1),
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.3),
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.1),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.4),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.4),
                                   width: 1,
                                 ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.fitness_center,
-                                    color: AppColors.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     size: 14,
                                   ),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
                                       widget.exercise.primaryMuscle,
-                                      style: const TextStyle(
-                                        color: AppColors.primary,
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                       ),

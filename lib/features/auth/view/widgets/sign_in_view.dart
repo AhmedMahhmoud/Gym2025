@@ -21,6 +21,8 @@ class SignInView extends StatefulWidget {
 }
 
 class _SignInViewState extends State<SignInView> {
+  bool _hasNavigatedToAdditionalInfo = false;
+
   @override
   Widget build(BuildContext context) {
     // Access locale to trigger rebuild on language change
@@ -69,7 +71,24 @@ class _SignInViewState extends State<SignInView> {
             height: 30,
           ),
           // Google Sign-In Button
-          BlocBuilder<AuthCubit, AuthState>(
+          BlocConsumer<AuthCubit, AuthState>(
+            listener: (context, state) {
+              if (state is GoogleSignInNeedsAdditionalInfo && !_hasNavigatedToAdditionalInfo) {
+                _hasNavigatedToAdditionalInfo = true;
+                // Pass both the googleAccount and the AuthCubit instance
+                Navigator.pushNamed(
+                  context,
+                  RouteNames.google_sign_in_additional_info_route,
+                  arguments: [
+                    state.googleAccount,
+                    context.read<AuthCubit>(),
+                  ],
+                ).then((_) {
+                  // Reset flag when returning from the screen
+                  _hasNavigatedToAdditionalInfo = false;
+                });
+              }
+            },
             builder: (context, state) {
               return SocialSignBtn(
                 text: 'auth.sign_in_with_google'.tr(),

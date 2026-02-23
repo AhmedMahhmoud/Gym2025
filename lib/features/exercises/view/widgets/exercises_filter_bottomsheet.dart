@@ -38,9 +38,9 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
     final state = context.watch<ExercisesCubit>().state;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -106,15 +106,22 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3)),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.filter_alt,
-                              color: AppColors.primary, size: 16),
+                          Icon(Icons.filter_alt,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -124,8 +131,8 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
                                   : _tempSelectedMuscle != null
                                       ? 'Muscle Selected: $_tempSelectedMuscle (select category for dual filter)'
                                       : 'Category Selected: $_tempSelectedCategory (select muscle for dual filter)',
-                              style: const TextStyle(
-                                color: AppColors.primary,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -173,12 +180,12 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
                             }
                           });
                         },
-                        selectedColor: AppColors.primary,
+                        selectedColor: Theme.of(context).colorScheme.primary,
                         labelStyle: TextStyle(
                           color:
                               isSelected ? Colors.white : AppColors.textPrimary,
                         ),
-                        backgroundColor: AppColors.background,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                       );
                     }).toList(),
                   ),
@@ -220,12 +227,12 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
                             }
                           });
                         },
-                        selectedColor: AppColors.primary,
+                        selectedColor: Theme.of(context).colorScheme.primary,
                         labelStyle: TextStyle(
                           color:
                               isSelected ? Colors.white : AppColors.textPrimary,
                         ),
-                        backgroundColor: AppColors.background,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                       );
                     }).toList(),
                   ),
@@ -243,7 +250,7 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

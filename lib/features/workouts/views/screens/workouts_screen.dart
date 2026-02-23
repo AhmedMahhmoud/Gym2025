@@ -638,7 +638,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                         gradient: LinearGradient(
                                           colors: [
                                             AppColors.textSecondary,
-                                            AppColors.backgroundSurface
+                                            Theme.of(context).colorScheme.surface
                                                 .withOpacity(0.7),
                                           ],
                                           begin: Alignment.topLeft,

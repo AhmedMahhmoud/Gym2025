@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/features/auth/data/models/sign_up_model.dart';
+import 'package:trackletics/features/auth/data/models/google_sign_in_model.dart';
 import 'package:trackletics/features/auth/data/repositories/auth_repository.dart';
 
 part 'auth_state.dart';
@@ -67,18 +68,43 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthUnauthenticated(errorMessage: failure.message));
         log(failure.message);
       },
-      (googleAccount) async {
-        // TODO: When backend is linked, call API with Google account info
-        // For now, we'll just log the account info
-        log('Google Sign-In successful: ${googleAccount.email}');
+      (response) async {
         // Clear any pending registration state
         await _storageService.clearRegistrationState();
-        // TODO: Replace with actual token from backend API
-        // emit(AuthAuthenticated(token: token));
-        // For now, emit unauthenticated with a message indicating backend needs to be linked
-        emit(AuthUnauthenticated(
-          errorMessage: 'Backend integration pending. Google account: ${googleAccount.email}',
-        ));
+        
+        // Check if response is a token (existing user) or GoogleAccount (needs additional info)
+        if (response is String) {
+          // User exists, token received - authenticate directly
+          emit(AuthAuthenticated(token: response));
+        } else if (response is GoogleSignInModel) {
+          // User doesn't exist or needs additional info
+          emit(GoogleSignInNeedsAdditionalInfo(googleAccount: response));
+        }
+      },
+    );
+  }
+
+  Future<void> completeGoogleSignIn({
+    required GoogleSignInModel googleAccount,
+    required String inAppName,
+    required String gender,
+  }) async {
+    emit(const AuthLoading());
+    final result = await authRepository.completeGoogleSignIn(
+      googleAccount: googleAccount,
+      inAppName: inAppName,
+      gender: gender,
+    );
+
+    result.fold(
+      (failure) {
+        emit(AuthUnauthenticated(errorMessage: failure.message));
+        log(failure.message);
+      },
+      (token) async {
+        // Clear any pending registration state
+        await _storageService.clearRegistrationState();
+        emit(AuthAuthenticated(token: token));
       },
     );
   }

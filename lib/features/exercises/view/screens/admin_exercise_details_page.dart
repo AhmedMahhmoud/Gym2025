@@ -354,7 +354,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.background,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: TabBar(

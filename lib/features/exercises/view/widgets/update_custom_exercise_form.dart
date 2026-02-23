@@ -6,6 +6,7 @@ import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/main.dart';
 
 class UpdateCustomExerciseForm extends StatefulWidget {
   final Exercise exercise;
@@ -163,10 +164,12 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
 
                   // Loading Indicator
                   if (state.status == ExerciseStatus.loading)
-                    const LinearProgressIndicator(
+                    LinearProgressIndicator(
                       backgroundColor: Colors.transparent,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(navKey.currentState!.context)
+                              .colorScheme
+                              .primary),
                     ),
                   const SizedBox(height: 5),
 
@@ -179,7 +182,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                       decoration: InputDecoration(
                         hintText: 'Exercise Name',
                         filled: true,
-                        fillColor: AppColors.background,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey),
@@ -190,8 +193,10 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
+                          borderSide: BorderSide(
+                              color: Theme.of(navKey.currentState!.context)
+                                  .colorScheme
+                                  .primary),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 16),
@@ -210,7 +215,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                       decoration: InputDecoration(
                         hintText: 'workouts.workout_description'.tr(),
                         filled: true,
-                        fillColor: AppColors.background,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey),
@@ -221,8 +226,10 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
+                          borderSide: BorderSide(
+                              color: Theme.of(navKey.currentState!.context)
+                                  .colorScheme
+                                  .primary),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 16),
@@ -240,7 +247,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                       decoration: InputDecoration(
                         hintText: 'workouts.youtube_video_url_optional'.tr(),
                         filled: true,
-                        fillColor: AppColors.background,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey),
@@ -251,8 +258,8 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
+                          borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 16),
@@ -270,7 +277,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                       decoration: InputDecoration(
                         hintText: 'workouts.muscle_group'.tr(),
                         filled: true,
-                        fillColor: AppColors.background,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey),
@@ -281,8 +288,8 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.primary),
+                          borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 16),
@@ -301,7 +308,8 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
                             ? null
                             : _handleSubmit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

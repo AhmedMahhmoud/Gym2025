@@ -50,7 +50,10 @@
         "google_sign_in_network_error": "Network error. Please check your internet connection",
         "google_sign_in_developer_error": "Google Sign-In configuration error. Please check SHA-1 fingerprint and OAuth client setup in Google Cloud Console",
         "google_sign_in_in_progress": "Another sign-in is already in progress",
-        "google_sign_in_internal_error": "An internal error occurred. Please try again"
+        "google_sign_in_internal_error": "An internal error occurred. Please try again",
+        "complete_profile": "Complete Your Profile",
+        "google_sign_in_complete_profile_message": "Please provide the following information to complete your account setup",
+        "complete_sign_in": "Complete Sign In"
     },
     "onboarding": {
         "skip": "Skip",
@@ -74,6 +77,8 @@
         "theme": "Theme",
         "dark_mode": "Dark Mode",
         "light_mode": "Light Mode",
+        "dark_mode_desc": "Switch to dark theme for better viewing in low light",
+        "light_mode_desc": "Switch to light theme for better viewing in bright environments",
         "notifications": "Notifications",
         "privacy": "Privacy",
         "terms": "Terms of Service",

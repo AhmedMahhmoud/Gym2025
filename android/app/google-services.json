@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "350976597492",
+    "project_id": "trackletics-396e4",
+    "storage_bucket": "trackletics-396e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350976597492:android:478151be41d1c5282beda1",
+        "android_client_info": {
+          "package_name": "com.trackletics.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "350976597492-24ev90iovf3nok7isckepr5vphhgaq5t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trackletics.app",
+            "certificate_hash": "94629bbd9b9dac4b2af8b086545cc84b30c99213"
+          }
+        },
+        {
+          "client_id": "350976597492-75jp6uim9onorbrq41v174ul3eumt3q8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmsrm5KUbHZz9hE1KTIMBvlXhWHfB-W_I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "350976597492-75jp6uim9onorbrq41v174ul3eumt3q8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "350976597492-583e7vpr22l1cpemvm5igaons52qdj90.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.trackletics.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

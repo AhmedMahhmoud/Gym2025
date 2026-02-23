@@ -13,9 +13,9 @@ class CustomBackBtn extends StatelessWidget {
       onTap: () => Navigator.pop(context),
       child: Container(
           padding: const EdgeInsets.all(7),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.backgroundSurface,
+            color: Theme.of(context).colorScheme.surface,
           ),
           child: const Icon(
             FontAwesomeIcons.arrowLeft,

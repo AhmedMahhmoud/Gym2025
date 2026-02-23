@@ -120,7 +120,7 @@ class _OtpScreenState extends State<OtpScreen> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.background,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 30),
               child: Column(
@@ -179,14 +179,14 @@ class _OtpScreenState extends State<OtpScreen> {
                     ),
                     pinTheme: PinTheme(
                       shape: PinCodeFieldShape.underline,
-                      activeColor: AppColors.primary,
-                      inactiveColor: AppColors.surface,
-                      selectedColor: AppColors.primary,
+                      activeColor: Theme.of(context).colorScheme.primary,
+                      inactiveColor: Theme.of(context).colorScheme.surface,
+                      selectedColor: Theme.of(context).colorScheme.primary,
                       fieldHeight: 60,
                       fieldWidth: 50,
                     ),
                     animationDuration: const Duration(milliseconds: 300),
-                    backgroundColor: AppColors.background,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     enableActiveFill: false,
                     onCompleted: (value) {
                       otpCode = value;
@@ -246,8 +246,8 @@ class _OtpScreenState extends State<OtpScreen> {
                                 'Resend',
                                 style: TextStyle(
                                   color: _remainingTime > 0
-                                      ? AppColors.textSecondary
-                                      : AppColors.primary,
+                                      ? Theme.of(context).colorScheme.onSurface.withOpacity(0.7)
+                                      : Theme.of(context).colorScheme.primary,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                 ),

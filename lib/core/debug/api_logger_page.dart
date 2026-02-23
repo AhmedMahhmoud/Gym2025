@@ -15,13 +15,13 @@ class ApiLoggerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'API Request Logger',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(

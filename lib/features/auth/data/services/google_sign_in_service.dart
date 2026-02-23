@@ -12,9 +12,21 @@ abstract class GoogleSignInService {
 class GoogleSignInServiceImpl implements GoogleSignInService {
   final GoogleSignIn _googleSignIn;
 
+  // Web client ID from Firebase Console (OAuth 2.0 Client ID with client_type: 3)
+  // This is required for Google Sign-In to work with Firebase
+  static const String _serverClientId =
+      '350976597492-75jp6uim9onorbrq41v174ul3eumt3q8.apps.googleusercontent.com';
+
   GoogleSignInServiceImpl({
     GoogleSignIn? googleSignIn,
-  }) : _googleSignIn = googleSignIn ?? GoogleSignIn();
+  }) : _googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              // Server client ID is required for backend verification
+              // This is the Web client ID from Firebase Console
+              serverClientId: _serverClientId,
+              // Request email and profile scopes
+              scopes: ['email', 'profile'],
+            );
 
   @override
   Future<GoogleSignInModel> signIn() async {

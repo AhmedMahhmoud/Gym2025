@@ -13,6 +13,8 @@ class ExerciseSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     // Access locale to trigger rebuild on language change
     context.locale;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return BlocBuilder<ExercisesCubit, ExercisesState>(
       builder: (context, state) {
@@ -22,20 +24,20 @@ class ExerciseSearchField extends StatelessWidget {
           },
           decoration: InputDecoration(
             hintText: 'exercises.search_exercises'.tr(),
-            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+            prefixIcon: Icon(Icons.search, color: Colors.grey),
             filled: true,
-            fillColor: AppColors.background,
+            fillColor: colorScheme.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderSide: BorderSide(color: Colors.grey),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderSide: BorderSide(color: Colors.grey),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primary),
+              borderSide: BorderSide(color: colorScheme.primary),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

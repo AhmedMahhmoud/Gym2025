@@ -11,6 +11,7 @@ import 'package:trackletics/features/profile/cubit/profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/features/exercises/view/widgets/update_custom_exercise_form.dart';
+import 'package:trackletics/main.dart';
 
 class ExerciseDetailsPage extends StatelessWidget {
   const ExerciseDetailsPage(
@@ -61,7 +62,9 @@ class ExerciseDetailsPage extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: Theme.of(navKey.currentState!.context)
+                        .colorScheme
+                        .primary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -324,7 +327,7 @@ class ExerciseDetailsPage extends StatelessWidget {
                                 .loadExercises(context);
                           }
                         },
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                         elevation: 8,
                         child: const Icon(
@@ -424,7 +427,7 @@ class ExerciseDetailsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),

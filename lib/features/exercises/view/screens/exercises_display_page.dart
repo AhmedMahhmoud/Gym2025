@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
-import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/exercises/view/widgets/exersises_display_listview.dart';
 import 'package:trackletics/features/exercises/view/widgets/exersises_search_field.dart';
 import 'package:trackletics/features/exercises/view/widgets/custom_exercise_form.dart';
@@ -91,48 +90,56 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                     ),
                     const SizedBox(width: 12),
                     // Filter icon button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: state.selectedFilterType != FilterType.none
-                            ? AppColors.primary.withOpacity(0.2)
-                            : AppColors.background,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: state.selectedFilterType != FilterType.none
-                              ? AppColors.primary
-                              : Colors.grey,
-                        ),
-                      ),
-                      child: IconButton(
-                        onPressed:
-                            _isCustomExercise ? null : _showFilterBottomSheet,
-                        icon: Stack(
-                          children: [
-                            Icon(
-                              Icons.filter_list,
-                              color: _isCustomExercise
-                                  ? Colors.grey.withOpacity(0.5)
-                                  : (state.selectedFilterType != FilterType.none
-                                      ? AppColors.primary
-                                      : Colors.grey),
+                    Builder(
+                      builder: (context) {
+                        final theme = Theme.of(context);
+                        final colorScheme = theme.colorScheme;
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: state.selectedFilterType != FilterType.none
+                                ? colorScheme.primary.withOpacity(0.2)
+                                : colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: state.selectedFilterType != FilterType.none
+                                  ? colorScheme.primary
+                                  : Colors.grey,
                             ),
-                            // Active filter indicator
-                            if (state.selectedFilterType != FilterType.none)
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
+                          ),
+                          child: IconButton(
+                            onPressed: _isCustomExercise
+                                ? null
+                                : _showFilterBottomSheet,
+                            icon: Stack(
+                              children: [
+                                Icon(
+                                  Icons.filter_list,
+                                  color: _isCustomExercise
+                                      ? Colors.grey.withOpacity(0.5)
+                                      : (state.selectedFilterType !=
+                                              FilterType.none
+                                          ? colorScheme.primary
+                                          : Colors.grey),
                                 ),
-                              ),
-                          ],
-                        ),
-                      ),
+                                // Active filter indicator
+                                if (state.selectedFilterType != FilterType.none)
+                                  Positioned(
+                                    right: 0,
+                                    top: 0,
+                                    child: Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.primary,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -147,10 +154,16 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
-                      border:
-                          Border.all(color: AppColors.primary.withOpacity(0.3)),
+                      border: Border.all(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -160,26 +173,36 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                               ? Icons.fitness_center
                               : Icons.category,
                           size: 16,
-                          color: AppColors.primary,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          '${state.selectedFilterType == FilterType.muscle ? 'Muscle' : 'Category'}: ${state.selectedChip}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Builder(
+                          builder: (context) {
+                            final theme = Theme.of(context);
+                            return Text(
+                              '${state.selectedFilterType == FilterType.muscle ? 'Muscle' : 'Category'}: ${state.selectedChip}',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () =>
-                              context.read<ExercisesCubit>().clearFilter(),
-                          child: const Icon(
-                            Icons.close,
-                            size: 16,
-                            color: AppColors.primary,
-                          ),
+                        Builder(
+                          builder: (context) {
+                            final theme = Theme.of(context);
+                            return GestureDetector(
+                              onTap: () =>
+                                  context.read<ExercisesCubit>().clearFilter(),
+                              child: Icon(
+                                Icons.close,
+                                size: 16,
+                                color: theme.colorScheme.primary,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -187,25 +210,39 @@ class _ExercisesScreenState extends State<ExercisesScreen>
                 ),
               const SizedBox(height: 20),
               // Add TabBar
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 15),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
-                    color: AppColors.primary,
-                  ),
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(text: 'workouts.all_exercises'.tr()),
-                    Tab(text: 'workouts.custom_exercises'.tr()),
-                  ],
-                ),
+              Builder(
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  final colorScheme = theme.colorScheme;
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    child: TabBar(
+                      indicatorPadding:
+                          const EdgeInsets.symmetric(horizontal: 0),
+                      dividerHeight: 0,
+                      controller: _tabController,
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: colorScheme.primary,
+                      ),
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Tab(text: 'workouts.all_exercises'.tr()),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Tab(text: 'workouts.custom_exercises'.tr()),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
               // Tab content
@@ -231,20 +268,25 @@ class _ExercisesScreenState extends State<ExercisesScreen>
             ],
           ),
           floatingActionButton: _isCustomExercise
-              ? FloatingActionButton(
-                  onPressed: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CustomExerciseForm(),
+              ? Builder(
+                  builder: (context) {
+                    final theme = Theme.of(context);
+                    return FloatingActionButton(
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CustomExerciseForm(),
+                          ),
+                        );
+                      },
+                      backgroundColor: theme.colorScheme.primary,
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
                       ),
                     );
                   },
-                  backgroundColor: AppColors.primary,
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                  ),
                 )
               : null,
         );

@@ -61,7 +61,9 @@ class _FloatingBottomNavBarState extends State<FloatingBottomNavBar>
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = widget.backgroundColor ?? AppColors.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final bgColor = widget.backgroundColor ?? colorScheme.primary; // Theme-aware primary
     final selectedColor = widget.selectedItemColor ?? Colors.white;
     final unselectedColor = widget.unselectedItemColor ?? Colors.white70;
 

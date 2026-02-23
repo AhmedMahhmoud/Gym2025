@@ -50,7 +50,10 @@
         "google_sign_in_network_error": "خطأ في الشبكة. يرجى التحقق من اتصالك بالإنترنت",
         "google_sign_in_developer_error": "خطأ في إعدادات Google Sign-In. يرجى التحقق من SHA-1 fingerprint وإعدادات OAuth client في Google Cloud Console",
         "google_sign_in_in_progress": "تسجيل دخول آخر قيد التنفيذ بالفعل",
-        "google_sign_in_internal_error": "حدث خطأ داخلي. يرجى المحاولة مرة أخرى"
+        "google_sign_in_internal_error": "حدث خطأ داخلي. يرجى المحاولة مرة أخرى",
+        "complete_profile": "أكمل ملفك الشخصي",
+        "google_sign_in_complete_profile_message": "يرجى تقديم المعلومات التالية لإكمال إعداد حسابك",
+        "complete_sign_in": "إكمال تسجيل الدخول"
     },
     "onboarding": {
         "skip": "تخطي",
@@ -74,6 +77,8 @@
         "theme": "المظهر",
         "dark_mode": "الوضع الداكن",
         "light_mode": "الوضع الفاتح",
+        "dark_mode_desc": "التبديل إلى المظهر الداكن لعرض أفضل في الإضاءة المنخفضة",
+        "light_mode_desc": "التبديل إلى المظهر الفاتح لعرض أفضل في البيئات المضيئة",
         "notifications": "الإشعارات",
         "privacy": "الخصوصية",
         "terms": "شروط الخدمة",

@@ -19,7 +19,7 @@ class SocialSignBtn extends StatelessWidget {
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: AppColors.divider.withOpacity(0.3),

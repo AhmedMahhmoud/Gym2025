@@ -10,6 +10,7 @@ enum AuthStatus {
   wrongVerifyReset,
   verifyResetLoading,
   verifyResetSuccess,
+  googleSignInNeedsAdditionalInfo,
 }
 
 /// 🔹 Sealed Class for State Management
@@ -46,3 +47,10 @@ final class AuthUnauthenticated extends AuthState {
   final String? errorMessage;
 }
 
+/// ✅ Google Sign-In needs additional info (inAppName and gender)
+final class GoogleSignInNeedsAdditionalInfo extends AuthState {
+  const GoogleSignInNeedsAdditionalInfo({
+    required this.googleAccount,
+  }) : super(status: AuthStatus.googleSignInNeedsAdditionalInfo);
+  final GoogleSignInModel googleAccount;
+}/// Temporary class to hold Google account info

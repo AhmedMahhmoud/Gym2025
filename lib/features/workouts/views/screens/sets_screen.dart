@@ -76,7 +76,7 @@ class _SetsScreenState extends State<SetsScreen> {
                         decoration: InputDecoration(
                           hintText: 'e.g., 12',
                           filled: true,
-                          fillColor: AppColors.background,
+                          fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -100,7 +100,7 @@ class _SetsScreenState extends State<SetsScreen> {
                                     const TextStyle(color: Colors.white70),
                                 hintText: 'e.g., 60.5',
                                 filled: true,
-                                fillColor: AppColors.background,
+                                fillColor: Theme.of(context).colorScheme.surface,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -117,7 +117,7 @@ class _SetsScreenState extends State<SetsScreen> {
                           const SizedBox(width: 8),
                           Container(
                             decoration: BoxDecoration(
-                              color: AppColors.background,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ToggleButtons(
@@ -129,7 +129,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               },
                               borderRadius: BorderRadius.circular(12),
                               selectedColor: Colors.white,
-                              fillColor: AppColors.primary,
+                              fillColor: Theme.of(context).colorScheme.primary,
                               children: const [
                                 Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 12),
@@ -158,7 +158,7 @@ class _SetsScreenState extends State<SetsScreen> {
                                     ? 'e.g., 2'
                                     : 'e.g., 120',
                                 filled: true,
-                                fillColor: AppColors.background,
+                                fillColor: Theme.of(context).colorScheme.surface,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -173,7 +173,7 @@ class _SetsScreenState extends State<SetsScreen> {
                           const SizedBox(width: 8),
                           Container(
                             decoration: BoxDecoration(
-                              color: AppColors.background,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ToggleButtons(
@@ -188,7 +188,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               },
                               borderRadius: BorderRadius.circular(12),
                               selectedColor: Colors.white,
-                              fillColor: AppColors.primary,
+                              fillColor: Theme.of(context).colorScheme.primary,
                               children: const [
                                 Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 12),
@@ -284,7 +284,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: Theme.of(context).colorScheme.primary,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -348,7 +348,7 @@ class _SetsScreenState extends State<SetsScreen> {
                         decoration: InputDecoration(
                           hintText: 'e.g., 12',
                           filled: true,
-                          fillColor: AppColors.background,
+                          fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -366,7 +366,7 @@ class _SetsScreenState extends State<SetsScreen> {
                         decoration: InputDecoration(
                           hintText: 'e.g., 60.5',
                           filled: true,
-                          fillColor: AppColors.background,
+                          fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -384,7 +384,7 @@ class _SetsScreenState extends State<SetsScreen> {
                         decoration: InputDecoration(
                           hintText: 'e.g., 60',
                           filled: true,
-                          fillColor: AppColors.background,
+                          fillColor: Theme.of(context).colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -445,7 +445,7 @@ class _SetsScreenState extends State<SetsScreen> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: Theme.of(context).colorScheme.primary,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -585,7 +585,7 @@ class _SetsScreenState extends State<SetsScreen> {
                         icon: const Icon(Icons.add),
                         label: Text('workouts.add_set_button'.tr()),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 24, vertical: 12),
@@ -659,7 +659,7 @@ class _SetsScreenState extends State<SetsScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(

@@ -71,14 +71,14 @@ class _AppTextFieldState extends State<AppTextField> {
         hintText: widget.hintText,
         hintStyle: const TextStyle(color: AppColors.textSecondary),
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: Theme.of(context).colorScheme.surface,
         errorStyle: const TextStyle(
           fontWeight: FontWeight.w600,
           color: Colors.redAccent,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

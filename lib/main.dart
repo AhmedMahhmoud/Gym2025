@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:trackletics/firebase_options.dart';
 import 'package:trackletics/core/network/connectivity.dart';
 import 'package:trackletics/core/network/dio_service.dart';
 import 'package:trackletics/core/services/auth_initialization_service.dart';
@@ -21,6 +23,7 @@ import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/data/repositories/profile_repository.dart';
 import 'package:trackletics/shared/widgets/main_scaffold.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_cubit.dart';
 import 'package:trackletics/routes/app_routes.dart';
 import 'package:trackletics/features/workouts/data/units_service.dart';
 import 'dart:ui' as ui;
@@ -30,6 +33,11 @@ final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Initialize easy_localization
   await EasyLocalization.ensureInitialized();
@@ -189,6 +197,9 @@ class _MyAppState extends State<MyApp> {
             MultiBlocProvider(
               providers: [
                 BlocProvider(
+                  create: (context) => ThemeCubit(),
+                ),
+                BlocProvider(
                   create: (context) => ProfileCubit(
                     repository: ProfileRepository(),
                     jwtService: JwtService(),
@@ -204,15 +215,21 @@ class _MyAppState extends State<MyApp> {
                   )..loadExercises(context),
                 ),
               ],
-              child: MaterialApp(
-                navigatorKey: navKey,
-                theme: AppTheme.getTheme(currentLocale.languageCode),
-                debugShowCheckedModeBanner: false,
-                onGenerateRoute: OnPageRoute.generateRoute,
-                home: _buildHomeScreen(),
-                localizationsDelegates: context.localizationDelegates,
-                supportedLocales: context.supportedLocales,
-                locale: currentLocale,
+              child: BlocBuilder<ThemeCubit, ThemeMode>(
+                builder: (context, themeMode) {
+                  return MaterialApp(
+                    navigatorKey: navKey,
+                    theme: AppTheme.getTheme(currentLocale.languageCode, isDark: false),
+                    darkTheme: AppTheme.getTheme(currentLocale.languageCode, isDark: true),
+                    themeMode: themeMode,
+                    debugShowCheckedModeBanner: false,
+                    onGenerateRoute: OnPageRoute.generateRoute,
+                    home: _buildHomeScreen(),
+                    localizationsDelegates: context.localizationDelegates,
+                    supportedLocales: context.supportedLocales,
+                    locale: currentLocale,
+                  );
+                },
               ),
             ),
             Directionality(

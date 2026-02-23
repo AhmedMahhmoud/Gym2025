@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trackletics/features/exercises/view/screens/exercises_display_page.dart';
-import 'package:trackletics/features/home/view/widgets/signout.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/cubit/profile_state.dart';
 
@@ -29,7 +27,10 @@ class Home extends StatelessWidget {
                   children: [
                     Text(
                       'home.hello'.tr(),
-                      style: const TextStyle(fontSize: 27),
+                      style: TextStyle(
+                        fontSize: 27,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(
                       width: 7,
@@ -38,14 +39,15 @@ class Home extends StatelessWidget {
                       width: MediaQuery.sizeOf(context).width * 0.70,
                       child: BlocBuilder<ProfileCubit, ProfileState>(
                         builder: (context, state) {
+                          final theme = Theme.of(context);
                           return Text(
                             state.displayName ?? '',
                             maxLines: 1,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 25,
                                 fontWeight: FontWeight.bold,
                                 overflow: TextOverflow.ellipsis,
-                                color: Colors.white),
+                                color: theme.colorScheme.onSurface),
                           );
                         },
                       ),

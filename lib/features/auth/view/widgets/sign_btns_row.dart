@@ -44,6 +44,7 @@ class _LoginButtonsRowState extends State<LoginButtonsRow> {
             } else if (state is AuthAuthenticated) {
               Navigator.pushReplacementNamed(context, RouteNames.home_route);
             }
+            // Note: GoogleSignInNeedsAdditionalInfo is handled in sign_in_view.dart
           },
           builder: (context, state) {
             return PrimaryRoundedButton(

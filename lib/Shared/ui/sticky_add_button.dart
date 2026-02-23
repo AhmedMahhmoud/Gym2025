@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:trackletics/core/theme/app_colors.dart';
 
 class StickyAddButton extends StatefulWidget {
   final VoidCallback onPressed;
@@ -56,6 +55,10 @@ class _StickyAddButtonState extends State<StickyAddButton>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary; // Theme-aware primary color
+    
     return AnimatedOpacity(
       opacity: widget.isVisible ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
@@ -93,8 +96,8 @@ class _StickyAddButtonState extends State<StickyAddButton>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary.withOpacity(0.8),
-                        AppColors.primary.withOpacity(0.9),
+                        primaryColor.withOpacity(0.8),
+                        primaryColor.withOpacity(0.9),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,

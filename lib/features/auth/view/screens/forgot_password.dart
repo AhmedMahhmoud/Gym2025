@@ -40,7 +40,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return BlocProvider(
       create: (context) => OtpCubit(otpRepository: OtpRepository()),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Form(
           key: _formKey,
           child: Padding(

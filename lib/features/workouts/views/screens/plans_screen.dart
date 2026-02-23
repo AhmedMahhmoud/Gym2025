@@ -72,7 +72,7 @@ class _PlansScreenState extends State<PlansScreen>
       setState(() {
         _isAddingPlan = true;
       });
-      
+
       // Logger navigation commented out
       // void navigateToLogger(ApiLoggerModel logData) {
       //   Navigator.pushNamed(
@@ -81,7 +81,7 @@ class _PlansScreenState extends State<PlansScreen>
       //     arguments: [logData],
       //   );
       // }
-      
+
       _workoutsCubit
           .createPlan(
         _titleController.text,
@@ -127,20 +127,22 @@ class _PlansScreenState extends State<PlansScreen>
   void _showEditPlanDialog(PlanResponse plan) {
     final titleController = TextEditingController(text: plan.title);
     final notesController = TextEditingController(text: plan.notes);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     showDialog(
       context: context,
       builder: (context) => FadeIn(
         duration: const Duration(milliseconds: 300),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2A2A2A),
+          backgroundColor: colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
           title: Text(
             'plans.edit_plan'.tr(),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -152,14 +154,15 @@ class _PlansScreenState extends State<PlansScreen>
                 decoration: InputDecoration(
                   labelText: 'plans.title'.tr(),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  labelStyle: const TextStyle(color: Colors.grey),
+                  fillColor: colorScheme.surface,
+                  labelStyle:
+                      TextStyle(color: colorScheme.onSurface.withOpacity(0.7)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: colorScheme.onSurface),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -167,14 +170,15 @@ class _PlansScreenState extends State<PlansScreen>
                 decoration: InputDecoration(
                   labelText: 'plans.notes_optional'.tr(),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  labelStyle: const TextStyle(color: Colors.grey),
+                  fillColor: colorScheme.surface,
+                  labelStyle:
+                      TextStyle(color: colorScheme.onSurface.withOpacity(0.7)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: colorScheme.onSurface),
                 maxLines: 3,
               ),
             ],
@@ -184,7 +188,7 @@ class _PlansScreenState extends State<PlansScreen>
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'plans.cancel'.tr(),
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(color: colorScheme.onSurface.withOpacity(0.7)),
               ),
             ),
             TextButton(
@@ -202,8 +206,8 @@ class _PlansScreenState extends State<PlansScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primary,
-                      AppColors.primary.withOpacity(0.7),
+                      colorScheme.primary,
+                      colorScheme.primary.withOpacity(0.7),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -245,21 +249,27 @@ class _PlansScreenState extends State<PlansScreen>
         backgroundColor: Colors.transparent,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
-          child: TabBar(
-            controller: _tabController,
-            indicatorColor: AppColors.primary,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: [
-              Tab(text: 'plans.my_plans'.tr()),
-              Tab(text: 'plans.static_plans'.tr()),
-            ],
-            onTap: (index) {
-              if (index == 0) {
-                _workoutsCubit.switchToUserPlans();
-              } else {
-                _workoutsCubit.switchToStaticPlans();
-              }
+          child: Builder(
+            builder: (context) {
+              final theme = Theme.of(context);
+              final colorScheme = theme.colorScheme;
+              return TabBar(
+                controller: _tabController,
+                indicatorColor: colorScheme.primary,
+                labelColor: colorScheme.onSurface,
+                unselectedLabelColor: colorScheme.onSurface.withOpacity(0.7),
+                tabs: [
+                  Tab(text: 'plans.my_plans'.tr()),
+                  Tab(text: 'plans.static_plans'.tr()),
+                ],
+                onTap: (index) {
+                  if (index == 0) {
+                    _workoutsCubit.switchToUserPlans();
+                  } else {
+                    _workoutsCubit.switchToStaticPlans();
+                  }
+                },
+              );
             },
           ),
         ),
@@ -311,196 +321,222 @@ class _PlansScreenState extends State<PlansScreen>
         return Column(
           children: [
             if (state.status == WorkoutsStatus.loadingPlans)
-              SizedBox(
-                height: MediaQuery.sizeOf(context).height / 2,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'plans.loading_plans'.tr(),
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            if (_isAddingPlan)
-              FadeIn(
-                duration: const Duration(milliseconds: 500),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _titleController,
-                        decoration: InputDecoration(
-                          labelText: 'plans.plan_title'.tr(),
-                          floatingLabelStyle: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                            color: Colors.white,
-                          ),
-                          hintText: 'plans.plan_title_hint'.tr(),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.1),
-                          labelStyle: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey,
-                          ),
-                          hintStyle: const TextStyle(color: Colors.white38),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.white),
-                        onTapOutside: (event) =>
-                            FocusScope.of(context).unfocus(),
-                        autofocus: true,
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _notesController,
-                        decoration: InputDecoration(
-                          labelText: 'plans.notes_optional'.tr(),
-                          floatingLabelStyle: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                            color: Colors.white,
-                          ),
-                          hintText: 'plans.notes_hint'.tr(),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.1),
-                          labelStyle: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey,
-                          ),
-                          hintStyle: const TextStyle(color: Colors.white38),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.white),
-                        onTapOutside: (event) =>
-                            FocusScope.of(context).unfocus(),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+              Builder(
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  final colorScheme = theme.colorScheme;
+                  return SizedBox(
+                    height: MediaQuery.sizeOf(context).height / 2,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _isAddingPlan = false;
-                                _titleController.clear();
-                                _notesController.clear();
-                              });
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white70,
-                            ),
-                            child: Text('plans.cancel'.tr()),
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                colorScheme.primary),
                           ),
-                          const SizedBox(width: 16),
-                          if (state.status == WorkoutsStatus.loading)
-                            Container(
-                              width: double.infinity,
-                              height: 4,
-                              margin: const EdgeInsets.only(bottom: 20),
-                              child: const LinearProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                                backgroundColor: AppColors.primary,
-                              ),
-                            )
-                          else
-                            ElasticIn(
-                              duration: const Duration(milliseconds: 800),
-                              child: ElevatedButton(
-                                onPressed: _createPlan,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 40,
-                                    vertical: 15,
-                                  ),
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ).copyWith(
-                                  backgroundColor: MaterialStateProperty.all(
-                                    Colors.transparent,
-                                  ),
-                                  overlayColor: MaterialStateProperty.all(
-                                    Colors.white.withOpacity(0.1),
-                                  ),
-                                ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Theme.of(context).primaryColor,
-                                        Theme.of(context)
-                                            .primaryColor
-                                            .withOpacity(0.7),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(30),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Theme.of(context)
-                                            .primaryColor
-                                            .withOpacity(0.5),
-                                        blurRadius: 10,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 30,
-                                    vertical: 15,
-                                  ),
-                                  child: Text(
-                                    'plans.create_plan'.tr(),
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'plans.loading_plans'.tr(),
+                            style: TextStyle(
+                                color: colorScheme.onSurface.withOpacity(0.7)),
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
+              ),
+            if (_isAddingPlan)
+              Builder(
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  final colorScheme = theme.colorScheme;
+                  final isDark = theme.brightness == Brightness.dark;
+                  return FadeIn(
+                    duration: const Duration(milliseconds: 500),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: _titleController,
+                            decoration: InputDecoration(
+                              labelText: 'plans.plan_title'.tr(),
+                              floatingLabelStyle: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                                color: colorScheme.primary,
+                              ),
+                              hintText: 'plans.plan_title_hint'.tr(),
+                              filled: true,
+                              fillColor: isDark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : colorScheme.surface,
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                              hintStyle: TextStyle(
+                                  color:
+                                      colorScheme.onSurface.withOpacity(0.5)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 15,
+                              ),
+                            ),
+                            style: TextStyle(color: colorScheme.onSurface),
+                            onTapOutside: (event) =>
+                                FocusScope.of(context).unfocus(),
+                            autofocus: true,
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _notesController,
+                            decoration: InputDecoration(
+                              labelText: 'plans.notes_optional'.tr(),
+                              floatingLabelStyle: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                                color: colorScheme.primary,
+                              ),
+                              hintText: 'plans.notes_hint'.tr(),
+                              filled: true,
+                              fillColor: isDark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : colorScheme.surface,
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                              hintStyle: TextStyle(
+                                  color:
+                                      colorScheme.onSurface.withOpacity(0.5)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 15,
+                              ),
+                            ),
+                            style: TextStyle(color: colorScheme.onSurface),
+                            onTapOutside: (event) =>
+                                FocusScope.of(context).unfocus(),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isAddingPlan = false;
+                                    _titleController.clear();
+                                    _notesController.clear();
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor:
+                                      colorScheme.onSurface.withOpacity(0.7),
+                                ),
+                                child: Text('plans.cancel'.tr()),
+                              ),
+                              const SizedBox(width: 16),
+                              if (state.status == WorkoutsStatus.loading)
+                                Container(
+                                  width: double.infinity,
+                                  height: 4,
+                                  margin: const EdgeInsets.only(bottom: 20),
+                                  child: LinearProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        colorScheme.primary),
+                                    backgroundColor:
+                                        colorScheme.primary.withOpacity(0.2),
+                                  ),
+                                )
+                              else
+                                ElasticIn(
+                                  duration: const Duration(milliseconds: 800),
+                                  child: ElevatedButton(
+                                    onPressed: _createPlan,
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 40,
+                                        vertical: 15,
+                                      ),
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ).copyWith(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                        Colors.transparent,
+                                      ),
+                                      overlayColor: MaterialStateProperty.all(
+                                        Colors.white.withOpacity(0.1),
+                                      ),
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Theme.of(context).primaryColor,
+                                            Theme.of(context)
+                                                .primaryColor
+                                                .withOpacity(0.7),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(30),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Theme.of(context)
+                                                .primaryColor
+                                                .withOpacity(0.5),
+                                            blurRadius: 10,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                        vertical: 15,
+                                      ),
+                                      child: Text(
+                                        'plans.create_plan'.tr(),
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             if (state.status == WorkoutsStatus.creatingPlan)
               Container(
                 width: double.infinity,
                 height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                child: const LinearProgressIndicator(
-                  backgroundColor: AppColors.primary,
+                margin: EdgeInsets.only(bottom: 16),
+                child: LinearProgressIndicator(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
             if (state.status == WorkoutsStatus.creatingStaticPlan)
@@ -508,8 +544,8 @@ class _PlansScreenState extends State<PlansScreen>
                 width: double.infinity,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
-                child: const LinearProgressIndicator(
-                  backgroundColor: AppColors.primary,
+                child: LinearProgressIndicator(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
             Expanded(
@@ -568,7 +604,9 @@ class _PlansScreenState extends State<PlansScreen>
                                   gradient: LinearGradient(
                                     colors: [
                                       AppColors.textSecondary,
-                                      AppColors.backgroundSurface
+                                      Theme.of(context)
+                                          .colorScheme
+                                          .surface
                                           .withOpacity(0.7),
                                     ],
                                     begin: Alignment.topLeft,
@@ -685,8 +723,8 @@ class _PlansScreenState extends State<PlansScreen>
                 width: double.infinity,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
-                child: const LinearProgressIndicator(
-                  backgroundColor: AppColors.primary,
+                child: LinearProgressIndicator(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
             if (_isAddingStaticPlan &&
@@ -782,10 +820,11 @@ class _PlansScreenState extends State<PlansScreen>
                               width: double.infinity,
                               height: 4,
                               margin: const EdgeInsets.only(bottom: 20),
-                              child: const LinearProgressIndicator(
+                              child: LinearProgressIndicator(
                                 valueColor:
                                     AlwaysStoppedAnimation<Color>(Colors.white),
-                                backgroundColor: AppColors.primary,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
                               ),
                             )
                           else
@@ -892,7 +931,8 @@ class _PlansScreenState extends State<PlansScreen>
                               icon: const Icon(Icons.add),
                               label: Text('plans.create_static_plan'.tr()),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 24, vertical: 12),
@@ -935,6 +975,10 @@ class _PlansScreenState extends State<PlansScreen>
 
   Widget _buildPlanCard(PlanResponse plan, int index) {
     final isDeleting = _isDeleting[plan.id] ?? false;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Card(
       key: ValueKey(plan.id),
       elevation: 5,
@@ -945,10 +989,15 @@ class _PlansScreenState extends State<PlansScreen>
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
-            ],
+            colors: isDark
+                ? [
+                    Colors.white.withOpacity(0.1),
+                    Colors.white.withOpacity(0.05),
+                  ]
+                : [
+                    colorScheme.surface.withOpacity(0.8),
+                    colorScheme.surface.withOpacity(0.6),
+                  ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -959,17 +1008,17 @@ class _PlansScreenState extends State<PlansScreen>
             ListTile(
               title: Text(
                 plan.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
-                  color: Colors.white,
+                  color: colorScheme.onSurface,
                 ),
               ),
               subtitle: plan.notes != null && plan.notes!.isNotEmpty
                   ? Text(
                       plan.notes!,
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: colorScheme.onSurface.withOpacity(0.7),
                         fontSize: 14,
                       ),
                       maxLines: 1,
@@ -980,8 +1029,8 @@ class _PlansScreenState extends State<PlansScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(FontAwesomeIcons.edit,
-                        color: Colors.white70),
+                    icon: Icon(FontAwesomeIcons.edit,
+                        color: colorScheme.onSurface.withOpacity(0.7)),
                     onPressed: () => _showEditPlanDialog(plan),
                   ),
                   IconButton(
@@ -989,9 +1038,9 @@ class _PlansScreenState extends State<PlansScreen>
                         color: Colors.redAccent),
                     onPressed: () => _showDeleteConfirmationDialog(plan),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
-                    color: Colors.white70,
+                    color: colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ],
               ),
@@ -1002,9 +1051,10 @@ class _PlansScreenState extends State<PlansScreen>
                 width: double.infinity,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 8),
-                child: const LinearProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  backgroundColor: AppColors.primary,
+                child: LinearProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                  backgroundColor: colorScheme.primary.withOpacity(0.2),
                 ),
               ),
           ],
@@ -1014,6 +1064,10 @@ class _PlansScreenState extends State<PlansScreen>
   }
 
   Widget _buildStaticPlanCard(PlanResponse plan, int index) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Card(
       key: ValueKey(plan.id),
       elevation: 5,
@@ -1024,10 +1078,15 @@ class _PlansScreenState extends State<PlansScreen>
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
-            ],
+            colors: isDark
+                ? [
+                    Colors.white.withOpacity(0.1),
+                    Colors.white.withOpacity(0.05),
+                  ]
+                : [
+                    colorScheme.surface.withOpacity(0.8),
+                    colorScheme.surface.withOpacity(0.6),
+                  ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -1036,24 +1095,24 @@ class _PlansScreenState extends State<PlansScreen>
         child: ListTile(
           title: Text(
             plan.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Colors.white,
+              color: colorScheme.onSurface,
             ),
           ),
           subtitle: plan.notes != null && plan.notes!.isNotEmpty
               ? Text(
                   plan.notes!,
-                  style: const TextStyle(
-                    color: Colors.white70,
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withOpacity(0.7),
                     fontSize: 14,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 )
               : null,
-          trailing: const Icon(
+          trailing: Icon(
             Icons.chevron_right,
             color: Colors.white70,
           ),

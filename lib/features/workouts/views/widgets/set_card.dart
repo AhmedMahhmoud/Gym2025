@@ -135,7 +135,7 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
               Text('workouts.timer_finished'.tr()),
             ],
           ),
-          backgroundColor: AppColors.primary,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -166,12 +166,12 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
         curve: Curves.easeInOut,
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
               color: _isRunning
-                  ? AppColors.primary.withOpacity(0.3)
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
                   : Colors.black.withOpacity(0.3),
               blurRadius: _isRunning ? 8 : 2,
               offset: const Offset(0, 4),
@@ -179,7 +179,7 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
           ],
           border: Border.all(
             color: _isRunning
-                ? AppColors.primary.withOpacity(0.6)
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.6)
                 : Colors.transparent,
             width: 2,
           ),
@@ -196,7 +196,10 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                     height: 48,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.3),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
@@ -209,7 +212,7 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                       child: Icon(
                         _isDurationSet ? Icons.timer : Icons.fitness_center,
                         size: 24,
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),
@@ -325,8 +328,8 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.8),
-            AppColors.primary,
+            Theme.of(context).colorScheme.primary.withOpacity(0.8),
+            Theme.of(context).colorScheme.primary,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -334,7 +337,7 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -382,15 +385,15 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.1),
-            AppColors.primary.withOpacity(0.05),
+            Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            Theme.of(context).colorScheme.primary.withOpacity(0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -430,7 +433,7 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                         valueColor: AlwaysStoppedAnimation<Color>(
                           _remainingSeconds! <= 10
                               ? Colors.red.withOpacity(0.9)
-                              : AppColors.primary,
+                              : Theme.of(context).colorScheme.primary,
                         ),
                       );
                     },
@@ -487,7 +490,7 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                     ? 'workouts.resume_timer'.tr()
                     : 'workouts.pause_timer'.tr(),
                 onPressed: _isPaused ? _resumeTimer : _pauseTimer,
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ],
           ),
@@ -550,7 +553,7 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
       builder: (context) => Container(
         margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -565,7 +568,8 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
           children: [
             if (_isDurationSet) ...[
               ListTile(
-                leading: const Icon(Icons.timer, color: AppColors.primary),
+                leading: Icon(Icons.timer,
+                    color: Theme.of(context).colorScheme.primary),
                 title: Text(
                   'workouts.start_timer'.tr(),
                   style: const TextStyle(

@@ -186,9 +186,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
   }
 
   void _showFilterOptions(BuildContext context, ExercisesState state) {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -204,8 +205,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.9,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -271,15 +272,22 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                           padding: const EdgeInsets.all(12),
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: AppColors.primary.withOpacity(0.3)),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.3)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.filter_alt,
-                                  color: AppColors.primary, size: 16),
+                              Icon(Icons.filter_alt,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 16),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -289,8 +297,9 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                       : _localSelectedMuscle != null
                                           ? 'Muscle Selected: $_localSelectedMuscle (select category for dual filter)'
                                           : 'Category Selected: $_localSelectedCategory (select muscle for dual filter)',
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -333,13 +342,15 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                               });
                               setState(() {});
                             },
-                            selectedColor: AppColors.primary,
+                            selectedColor:
+                                Theme.of(context).colorScheme.primary,
                             labelStyle: TextStyle(
                               color: isSelected
                                   ? Colors.white
-                                  : AppColors.textPrimary,
+                                  : Theme.of(context).colorScheme.onSurface,
                             ),
-                            backgroundColor: AppColors.background,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
                           );
                         }).toList(),
                       ),
@@ -380,13 +391,15 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                               });
                               setState(() {});
                             },
-                            selectedColor: AppColors.primary,
+                            selectedColor:
+                                Theme.of(context).colorScheme.primary,
                             labelStyle: TextStyle(
                               color: isSelected
                                   ? Colors.white
-                                  : AppColors.textPrimary,
+                                  : Theme.of(context).colorScheme.onSurface,
                             ),
-                            backgroundColor: AppColors.background,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
                           );
                         }).toList(),
                       ),
@@ -404,7 +417,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -584,10 +597,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                   },
                   child: Container(
                     height: MediaQuery.of(context).size.height * 0.9,
-                    decoration: const BoxDecoration(
-                      color: AppColors.background,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                          const BorderRadius.vertical(top: Radius.circular(20)),
                     ),
                     child: Column(
                       children: [
@@ -628,14 +641,16 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                           ),
                                         ),
                                         if (isAddingExercises)
-                                          const SizedBox(
+                                          SizedBox(
                                             width: 16,
                                             height: 16,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
-                                                AppColors.primary,
+                                                Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
                                               ),
                                             ),
                                           ),
@@ -657,9 +672,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                                         .toString(),
                                                   },
                                                 ),
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 12,
-                                            color: AppColors.primary,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -682,7 +699,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                         Container(
                           margin: const EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(25),
                           ),
                           child: TabBar(
@@ -729,10 +746,13 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.background,
+                            color: Theme.of(context).colorScheme.surface,
                             border: Border(
                               top: BorderSide(
-                                color: AppColors.surface.withOpacity(0.3),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surface
+                                    .withOpacity(0.3),
                                 width: 1,
                               ),
                             ),
@@ -811,7 +831,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
               hintText: 'workouts.search_exercises'.tr(),
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Theme.of(context).colorScheme.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -836,7 +856,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                     style: const TextStyle(fontSize: 14),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -890,8 +910,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: isAdded
-                          ? AppColors.surface.withOpacity(0.5)
-                          : AppColors.surface,
+                          ? Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.5)
+                          : Theme.of(context).colorScheme.surface,
                       child: ListTile(
                         title: Text(
                           exercise.name,
@@ -966,7 +989,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
               hintText: 'workouts.search_custom_exercises'.tr(),
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Theme.of(context).colorScheme.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -1054,8 +1077,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: isAdded
-                          ? AppColors.surface.withOpacity(0.5)
-                          : AppColors.surface,
+                          ? Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.5)
+                          : Theme.of(context).colorScheme.surface,
                       child: ListTile(
                         title: Text(
                           exercise.name,
