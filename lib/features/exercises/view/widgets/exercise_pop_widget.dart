@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trackletics/Shared/ui/cached_network_img.dart';
+import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 
 class PopAnimatedCard extends StatefulWidget {
@@ -152,8 +153,10 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                                 children: [
                                   Icon(
                                     Icons.fitness_center,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.textPrimary
+                                        : AppColors.primaryLight,
                                     size: 14,
                                   ),
                                   const SizedBox(width: 6),
@@ -161,9 +164,10 @@ class _PopAnimatedCardState extends State<PopAnimatedCard>
                                     child: Text(
                                       widget.exercise.primaryMuscle,
                                       style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? AppColors.textPrimary
+                                            : AppColors.primaryLight,
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                       ),

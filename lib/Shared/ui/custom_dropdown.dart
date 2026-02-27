@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:trackletics/core/theme/app_theme.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AppDropdown<T> extends StatefulWidget {
@@ -33,9 +32,24 @@ class AppDropdown<T> extends StatefulWidget {
 class _AppDropdownState<T> extends State<AppDropdown<T>> {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return DropdownButtonFormField<T>(
       value: widget.value,
-      items: widget.items,
+      items: widget.items.map((item) {
+        return DropdownMenuItem<T>(
+          value: item.value,
+          child: DefaultTextStyle(
+            style: TextStyle(
+              color: isDark ? AppColors.textPrimary : Colors.black,
+              fontSize: 16,
+              fontFamily: context.locale.languageCode == 'ar' ? 'Cairo' : 'Quicksand',
+              fontWeight: FontWeight.w500,
+            ),
+            child: item.child,
+          ),
+        );
+      }).toList(),
       onChanged: widget.onChanged,
       onSaved: widget.onSaved,
       validator: (value) {
@@ -49,16 +63,17 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
       },
       autovalidateMode: AutovalidateMode.onUserInteraction,
       style: TextStyle(
-        color: AppColors.textPrimary,
+        color: isDark ? AppColors.textPrimary : Colors.black,
         fontSize: 16,
         fontFamily: context.locale.languageCode == 'ar' ? 'Cairo' : 'Quicksand',
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         hintText: widget.hintText,
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
+        hintStyle: TextStyle(
+          color: isDark ? AppColors.textSecondary : Colors.black54,
+        ),
+        filled: false,
         errorStyle: const TextStyle(
           fontWeight: FontWeight.w600,
           color: Colors.redAccent,
@@ -69,14 +84,26 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.1),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.1),
+          ),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         prefixIcon: widget.prefixIcon,
-        suffixIcon: const Icon(
+        suffixIcon: Icon(
           FontAwesomeIcons.chevronDown,
-          color: AppColors.textSecondary,
+          color: isDark ? AppColors.textSecondary : Colors.black54,
           size: 16,
         ),
       ),

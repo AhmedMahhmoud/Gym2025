@@ -7,9 +7,7 @@ import 'package:trackletics/core/services/token_manager.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/routes/route_names.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/core/network/dio_service.dart';
 
 class SignOutBtn extends StatelessWidget {
@@ -79,8 +77,10 @@ class SignOutBtn extends StatelessWidget {
                     children: [
                       Text(
                         'signout.title'.tr(),
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -89,7 +89,9 @@ class SignOutBtn extends StatelessWidget {
                       Text(
                         'signout.logoutMessage'.tr(),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withOpacity(0.7)
+                              : Colors.black.withOpacity(0.7),
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                         ),
@@ -160,8 +162,10 @@ class SignOutBtn extends StatelessWidget {
                     children: [
                       Text(
                         'Delete Account.title'.tr(),
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -170,7 +174,9 @@ class SignOutBtn extends StatelessWidget {
                       Text(
                         'Delete Account.pernament'.tr(),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withOpacity(0.7)
+                              : Colors.black.withOpacity(0.7),
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                         ),
@@ -236,7 +242,9 @@ class SignOutBtn extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF2A2A2A)
+            : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -257,8 +265,10 @@ class SignOutBtn extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -267,8 +277,10 @@ class SignOutBtn extends StatelessWidget {
         ),
         content: Text(
           message,
-          style: const TextStyle(
-            color: Colors.white70,
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black87,
             fontSize: 16,
           ),
         ),
@@ -277,7 +289,11 @@ class SignOutBtn extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'common.cancel'.tr(),
-              style: const TextStyle(color: Colors.white70),
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black87,
+              ),
             ),
           ),
           ElevatedButton(

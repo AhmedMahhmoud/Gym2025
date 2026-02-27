@@ -62,8 +62,11 @@ class _SignInViewState extends State<SignInView> {
               alignment: Alignment.centerRight,
               child: Text(
                 'auth.forgot_password',
-                style: const TextStyle(
-                    color: AppColors.primary, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textPrimary
+                        : AppColors.primaryLight,
+                    fontWeight: FontWeight.w500),
               ).tr(),
             ),
           ),
@@ -73,7 +76,8 @@ class _SignInViewState extends State<SignInView> {
           // Google Sign-In Button
           BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
-              if (state is GoogleSignInNeedsAdditionalInfo && !_hasNavigatedToAdditionalInfo) {
+              if (state is GoogleSignInNeedsAdditionalInfo &&
+                  !_hasNavigatedToAdditionalInfo) {
                 _hasNavigatedToAdditionalInfo = true;
                 // Pass both the googleAccount and the AuthCubit instance
                 Navigator.pushNamed(
@@ -90,9 +94,7 @@ class _SignInViewState extends State<SignInView> {
               }
             },
             builder: (context, state) {
-              return SocialSignBtn(
-                text: 'auth.sign_in_with_google'.tr(),
-                icon: FontAwesomeIcons.google,
+              return GoogleSignInButton(
                 onPressed: state is AuthLoading
                     ? () {}
                     : () {

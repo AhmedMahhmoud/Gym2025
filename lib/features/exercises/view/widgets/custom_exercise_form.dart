@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trackletics/Shared/ui/custom_back_btn.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
@@ -152,9 +153,17 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('workouts.add_custom_exercise'.tr()),
+          title: Text(
+            'workouts.add_custom_exercise'.tr(),
+            style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+                fontWeight: FontWeight.bold),
+          ),
           backgroundColor: Colors.transparent,
           elevation: 0,
+          leading: const CustomBackBtn(),
         ),
         body: BlocBuilder<ExercisesCubit, ExercisesState>(
           builder: (context, state) {
@@ -180,8 +189,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                     if (state.status == ExerciseStatus.loading)
                       LinearProgressIndicator(
                         backgroundColor: Colors.transparent,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.primary),
                       ),
                     const SizedBox(height: 5),
 
@@ -207,8 +216,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                                BorderSide(color: Theme.of(context).colorScheme.primary),
+                            borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -247,8 +256,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                                BorderSide(color: Theme.of(context).colorScheme.primary),
+                            borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 16),
@@ -279,8 +288,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                                BorderSide(color: Theme.of(context).colorScheme.primary),
+                            borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -319,8 +328,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                                BorderSide(color: Theme.of(context).colorScheme.primary),
+                            borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -347,7 +356,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm>
                               ? null
                               : _handleSubmit,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

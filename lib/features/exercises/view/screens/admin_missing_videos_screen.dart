@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:trackletics/Shared/ui/custom_back_btn.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/features/exercises/data/models/missing_video_exercise.dart';
@@ -33,14 +34,26 @@ class _AdminMissingVideosScreenState extends State<AdminMissingVideosScreen> {
         if (!profileState.isAdmin) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Access Denied'),
+              title: Text(
+                'Access Denied',
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
+              ),
               backgroundColor: Colors.transparent,
               elevation: 0,
+              leading: CustomBackBtn(),
             ),
-            body: const Center(
+            body: Center(
               child: Text(
                 'Admin access required',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
               ),
             ),
           );
@@ -60,20 +73,31 @@ class _AdminMissingVideosScreenState extends State<AdminMissingVideosScreen> {
 
             return Scaffold(
               appBar: AppBar(
-                title: Text('profile.admin_missing_videos'.tr()),
+                leading: CustomBackBtn(),
+                title: Text(
+                  'profile.admin_missing_videos'.tr(),
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 actions: [
                   if (isLoadingMissing)
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
+                          ),
                         ),
                       ),
                     ),
@@ -87,11 +111,16 @@ class _AdminMissingVideosScreenState extends State<AdminMissingVideosScreen> {
                       ),
                     )
                   : missing.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text(
                             'All exercises have both videos. Great job! 🟢',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white70),
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white70
+                                  : Colors.black87,
+                            ),
                           ),
                         )
                       : Column(
@@ -157,10 +186,10 @@ class _AdminMissingVideosScreenState extends State<AdminMissingVideosScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.05),
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: Colors.white.withOpacity(0.1),
+                                          color: AppColors.primary
+                                              .withOpacity(0.3),
                                         ),
                                       ),
                                       padding: const EdgeInsets.all(16),
@@ -178,10 +207,12 @@ class _AdminMissingVideosScreenState extends State<AdminMissingVideosScreen> {
                                                   color: AppColors.primary
                                                       .withOpacity(0.3)),
                                             ),
-                                            child: const Icon(
-                                              Icons.videocam_off,
-                                              color: AppColors.primary,
-                                            ),
+                                            child: Icon(Icons.videocam_off,
+                                                color: Theme.of(context)
+                                                            .brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white
+                                                    : AppColors.primaryLight),
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(
@@ -194,26 +225,38 @@ class _AdminMissingVideosScreenState extends State<AdminMissingVideosScreen> {
                                                   maxLines: 2,
                                                   overflow:
                                                       TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                                .brightness ==
+                                                            Brightness.dark
+                                                        ? Colors.white
+                                                        : Colors.black,
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
                                                 const SizedBox(height: 6),
-                                                const Text(
+                                                Text(
                                                   'Missing at least one video',
                                                   style: TextStyle(
-                                                    color: Colors.white70,
+                                                    color: Theme.of(context)
+                                                                .brightness ==
+                                                            Brightness.dark
+                                                        ? Colors.white70
+                                                        : Colors.black87,
                                                     fontSize: 12,
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          const Icon(
+                                          Icon(
                                             Icons.chevron_right,
-                                            color: Colors.white70,
+                                            color:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white70
+                                                    : Colors.black87,
                                           ),
                                         ],
                                       ),

@@ -13,7 +13,9 @@ class LanguageSelectorWidget extends StatelessWidget {
       context: context,
       builder: (BuildContext dialogContext) {
         return Dialog(
-          backgroundColor: const Color(0xFF2A2A2A),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
@@ -21,14 +23,9 @@ class LanguageSelectorWidget extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF2A2A2A),
-                  Color(0xFF1F1F1F),
-                ],
-              ),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF2A2A2A)
+                  : Colors.white,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -52,16 +49,18 @@ class LanguageSelectorWidget extends StatelessWidget {
                       ),
                       child: const Icon(
                         FontAwesomeIcons.language,
-                        color: AppColors.primary,
+                        color: AppColors.primaryLight,
                         size: 22,
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: const Text(
+                      child: Text(
                         'profile.select_language',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
@@ -105,7 +104,9 @@ class LanguageSelectorWidget extends StatelessWidget {
                   child: Text(
                     'common.close',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.7)
+                          : Colors.black87,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -154,16 +155,23 @@ class LanguageSelectorWidget extends StatelessWidget {
                     AppColors.primary.withOpacity(0.3),
                     AppColors.primary.withOpacity(0.15),
                   ]
-                : [
-                    Colors.white.withOpacity(0.08),
-                    Colors.white.withOpacity(0.04),
-                  ],
+                : Theme.of(context).brightness == Brightness.dark
+                    ? [
+                        Colors.white.withOpacity(0.08),
+                        Colors.white.withOpacity(0.04),
+                      ]
+                    : [
+                        Colors.black.withOpacity(0.05),
+                        Colors.black.withOpacity(0.02),
+                      ],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? AppColors.primary.withOpacity(0.6)
-                : Colors.white.withOpacity(0.1),
+                : Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.1),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -184,10 +192,14 @@ class LanguageSelectorWidget extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.1),
                 ),
               ),
               child: Center(
@@ -206,8 +218,10 @@ class LanguageSelectorWidget extends StatelessWidget {
                 children: [
                   Text(
                     languageName,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.3,
@@ -217,7 +231,9 @@ class LanguageSelectorWidget extends StatelessWidget {
                   Text(
                     languageNativeName,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.7)
+                          : Colors.black.withOpacity(0.7),
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
                     ),
@@ -234,7 +250,7 @@ class LanguageSelectorWidget extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: AppColors.primaryLight,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -270,10 +286,17 @@ class LanguageSelectorWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary.withOpacity(0.2),
+              AppColors.primary.withOpacity(0.1),
+            ],
+          ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: AppColors.primary.withOpacity(0.3),
           ),
         ),
         child: Row(
@@ -283,12 +306,12 @@ class LanguageSelectorWidget extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
+                color: AppColors.primary.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
                 FontAwesomeIcons.language,
-                color: Colors.white70,
+                color: AppColors.primary,
                 size: 18,
               ),
             ),
@@ -299,10 +322,12 @@ class LanguageSelectorWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'profile.language',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -318,7 +343,9 @@ class LanguageSelectorWidget extends StatelessWidget {
                       Text(
                         currentLanguageName,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withOpacity(0.6)
+                              : Colors.black.withOpacity(0.6),
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                         ),
@@ -332,7 +359,9 @@ class LanguageSelectorWidget extends StatelessWidget {
             // Arrow
             Icon(
               Icons.chevron_right_rounded,
-              color: Colors.white.withOpacity(0.4),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.4)
+                  : Colors.black.withOpacity(0.4),
               size: 24,
             ),
           ],

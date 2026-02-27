@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:trackletics/core/theme/app_colors.dart';
+import 'package:easy_localization/easy_localization.dart';
 
-class SocialSignBtn extends StatelessWidget {
-  const SocialSignBtn({
+class GoogleSignInButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const GoogleSignInButton({
     super.key,
-    required this.text,
-    required this.icon,
     required this.onPressed,
   });
-  final String text;
-  final IconData icon;
-  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -19,28 +16,34 @@ class SocialSignBtn extends StatelessWidget {
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.divider.withOpacity(0.3),
+            color: const Color(0xFFDADCE0),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: AppColors.textPrimary,
+            Image.asset(
+              'assets/images/google_icon.png',
+              height: 20,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Text(
-              text,
+              'auth.continue_with_google'.tr(),
               style: const TextStyle(
-                color: AppColors.textPrimary,
+                color: Color(0xFF3C4043),
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

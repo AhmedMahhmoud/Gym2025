@@ -157,7 +157,8 @@ class AppTheme {
         }),
         trackColor:
             WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-          if (states.contains(WidgetState.selected)) return AppColors.primaryLight;
+          if (states.contains(WidgetState.selected))
+            return AppColors.primaryLight;
           return AppColors.dividerLight;
         }),
       ),
@@ -175,7 +176,7 @@ class AppTheme {
       useMaterial3: false, // OLD: Material 2
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
-        primary: AppColors.primary, // Purple
+        primary: AppColors.primaryLight, // Purple
         background: AppColors.background,
         surface: AppColors.surface,
         onPrimary: AppColors.buttonText,
@@ -204,7 +205,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.primaryLight,
           foregroundColor: AppColors.buttonText,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(

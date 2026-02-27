@@ -77,28 +77,40 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
       builder: (context) => FadeInWidget(
         duration: const Duration(milliseconds: 300),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2A2A2A),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
           title: Text(
             'workouts.delete_exercise'.tr(),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: Text(
             'workouts.delete_exercise_confirmation'
                 .tr(namedArgs: {'name': exercise.name}),
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black87,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'workouts.cancel'.tr(),
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
+                ),
               ),
             ),
             TextButton(
@@ -205,8 +217,12 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.02),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -216,25 +232,31 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
         child: ListTile(
           title: Text(
             exercise.name,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
           ),
           subtitle: Text(
             exercise.primaryMuscle,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black87,
             ),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(
+                icon: Icon(
                   FontAwesomeIcons.circleInfo,
-                  color: Colors.white70,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
                 ),
                 onPressed: () {
                   Navigator.pushNamed(
@@ -255,9 +277,11 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                       color: Colors.redAccent),
                   onPressed: () => _showDeleteConfirmationDialog(exercise),
                 ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: Colors.white70,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black87,
               ),
             ],
           ),
@@ -279,8 +303,12 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.02),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -288,31 +316,39 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
           borderRadius: BorderRadius.circular(15),
         ),
         child: ListTile(
-          leading: const Icon(
+          leading: Icon(
             Icons.drag_handle,
-            color: Colors.white70,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black87,
           ),
           title: Text(
             exercise.name,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
           ),
           subtitle: Text(
             exercise.primaryMuscle,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black87,
             ),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(
+                icon: Icon(
                   FontAwesomeIcons.circleInfo,
-                  color: Colors.white70,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
                 ),
                 onPressed: () {
                   Navigator.pushNamed(
@@ -350,8 +386,13 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
       appBar: AppBar(
         title: BlocSelector<WorkoutsCubit, WorkoutsState, String?>(
           selector: (state) => state.currentWorkout?.title,
-          builder: (context, title) =>
-              Text(title ?? 'workouts.workout_details'.tr()),
+          builder: (context, title) => Text(
+            title ?? 'workouts.workout_details'.tr(),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
       body: SafeArea(
@@ -392,7 +433,12 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                   children: [
                     Text(
                       'workouts.no_exercises_added_yet'.tr(),
-                      style: const TextStyle(fontSize: 18, color: Colors.white),
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     if (!state.isGuidedMode &&
@@ -401,7 +447,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                       ElevatedButton(
                         onPressed: _showAddExerciseBottomSheet,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: AppColors.primaryLight,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -429,11 +475,21 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                         if (!_isReordering)
                           TextButton.icon(
                             onPressed: _toggleReordering,
-                            icon: const Icon(Icons.reorder,
-                                color: Colors.white70),
+                            icon: Icon(
+                              Icons.reorder,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white70
+                                  : Colors.black87,
+                            ),
                             label: Text(
                               'workouts.reorder_exercises'.tr(),
-                              style: const TextStyle(color: Colors.white70),
+                              style: TextStyle(
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black87,
+                              ),
                             ),
                           )
                         else
@@ -451,7 +507,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                               ElevatedButton(
                                 onPressed: _saveExerciseOrder,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: AppColors.primaryLight,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -550,7 +606,10 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                         ],
                       ),
                       child: Material(
-                        color: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        color: AppColors.primaryLight,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(15),
                           onTap: _showAddExerciseBottomSheet,

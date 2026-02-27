@@ -244,7 +244,15 @@ class _PlansScreenState extends State<PlansScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('plans.workout_plans'.tr()),
+        title: Text(
+          'plans.workout_plans'.tr(),
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
         bottom: PreferredSize(
@@ -254,6 +262,7 @@ class _PlansScreenState extends State<PlansScreen>
               final theme = Theme.of(context);
               final colorScheme = theme.colorScheme;
               return TabBar(
+                dividerColor: Colors.transparent,
                 controller: _tabController,
                 indicatorColor: colorScheme.primary,
                 labelColor: colorScheme.onSurface,
@@ -534,7 +543,7 @@ class _PlansScreenState extends State<PlansScreen>
               Container(
                 width: double.infinity,
                 height: 4,
-                margin: EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: 16),
                 child: LinearProgressIndicator(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
@@ -563,10 +572,13 @@ class _PlansScreenState extends State<PlansScreen>
                                   const EdgeInsets.symmetric(horizontal: 30),
                               child: Text(
                                 'plans.add_new_plan'.tr(),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white70,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white70
+                                      : Colors.black87,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -623,9 +635,12 @@ class _PlansScreenState extends State<PlansScreen>
                                   ],
                                 ),
                                 padding: const EdgeInsets.all(15),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.add,
-                                  color: Colors.white,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
                                   size: 30,
                                 ),
                               ),
@@ -694,13 +709,21 @@ class _PlansScreenState extends State<PlansScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'plans.loading_plans'.tr(),
-                    style: const TextStyle(color: Colors.white70),
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black87,
+                    ),
                   ),
                 ],
               ),
@@ -739,19 +762,33 @@ class _PlansScreenState extends State<PlansScreen>
                         controller: _staticTitleController,
                         decoration: InputDecoration(
                           labelText: 'plans.static_plan_title'.tr(),
-                          floatingLabelStyle: const TextStyle(
+                          floatingLabelStyle: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 20,
-                            color: Colors.white,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
                           ),
                           hintText: 'plans.static_plan_title_hint'.tr(),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.1),
-                          labelStyle: const TextStyle(
+                          fillColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : Colors.black.withOpacity(0.05),
+                          labelStyle: TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey
+                                    : Colors.black54,
                           ),
-                          hintStyle: const TextStyle(color: Colors.white38),
+                          hintStyle: TextStyle(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white38
+                                    : Colors.black38,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
                             borderSide: BorderSide.none,
@@ -761,7 +798,11 @@ class _PlansScreenState extends State<PlansScreen>
                             vertical: 15,
                           ),
                         ),
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
+                        ),
                         onTapOutside: (event) =>
                             FocusScope.of(context).unfocus(),
                         autofocus: true,
@@ -771,19 +812,33 @@ class _PlansScreenState extends State<PlansScreen>
                         controller: _staticNotesController,
                         decoration: InputDecoration(
                           labelText: 'plans.notes_optional'.tr(),
-                          floatingLabelStyle: const TextStyle(
+                          floatingLabelStyle: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 20,
-                            color: Colors.white,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
                           ),
                           hintText: 'plans.static_notes_hint'.tr(),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.1),
-                          labelStyle: const TextStyle(
+                          fillColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : Colors.black.withOpacity(0.05),
+                          labelStyle: TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey
+                                    : Colors.black54,
                           ),
-                          hintStyle: const TextStyle(color: Colors.white38),
+                          hintStyle: TextStyle(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white38
+                                    : Colors.black38,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
                             borderSide: BorderSide.none,
@@ -793,7 +848,11 @@ class _PlansScreenState extends State<PlansScreen>
                             vertical: 15,
                           ),
                         ),
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
+                        ),
                         onTapOutside: (event) =>
                             FocusScope.of(context).unfocus(),
                       ),
@@ -810,77 +869,86 @@ class _PlansScreenState extends State<PlansScreen>
                               });
                             },
                             style: TextButton.styleFrom(
-                              foregroundColor: Colors.white70,
+                              foregroundColor: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white70
+                                  : Colors.black87,
                             ),
                             child: Text('plans.cancel'.tr()),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 8),
                           if (state.status == WorkoutsStatus.creatingStaticPlan)
                             Container(
                               width: double.infinity,
                               height: 4,
                               margin: const EdgeInsets.only(bottom: 20),
                               child: LinearProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
                                 backgroundColor:
                                     Theme.of(context).colorScheme.primary,
                               ),
                             )
                           else
-                            ElevatedButton(
-                              onPressed: _createStaticPlan,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 40,
-                                  vertical: 15,
-                                ),
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ).copyWith(
-                                backgroundColor: MaterialStateProperty.all(
-                                  Colors.transparent,
-                                ),
-                                overlayColor: MaterialStateProperty.all(
-                                  Colors.white.withOpacity(0.1),
-                                ),
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Theme.of(context).primaryColor,
-                                      Theme.of(context)
-                                          .primaryColor
-                                          .withOpacity(0.7),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
+                            Flexible(
+                              child: ElevatedButton(
+                                onPressed: _createStaticPlan,
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 15,
                                   ),
-                                  borderRadius: BorderRadius.circular(30),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Theme.of(context)
-                                          .primaryColor
-                                          .withOpacity(0.5),
-                                      blurRadius: 10,
-                                      spreadRadius: 2,
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ).copyWith(
+                                  backgroundColor: MaterialStateProperty.all(
+                                    Colors.transparent,
+                                  ),
+                                  overlayColor: MaterialStateProperty.all(
+                                    Colors.white.withOpacity(0.1),
+                                  ),
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Theme.of(context).primaryColor,
+                                        Theme.of(context)
+                                            .primaryColor
+                                            .withOpacity(0.7),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                     ),
-                                  ],
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 30,
-                                  vertical: 15,
-                                ),
-                                child: Text(
-                                  'plans.create_static_plan'.tr(),
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Theme.of(context)
+                                            .primaryColor
+                                            .withOpacity(0.5),
+                                        blurRadius: 10,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 15,
+                                  ),
+                                  child: Text(
+                                    'plans.create_static_plan'.tr(),
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -905,10 +973,13 @@ class _PlansScreenState extends State<PlansScreen>
                           const SizedBox(height: 16),
                           Text(
                             'plans.no_static_plans_available'.tr(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white70,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white70
+                                  : Colors.black87,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -916,8 +987,11 @@ class _PlansScreenState extends State<PlansScreen>
                             context.read<ProfileCubit>().state.isAdmin
                                 ? 'plans.create_first_static_plan'.tr()
                                 : 'plans.check_back_later'.tr(),
-                            style: const TextStyle(
-                              color: Colors.grey,
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey
+                                  : Colors.black54,
                             ),
                           ),
                           if (context.read<ProfileCubit>().state.isAdmin) ...[
@@ -977,7 +1051,6 @@ class _PlansScreenState extends State<PlansScreen>
     final isDeleting = _isDeleting[plan.id] ?? false;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return Card(
       key: ValueKey(plan.id),
@@ -988,19 +1061,6 @@ class _PlansScreenState extends State<PlansScreen>
       margin: const EdgeInsets.only(bottom: 16),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? [
-                    Colors.white.withOpacity(0.1),
-                    Colors.white.withOpacity(0.05),
-                  ]
-                : [
-                    colorScheme.surface.withOpacity(0.8),
-                    colorScheme.surface.withOpacity(0.6),
-                  ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
@@ -1114,7 +1174,9 @@ class _PlansScreenState extends State<PlansScreen>
               : null,
           trailing: Icon(
             Icons.chevron_right,
-            color: Colors.white70,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black87,
           ),
           onTap: () => _navigateToWorkouts(plan),
         ),
@@ -1128,28 +1190,40 @@ class _PlansScreenState extends State<PlansScreen>
       builder: (context) => FadeIn(
         duration: const Duration(milliseconds: 300),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2A2A2A),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
           title: Text(
             'plans.delete_plan'.tr(),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: Text(
             'plans.delete_plan_confirmation'
                 .tr(namedArgs: {'title': plan.title}),
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black87,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'plans.cancel'.tr(),
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
+                ),
               ),
             ),
             TextButton(

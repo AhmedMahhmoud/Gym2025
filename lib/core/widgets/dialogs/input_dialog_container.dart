@@ -18,7 +18,7 @@ class InputDialogContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.divider,
-      shadowColor: AppColors.primary,
+      shadowColor: AppColors.primaryLight,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
       child: Animate(

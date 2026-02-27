@@ -184,7 +184,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -202,8 +202,10 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                 Expanded(
                   child: Text(
                     stepText,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),
@@ -331,7 +333,8 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                           exercise: updatedExercise,
                         ),
                         const Padding(
-                          padding: EdgeInsets.all(8.0),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.0, vertical: 40),
                           child: CustomBackBtn(),
                         ),
                       ],
@@ -358,6 +361,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: TabBar(
+                          dividerColor: Colors.transparent,
                           onTap: (value) {
                             setState(() {
                               _selectedGender = value == 0 ? 'male' : 'female';
@@ -367,7 +371,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                           controller: _tabController,
                           indicator: BoxDecoration(
                             borderRadius: BorderRadius.circular(25),
-                            color: AppColors.primary,
+                            color: AppColors.primaryLight
                           ),
                           labelColor: Colors.white,
                           unselectedLabelColor: Colors.grey,
@@ -422,9 +426,12 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                                 ),
                                 label: Text(
                                   updatedExercise.primaryMuscle,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                                  style: TextStyle(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black,
+                                    fontWeight: FontWeight.w400,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -449,9 +456,12 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                                   ),
                                   label: Text(
                                     updatedExercise.category,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
+                                    style: TextStyle(
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black,
+                                      fontWeight: FontWeight.w400,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -508,7 +518,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                             style: TextStyle(
                               color: Colors.grey[400],
                               fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -529,6 +539,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                                       ? Colors.green
                                       : Colors.grey,
                                   fontSize: 12,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -546,6 +557,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                                   color: updatedExercise.hasFemaleVideo
                                       ? Colors.green
                                       : Colors.grey,
+                                  fontWeight: FontWeight.w700,
                                   fontSize: 12,
                                 ),
                               ),
@@ -575,7 +587,7 @@ class _AdminExerciseDetailsPageState extends State<AdminExerciseDetailsPage>
                     // Controllers will auto re-init on next build if URLs changed
                   }
                 },
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.primaryLight,
                 foregroundColor: Colors.white,
                 elevation: 8,
                 child: const Icon(

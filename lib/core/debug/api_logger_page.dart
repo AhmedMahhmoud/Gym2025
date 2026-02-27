@@ -245,7 +245,7 @@ class ApiLoggerPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: color ?? AppColors.primary, size: 20),
+              Icon(icon, color: color ?? AppColors.primaryLight, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,

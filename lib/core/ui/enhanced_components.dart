@@ -272,7 +272,7 @@ class _EnhancedTextFieldState extends State<EnhancedTextField>
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.primary,
+                color: AppColors.primaryLight,
                 width: _borderAnimation.value,
               ),
             ),
@@ -470,7 +470,7 @@ class CustomSnackbar {
           ),
         ],
       ),
-      backgroundColor: isError ? Colors.red[600] : AppColors.primary,
+      backgroundColor: isError ? Colors.red[600] : AppColors.primaryLight,  
       duration: duration,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
@@ -499,7 +499,7 @@ class PullToRefreshWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: onRefresh,
-      color: color ?? AppColors.primary,
+      color: color ?? AppColors.primaryLight,
       backgroundColor: Colors.white,
       child: child,
     );

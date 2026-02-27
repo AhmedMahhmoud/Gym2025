@@ -36,7 +36,7 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
 
     final cubit = context.read<ExercisesCubit>();
     final state = context.watch<ExercisesCubit>().state;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -120,21 +120,36 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
                       child: Row(
                         children: [
                           Icon(Icons.filter_alt,
-                              color: Theme.of(context).colorScheme.primary,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Theme.of(context).colorScheme.primary,
                               size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               _tempSelectedMuscle != null &&
                                       _tempSelectedCategory != null
-                                  ? 'Dual Filter: $_tempSelectedMuscle + $_tempSelectedCategory'
+                                  ? 'exercises.dual_filter'.tr(namedArgs: {
+                                      'muscle': _tempSelectedMuscle!,
+                                      'category': _tempSelectedCategory!,
+                                    })
                                   : _tempSelectedMuscle != null
-                                      ? 'Muscle Selected: $_tempSelectedMuscle (select category for dual filter)'
-                                      : 'Category Selected: $_tempSelectedCategory (select muscle for dual filter)',
+                                      ? 'exercises.muscle_selected'
+                                          .tr(namedArgs: {
+                                          'muscle': _tempSelectedMuscle!,
+                                        })
+                                      : 'exercises.category_selected'
+                                          .tr(namedArgs: {
+                                          'category': _tempSelectedCategory!,
+                                        }),
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Theme.of(context).colorScheme.primary,
                                 fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -160,7 +175,14 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
                               (_tempSelectedType == FilterType.both &&
                                   _tempSelectedMuscle == muscle);
                       return FilterChip(
-                        label: Text(muscle),
+                        checkmarkColor: Colors.white,
+                        label: Text(
+                          muscle,
+                          style: TextStyle(
+                              color: isDark || isSelected
+                                  ? Colors.white
+                                  : Colors.black),
+                        ),
                         selected: isSelected,
                         onSelected: (_) {
                           setState(() {
@@ -207,7 +229,12 @@ class _ExerciseFilterBottomSheetState extends State<ExerciseFilterBottomSheet> {
                               (_tempSelectedType == FilterType.both &&
                                   _tempSelectedCategory == category);
                       return FilterChip(
-                        label: Text(category),
+                        checkmarkColor: Colors.white,
+                        label: Text(category,
+                            style: TextStyle(
+                                color: isDark || isSelected
+                                    ? Colors.white
+                                    : Colors.black)),
                         selected: isSelected,
                         onSelected: (_) {
                           setState(() {

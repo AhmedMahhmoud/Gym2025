@@ -30,8 +30,11 @@ class ExerciseDetailsPage extends StatelessWidget {
       return (
         Text(
           description,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(navKey.currentState!.context).brightness ==
+                    Brightness.dark
+                ? Colors.white
+                : Colors.black,
             fontSize: 14,
             fontWeight: FontWeight.w400,
           ),
@@ -82,8 +85,12 @@ class ExerciseDetailsPage extends StatelessWidget {
                 Expanded(
                   child: Text(
                     stepText,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color:
+                          Theme.of(navKey.currentState!.context).brightness ==
+                                  Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),
@@ -162,9 +169,11 @@ class ExerciseDetailsPage extends StatelessWidget {
                     Center(
                         child: Text(
                       updatedExercise.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 20,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
                           fontWeight: FontWeight.w600),
                     )),
                     const Divider(),
@@ -178,10 +187,13 @@ class ExerciseDetailsPage extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Primary Muscle',
                                 style: TextStyle(
-                                    color: AppColors.textSecondary,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold),
                               ),
@@ -190,9 +202,12 @@ class ExerciseDetailsPage extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(8)),
                                   label: Text(
                                     updatedExercise.primaryMuscle,
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                                    style: TextStyle(
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontWeight: FontWeight.w500,
                                         fontSize: 14),
                                   )),
                             ],
@@ -201,10 +216,13 @@ class ExerciseDetailsPage extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Equipment',
                                   style: TextStyle(
-                                      color: AppColors.textSecondary,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.textSecondary
+                                          : Colors.black87,
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold),
                                 ),
@@ -213,8 +231,11 @@ class ExerciseDetailsPage extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(8)),
                                     label: Text(
                                       updatedExercise.category,
-                                      style: const TextStyle(
-                                          color: Colors.white,
+                                      style: TextStyle(
+                                          color: Theme.of(context).brightness ==
+                                                  Brightness.dark
+                                              ? Colors.white
+                                              : Colors.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14),
                                     )),
@@ -236,10 +257,13 @@ class ExerciseDetailsPage extends StatelessWidget {
                                       updatedExercise.description);
                               return Text(
                                 formattedResult.$2 ? 'Steps' : 'Description',
-                                style: const TextStyle(
-                                    color: AppColors.textSecondary,
+                                style: TextStyle(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black,
                                     fontSize: 16,
-                                    fontWeight: FontWeight.bold),
+                                    fontWeight: FontWeight.w700),
                               );
                             },
                           ),
@@ -448,8 +472,10 @@ class ExerciseDetailsPage extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               'workouts.delete_exercise'.tr(),
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -463,8 +489,10 @@ class ExerciseDetailsPage extends StatelessWidget {
             Text(
               'workouts.delete_exercise_confirmation'
                   .tr(namedArgs: {'name': exercise.name}),
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -473,7 +501,9 @@ class ExerciseDetailsPage extends StatelessWidget {
             Text(
               'workouts.delete_exercise_confirmation_desc'.tr(),
               style: TextStyle(
-                color: Colors.grey[400],
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : Colors.black87,
                 fontSize: 14,
               ),
             ),
@@ -485,13 +515,17 @@ class ExerciseDetailsPage extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.2),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey.withOpacity(0.2)
+                    : Colors.grey.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'common.cancel'.tr(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
                   fontWeight: FontWeight.w600,
                 ),
               ),

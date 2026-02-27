@@ -43,13 +43,17 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return TextFormField(
       controller: widget.controller,
       onChanged: (value) =>
           widget.onChanged == null ? null : widget.onChanged!(value),
       keyboardType: widget.keyboardType,
       obscureText: _obscureText,
-      style: const TextStyle(color: AppColors.textPrimary),
+      style: TextStyle(
+        color: isDark ? AppColors.textPrimary : Colors.black,
+      ),
       validator: (value) {
         // Default Validation: Check if field is empty
         if (value == null || value.trim().isEmpty) {
@@ -67,11 +71,12 @@ class _AppTextFieldState extends State<AppTextField> {
       onTapOutside: (event) => FocusScope.of(context).unfocus(),
       textInputAction: widget.textInputAction ?? TextInputAction.next,
       decoration: InputDecoration(
-        suffixIconColor: AppColors.textSecondary,
+        suffixIconColor: isDark ? AppColors.textSecondary : Colors.black54,
         hintText: widget.hintText,
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
+        hintStyle: TextStyle(
+          color: isDark ? AppColors.textSecondary : Colors.black54,
+        ),
+        filled: false,
         errorStyle: const TextStyle(
           fontWeight: FontWeight.w600,
           color: Colors.redAccent,
@@ -82,7 +87,19 @@ class _AppTextFieldState extends State<AppTextField> {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.1),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.1),
+          ),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -91,7 +108,7 @@ class _AppTextFieldState extends State<AppTextField> {
             ? IconButton(
                 icon: Icon(
                   _obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: AppColors.textSecondary,
+                  color: isDark ? AppColors.textSecondary : Colors.black54,
                 ),
                 onPressed: () {
                   setState(() {

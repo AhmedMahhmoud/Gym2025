@@ -94,7 +94,7 @@ class _PrimaryRoundedButtonState extends State<PrimaryRoundedButton>
                       )
                     : LinearGradient(
                         colors: [
-                          AppColors.primary,
+                          AppColors.primaryLight,
                           AppColors.primary.withOpacity(0.8),
                         ],
                         begin: Alignment.topLeft,

@@ -6,6 +6,7 @@ import 'package:trackletics/features/home/view/screens/home.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/view/screens/profile_screen.dart';
 import 'package:trackletics/features/workouts/workouts.dart';
+import 'package:trackletics/features/coaches/view/screens/coaches_screen.dart';
 import 'package:trackletics/main.dart';
 import 'package:trackletics/shared/widgets/floating_bottom_nav_bar.dart';
 import 'dart:async';
@@ -52,6 +53,10 @@ class _MainScaffoldState extends State<MainScaffold> {
           label: 'workouts.workouts'.tr(),
         ),
         FloatingNavBarItem(
+          icon: Icons.school_rounded,
+          label: 'Coaches',
+        ),
+        FloatingNavBarItem(
           icon: Icons.person_rounded,
           label: 'profile.profile'.tr(),
         ),
@@ -77,6 +82,8 @@ class _MainScaffoldState extends State<MainScaffold> {
       case 1:
         return const WorkoutsFeature();
       case 2:
+        return const CoachesScreen();
+      case 3:
         return const ProfileScreen();
       default:
         return const SizedBox.shrink();

@@ -302,7 +302,9 @@ class _AddSetDialogState extends State<AddSetDialog> {
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF1A1A1A)
+              : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: AppColors.primary.withOpacity(0.2),
@@ -345,25 +347,34 @@ class _AddSetDialogState extends State<AddSetDialog> {
                       color: AppColors.primary.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.add,
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                       size: 20,
                     ),
                   ),
                   const SizedBox(width: 16),
                   Text(
                     'workouts.add_set'.tr(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white70),
+                    icon: Icon(
+                      Icons.close,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black87,
+                    ),
                   ),
                 ],
               ),
@@ -373,7 +384,10 @@ class _AddSetDialogState extends State<AddSetDialog> {
               Container(
                 height: 4,
                 child: LinearProgressIndicator(
-                  backgroundColor: Colors.white.withOpacity(0.1),
+                  backgroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.1),
                   valueColor:
                       const AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
@@ -527,7 +541,10 @@ class _AddSetDialogState extends State<AddSetDialog> {
                           child: TextButton(
                             onPressed: () => Navigator.pop(context),
                             style: TextButton.styleFrom(
-                              foregroundColor: Colors.white70,
+                              foregroundColor: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white70
+                                  : Colors.black87,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -550,7 +567,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _isLoading
                                   ? AppColors.primary.withOpacity(0.6)
-                                  : AppColors.primary,
+                                  : AppColors.primaryLight,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -628,9 +645,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                   children: [
                     Icon(
                       Icons.repeat,
-                      color: _isRepsBased
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.7),
+                      color: _isRepsBased ? Colors.white : AppColors.primary,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
@@ -639,7 +654,9 @@ class _AddSetDialogState extends State<AddSetDialog> {
                       style: TextStyle(
                         color: _isRepsBased
                             ? Colors.white
-                            : Colors.white.withOpacity(0.7),
+                            : Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
                         fontWeight:
                             _isRepsBased ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -663,9 +680,7 @@ class _AddSetDialogState extends State<AddSetDialog> {
                   children: [
                     Icon(
                       Icons.timer_outlined,
-                      color: !_isRepsBased
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.7),
+                      color: !_isRepsBased ? Colors.white : AppColors.primary,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
@@ -674,7 +689,9 @@ class _AddSetDialogState extends State<AddSetDialog> {
                       style: TextStyle(
                         color: !_isRepsBased
                             ? Colors.white
-                            : Colors.white.withOpacity(0.7),
+                            : Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
                         fontWeight:
                             !_isRepsBased ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -697,10 +714,14 @@ class _AddSetDialogState extends State<AddSetDialog> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white.withOpacity(0.03)
+            : Colors.black.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.black.withOpacity(0.1),
           width: 1,
         ),
       ),
@@ -709,12 +730,14 @@ class _AddSetDialogState extends State<AddSetDialog> {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 20),
+              Icon(icon, color: AppColors.primaryLight, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -741,11 +764,20 @@ class _AddSetDialogState extends State<AddSetDialog> {
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines ?? 1,
-      style: const TextStyle(color: Colors.white, fontSize: 16),
+      style: TextStyle(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black,
+        fontSize: 16,
+      ),
       onChanged: (_) => onChanged?.call(),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        hintStyle: TextStyle(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.5)
+              : Colors.black.withOpacity(0.5),
+        ),
         prefixIcon: Icon(
           prefixIcon,
           color: hasError
@@ -755,13 +787,17 @@ class _AddSetDialogState extends State<AddSetDialog> {
         filled: true,
         fillColor: hasError
             ? Colors.red.withOpacity(0.05)
-            : Colors.white.withOpacity(0.05),
+            : Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.05)
+                : Colors.black.withOpacity(0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
             color: hasError
                 ? Colors.red.withOpacity(0.5)
-                : Colors.white.withOpacity(0.1),
+                : Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.1),
           ),
         ),
         enabledBorder: OutlineInputBorder(
@@ -769,13 +805,15 @@ class _AddSetDialogState extends State<AddSetDialog> {
           borderSide: BorderSide(
             color: hasError
                 ? Colors.red.withOpacity(0.5)
-                : Colors.white.withOpacity(0.1),
+                : Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.1),
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: hasError ? Colors.red : AppColors.primary,
+            color: hasError ? Colors.red : AppColors.primaryLight,
             width: 2,
           ),
         ),
@@ -792,9 +830,15 @@ class _AddSetDialogState extends State<AddSetDialog> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white.withOpacity(0.05)
+            : Colors.black.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.black.withOpacity(0.1),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -814,8 +858,11 @@ class _AddSetDialogState extends State<AddSetDialog> {
               child: Text(
                 value.tr(),
                 style: TextStyle(
-                  color:
-                      isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                  color: isSelected
+                      ? Colors.white
+                      : Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.7)
+                          : Colors.black.withOpacity(0.7),
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),

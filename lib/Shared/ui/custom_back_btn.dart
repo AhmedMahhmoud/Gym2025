@@ -12,14 +12,16 @@ class CustomBackBtn extends StatelessWidget {
     return InkWell(
       onTap: () => Navigator.pop(context),
       child: Container(
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Theme.of(context).colorScheme.surface,
           ),
-          child: const Icon(
+          child: Icon(
             FontAwesomeIcons.arrowLeft,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
             size: 20,
           )),
     );

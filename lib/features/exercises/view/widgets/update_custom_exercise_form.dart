@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:trackletics/Shared/ui/custom_back_btn.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
@@ -140,6 +141,7 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
       },
       child: Scaffold(
         appBar: AppBar(
+          leading: CustomBackBtn(),
           title: Text('workouts.edit_workout'.tr()),
           backgroundColor: Colors.transparent,
           elevation: 0,

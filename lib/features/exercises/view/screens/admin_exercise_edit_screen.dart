@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:trackletics/Shared/ui/custom_back_btn.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
@@ -85,34 +86,45 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
         if (!profileState.isAdmin) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Access Denied'),
+              title: Text(
+                'Access Denied',
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
+              ),
               backgroundColor: Colors.transparent,
               elevation: 0,
             ),
-            body: const Center(
+            body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.lock,
                     size: 64,
                     color: Colors.red,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'Access Denied',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'You need admin privileges to edit exercises',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white70,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black87,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -158,20 +170,31 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
 
               return Scaffold(
                 appBar: AppBar(
-                  title: Text('exercises.edit_exercise'.tr()),
+                  leading: CustomBackBtn(),
+                  title: Text(
+                    'exercises.edit_exercise'.tr(),
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   actions: [
                     if (_isLoading)
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
                         child: SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
                           ),
                         ),
                       ),
@@ -204,19 +227,23 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: AppColors.primary),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.admin_panel_settings,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
-                            SizedBox(width: 4),
+                            Icon(Icons.admin_panel_settings,
+                                size: 16,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : AppColors.primaryLight),
+                            const SizedBox(width: 4),
                             Text(
                               'Admin Mode',
                               style: TextStyle(
-                                color: AppColors.primary,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : AppColors.primaryLight,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -291,7 +318,7 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _saveChanges,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: AppColors.primaryLight,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -326,13 +353,19 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
     int maxLines = 1,
     bool enabled = true,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            color: enabled ? Colors.white : Colors.white.withOpacity(0.6),
+            color: enabled
+                ? (isDark ? Colors.white : Colors.black)
+                : (isDark
+                    ? Colors.white.withOpacity(0.6)
+                    : Colors.black.withOpacity(0.6)),
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -342,13 +375,20 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
           controller: controller,
           maxLines: maxLines,
           enabled: enabled,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+          ),
           onTapOutside: (event) => FocusScope.of(context).unfocus(),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
               color: enabled
-                  ? Colors.white.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.3),
+                  ? (isDark
+                      ? Colors.white.withOpacity(0.5)
+                      : Colors.black.withOpacity(0.5))
+                  : (isDark
+                      ? Colors.white.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.3)),
             ),
             prefixIcon: Icon(
               icon,
@@ -358,22 +398,34 @@ class _AdminExerciseEditScreenState extends State<AdminExerciseEditScreen> {
             ),
             filled: true,
             fillColor: enabled
-                ? Colors.white.withOpacity(0.05)
-                : Colors.white.withOpacity(0.02),
+                ? (isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : AppColors.primary.withOpacity(0.1))
+                : (isDark
+                    ? Colors.white.withOpacity(0.02)
+                    : AppColors.primary.withOpacity(0.05)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: enabled
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.white.withOpacity(0.05),
+                    ? (isDark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.1))
+                    : (isDark
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05)),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: enabled
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.white.withOpacity(0.05),
+                    ? (isDark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.1))
+                    : (isDark
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05)),
               ),
             ),
             focusedBorder: OutlineInputBorder(

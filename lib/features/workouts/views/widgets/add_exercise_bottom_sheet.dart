@@ -207,7 +207,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
           ),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
@@ -223,10 +223,13 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                       children: [
                         Text(
                           'workouts.filter_exercises'.tr(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
                           ),
                         ),
                         Row(
@@ -286,7 +289,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                           child: Row(
                             children: [
                               Icon(Icons.filter_alt,
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Theme.of(context).colorScheme.primary,
                                   size: 16),
                               const SizedBox(width: 8),
                               Expanded(
@@ -298,8 +304,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                           ? 'Muscle Selected: $_localSelectedMuscle (select category for dual filter)'
                                           : 'Category Selected: $_localSelectedCategory (select muscle for dual filter)',
                                   style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Theme.of(context).colorScheme.primary,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -311,8 +319,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
 
                       // Filter by muscle
                       Text('workouts.by_muscle'.tr(),
-                          style: const TextStyle(
-                              color: Colors.white,
+                          style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
                               fontWeight: FontWeight.bold,
                               fontSize: 17)),
                       const SizedBox(height: 6),
@@ -325,6 +336,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                   (_localFilterType == FilterType.both &&
                                       _localSelectedMuscle == muscle);
                           return FilterChip(
+                            checkmarkColor: Colors.white,
                             label: Text(muscle),
                             selected: isSelected,
                             onSelected: (_) {
@@ -347,7 +359,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                             labelStyle: TextStyle(
                               color: isSelected
                                   ? Colors.white
-                                  : Theme.of(context).colorScheme.onSurface,
+                                  : Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
                             ),
                             backgroundColor:
                                 Theme.of(context).colorScheme.surface,
@@ -360,8 +375,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
 
                       // Filter by category
                       Text('workouts.by_category'.tr(),
-                          style: const TextStyle(
-                              color: Colors.white,
+                          style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
                               fontWeight: FontWeight.bold,
                               fontSize: 17)),
                       const SizedBox(height: 8),
@@ -374,6 +392,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                   (_localFilterType == FilterType.both &&
                                       _localSelectedCategory == category);
                           return FilterChip(
+                            checkmarkColor: Colors.white,
                             label: Text(category),
                             selected: isSelected,
                             onSelected: (_) {
@@ -396,7 +415,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                             labelStyle: TextStyle(
                               color: isSelected
                                   ? Colors.white
-                                  : Theme.of(context).colorScheme.onSurface,
+                                  : Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
                             ),
                             backgroundColor:
                                 Theme.of(context).colorScheme.surface,
@@ -633,10 +655,14 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                           child: Text(
                                             'workouts.add_workout_exercise'
                                                 .tr(),
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.white,
+                                              color: Theme.of(context)
+                                                          .brightness ==
+                                                      Brightness.dark
+                                                  ? Colors.white
+                                                  : Colors.black,
                                             ),
                                           ),
                                         ),
@@ -703,13 +729,19 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                             borderRadius: BorderRadius.circular(25),
                           ),
                           child: TabBar(
+                            indicatorPadding:
+                                const EdgeInsets.symmetric(horizontal: 0),
+                            dividerHeight: 0,
+                            dividerColor: Colors.transparent,
                             controller: _tabController,
                             indicator: BoxDecoration(
-                              borderRadius: BorderRadius.circular(25),
-                              color: AppColors.primary,
-                            ),
+                                borderRadius: BorderRadius.circular(10),
+                                color: AppColors.primaryLight),
                             labelColor: Colors.white,
-                            unselectedLabelColor: Colors.grey,
+                            unselectedLabelColor:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey
+                                    : Colors.black54,
                             labelStyle: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
@@ -719,10 +751,20 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                               fontSize: 14,
                             ),
                             tabs: [
-                              Tab(
-                                text: 'workouts.all_exercises'.tr(),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Tab(
+                                  text: 'workouts.all_exercises'.tr(),
+                                ),
                               ),
-                              Tab(text: 'workouts.custom_exercises'.tr()),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Tab(
+                                  text: 'workouts.custom_exercises'.tr(),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -765,7 +807,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                                 onPressed:
                                     isAddingExercises ? null : _saveAndClose,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: AppColors.primaryLight,
                                   foregroundColor: Colors.white,
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 16),
@@ -857,7 +899,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.surface,
-                    foregroundColor: Colors.white,
+                    foregroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -893,7 +938,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
               ? Center(
                   child: Text(
                     'workouts.no_exercises_found'.tr(),
-                    style: const TextStyle(color: Colors.white70),
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black87,
+                    ),
                   ),
                 )
               : ListView.builder(
@@ -919,8 +968,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                         title: Text(
                           exercise.name,
                           style: TextStyle(
-                            color:
-                                Colors.white.withOpacity(isAdded ? 0.7 : 1.0),
+                            color: Theme.of(context).brightness ==
+                                    Brightness.dark
+                                ? Colors.white.withOpacity(isAdded ? 0.7 : 1.0)
+                                : Colors.black.withOpacity(isAdded ? 0.7 : 1.0),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -928,14 +979,22 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                           exercise.primaryMuscle,
                           style: TextStyle(
                             color:
-                                Colors.white70.withOpacity(isAdded ? 0.7 : 1.0),
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                        .withOpacity(isAdded ? 0.7 : 1.0)
+                                    : Colors.black87
+                                        .withOpacity(isAdded ? 0.7 : 1.0),
                           ),
                         ),
                         leading: IconButton(
                           icon: Icon(
                             FontAwesomeIcons.circleInfo,
                             color:
-                                Colors.white70.withOpacity(isAdded ? 0.7 : 1.0),
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                        .withOpacity(isAdded ? 0.7 : 1.0)
+                                    : Colors.black87
+                                        .withOpacity(isAdded ? 0.7 : 1.0),
                           ),
                           onPressed: () {
                             Navigator.pushNamed(
@@ -950,9 +1009,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                         ),
                         trailing: IconButton(
                           icon: Icon(
-                            isAdded ? Icons.check_circle : Icons.add_circle,
-                            color: isAdded ? Colors.green : AppColors.primary,
-                          ),
+                              isAdded ? Icons.check_circle : Icons.add_circle,
+                              color: isAdded
+                                  ? Colors.green
+                                  : AppColors.primaryLight),
                           onPressed: () =>
                               _addExerciseToWorkout(context, exercise),
                         ),
@@ -1017,8 +1077,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                   Expanded(
                     child: Text(
                       'workouts.add_new_custom_exercise'.tr(),
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -1031,7 +1093,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                       height: 32,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.primary,
+                        color: AppColors.primaryLight,
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primary.withOpacity(0.3),
@@ -1060,7 +1122,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
               ? Center(
                   child: Text(
                     'workouts.no_custom_exercises_found'.tr(),
-                    style: const TextStyle(color: Colors.white70),
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black87,
+                    ),
                   ),
                 )
               : ListView.builder(
@@ -1086,8 +1152,10 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                         title: Text(
                           exercise.name,
                           style: TextStyle(
-                            color:
-                                Colors.white.withOpacity(isAdded ? 0.7 : 1.0),
+                            color: Theme.of(context).brightness ==
+                                    Brightness.dark
+                                ? Colors.white.withOpacity(isAdded ? 0.7 : 1.0)
+                                : Colors.black.withOpacity(isAdded ? 0.7 : 1.0),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1095,7 +1163,11 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                           exercise.primaryMuscle,
                           style: TextStyle(
                             color:
-                                Colors.white70.withOpacity(isAdded ? 0.7 : 1.0),
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                        .withOpacity(isAdded ? 0.7 : 1.0)
+                                    : Colors.black87
+                                        .withOpacity(isAdded ? 0.7 : 1.0),
                           ),
                         ),
                         leading: Row(
@@ -1104,8 +1176,12 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                             IconButton(
                               icon: Icon(
                                 FontAwesomeIcons.circleInfo,
-                                color: Colors.white70
-                                    .withOpacity(isAdded ? 0.7 : 1.0),
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white70
+                                        .withOpacity(isAdded ? 0.7 : 1.0)
+                                    : Colors.black87
+                                        .withOpacity(isAdded ? 0.7 : 1.0),
                               ),
                               onPressed: () {
                                 Navigator.pushNamed(
@@ -1133,9 +1209,13 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
                         ),
                         trailing: IconButton(
                           icon: Icon(
-                            isAdded ? Icons.check_circle : Icons.add_circle,
-                            color: isAdded ? Colors.green : AppColors.primary,
-                          ),
+                              isAdded ? Icons.check_circle : Icons.add_circle,
+                              color: isAdded
+                                  ? Colors.green
+                                  : Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : AppColors.primaryLight),
                           onPressed: () =>
                               _addExerciseToWorkout(context, exercise),
                         ),

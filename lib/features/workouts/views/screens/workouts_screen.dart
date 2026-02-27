@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:trackletics/Shared/ui/custom_back_btn.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
@@ -82,9 +83,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       _workoutsCubit
           .createWorkout(
         _titleController.text,
-        notes: _notesController.text.isNotEmpty
-            ? _notesController.text
-            : null,
+        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
         // onLogCreated: navigateToLogger,
       )
           .then((newWorkout) {
@@ -110,14 +109,18 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       builder: (context) => FadeInWidget(
         duration: const Duration(milliseconds: 300),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2A2A2A),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
           title: Text(
             'workouts.edit_workout'.tr(),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -128,14 +131,24 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 controller: titleController,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  labelStyle: const TextStyle(color: Colors.grey),
+                  fillColor: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.05),
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey
+                        : Colors.black54,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -143,14 +156,24 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 decoration: InputDecoration(
                   hintText: 'workouts.notes_optional'.tr(),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  labelStyle: const TextStyle(color: Colors.grey),
+                  fillColor: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.05),
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey
+                        : Colors.black54,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
                 maxLines: 3,
               ),
             ],
@@ -160,7 +183,11 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'workouts.cancel'.tr(),
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
+                ),
               ),
             ),
             TextButton(
@@ -176,14 +203,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withOpacity(0.7),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -223,28 +242,40 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       builder: (context) => FadeInWidget(
         duration: const Duration(milliseconds: 300),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2A2A2A),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
           title: Text(
             'workouts.delete_workout'.tr(),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: Text(
             'workouts.delete_workout_confirmation'
                 .tr(namedArgs: {'title': workout.title}),
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black87,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'workouts.cancel'.tr(),
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
+                ),
               ),
             ),
             TextButton(
@@ -319,8 +350,16 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_workoutsCubit.state.currentPlan?.title ??
-            'workouts.workouts'.tr()),
+        leading: const CustomBackBtn(),
+        title: Text(
+          _workoutsCubit.state.currentPlan?.title ?? 'workouts.workouts'.tr(),
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -355,20 +394,34 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       if (state.status == WorkoutsStatus.loading ||
                           state.status == WorkoutsStatus.loadingWorkouts)
                         Text(
                           'workouts.loading_workouts'.tr(),
-                          style: const TextStyle(color: Colors.white70),
+                          style: TextStyle(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black87,
+                          ),
                         )
                       else
                         Text(
                           'workouts.loading_workouts'.tr(),
-                          style: const TextStyle(color: Colors.white70),
+                          style: TextStyle(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black87,
+                          ),
                         ),
                     ],
                   ),
@@ -385,7 +438,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                     Text(
                       state.errorMessage ??
                           'workouts.failed_to_load_workouts'.tr(),
-                      style: const TextStyle(color: Colors.red),
+                      style: const TextStyle(
+                        color: Colors.red,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -419,19 +474,33 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                             controller: _titleController,
                             decoration: InputDecoration(
                               labelText: 'workouts.workout_title'.tr(),
-                              floatingLabelStyle: const TextStyle(
+                              floatingLabelStyle: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 20,
-                                color: Colors.white,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
                               ),
                               hintText: 'workouts.workout_title_hint'.tr(),
                               filled: true,
-                              fillColor: Colors.white.withOpacity(0.1),
-                              labelStyle: const TextStyle(
+                              fillColor: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : Colors.black.withOpacity(0.05),
+                              labelStyle: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                color: Colors.grey,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.grey
+                                    : Colors.black54,
                               ),
-                              hintStyle: const TextStyle(color: Colors.white38),
+                              hintStyle: TextStyle(
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white38
+                                    : Colors.black38,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: BorderSide.none,
@@ -441,7 +510,12 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                 vertical: 15,
                               ),
                             ),
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
                             onTapOutside: (event) =>
                                 FocusScope.of(context).unfocus(),
                             autofocus: true,
@@ -452,19 +526,33 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                             controller: _notesController,
                             decoration: InputDecoration(
                               labelText: 'workouts.notes_optional'.tr(),
-                              floatingLabelStyle: const TextStyle(
+                              floatingLabelStyle: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 20,
-                                color: Colors.white,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
                               ),
                               hintText: 'workouts.workout_notes_hint'.tr(),
                               filled: true,
-                              fillColor: Colors.white.withOpacity(0.1),
-                              labelStyle: const TextStyle(
+                              fillColor: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : Colors.black.withOpacity(0.05),
+                              labelStyle: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                color: Colors.grey,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.grey
+                                    : Colors.black54,
                               ),
-                              hintStyle: const TextStyle(color: Colors.white38),
+                              hintStyle: TextStyle(
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white38
+                                    : Colors.black38,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: BorderSide.none,
@@ -474,7 +562,12 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                 vertical: 15,
                               ),
                             ),
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
                             onTapOutside: (event) =>
                                 FocusScope.of(context).unfocus(),
                           ),
@@ -492,11 +585,15 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                   });
                                 },
                                 style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white70,
+                                  foregroundColor:
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.black87,
                                 ),
                                 child: Text('workouts.cancel'.tr()),
                               ),
-                              const SizedBox(width: 16),
+                              const SizedBox(width: 8),
                               if (state.status == WorkoutsStatus.loading)
                                 Container(
                                   width: double.infinity,
@@ -507,62 +604,66 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                   ),
                                 )
                               else
-                                ElasticIn(
-                                  duration: const Duration(milliseconds: 800),
-                                  child: ElevatedButton(
-                                    onPressed: _createWorkout,
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 40,
-                                        vertical: 15,
-                                      ),
-                                      backgroundColor: Colors.transparent,
-                                      shadowColor: Colors.transparent,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
-                                    ).copyWith(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                        Colors.transparent,
-                                      ),
-                                      overlayColor: MaterialStateProperty.all(
-                                        Colors.white.withOpacity(0.1),
-                                      ),
-                                    ),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Theme.of(context).primaryColor,
-                                            Theme.of(context)
-                                                .primaryColor
-                                                .withOpacity(0.7),
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
+                                Flexible(
+                                  child: ElasticIn(
+                                    duration: const Duration(milliseconds: 800),
+                                    child: ElevatedButton(
+                                      onPressed: _createWorkout,
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 15,
                                         ),
-                                        borderRadius: BorderRadius.circular(30),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Theme.of(context)
-                                                .primaryColor
-                                                .withOpacity(0.5),
-                                            blurRadius: 10,
-                                            spreadRadius: 2,
+                                        backgroundColor: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                        ),
+                                      ).copyWith(
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                          Colors.transparent,
+                                        ),
+                                        overlayColor: MaterialStateProperty.all(
+                                          Colors.white.withOpacity(0.1),
+                                        ),
+                                      ),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Theme.of(context).primaryColor,
+                                              Theme.of(context)
+                                                  .primaryColor
+                                                  .withOpacity(0.7),
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
                                           ),
-                                        ],
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 30,
-                                        vertical: 15,
-                                      ),
-                                      child: Text(
-                                        'workouts.create_workout'.tr(),
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Theme.of(context)
+                                                  .primaryColor
+                                                  .withOpacity(0.5),
+                                              blurRadius: 10,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 15,
+                                        ),
+                                        child: Text(
+                                          'workouts.create_workout'.tr(),
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -590,10 +691,13 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                         ? 'workouts.no_workouts_in_static_plan'
                                             .tr()
                                         : 'workouts.add_new_workout'.tr(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white70,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.black87,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -638,7 +742,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                         gradient: LinearGradient(
                                           colors: [
                                             AppColors.textSecondary,
-                                            Theme.of(context).colorScheme.surface
+                                            Theme.of(context)
+                                                .colorScheme
+                                                .surface
                                                 .withOpacity(0.7),
                                           ],
                                           begin: Alignment.topLeft,
@@ -655,9 +761,12 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                         ],
                                       ),
                                       padding: const EdgeInsets.all(15),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.add,
-                                        color: Colors.white,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
                                         size: 30,
                                       ),
                                     ),
@@ -753,30 +862,26 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
           borderRadius: BorderRadius.circular(15),
         ),
         child: ListTile(
           title: Text(
             workout.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
           ),
           subtitle: workout.notes != null && workout.notes!.isNotEmpty
               ? Text(
                   workout.notes!,
-                  style: const TextStyle(
-                    color: Colors.white70,
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black38,
                     fontSize: 14,
                   ),
                   maxLines: 1,
@@ -790,8 +895,10 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                   (!context.read<WorkoutsCubit>().state.isViewingStaticPlans ||
                       context.read<ProfileCubit>().state.isAdmin))
                 IconButton(
-                  icon:
-                      const Icon(FontAwesomeIcons.edit, color: Colors.white70),
+                  icon: Icon(FontAwesomeIcons.edit,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : AppColors.textSecondary),
                   onPressed: () => _showEditWorkoutDialog(workout),
                 ),
               if (!context.read<WorkoutsCubit>().state.isGuidedMode &&
@@ -802,9 +909,11 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                       color: Colors.redAccent),
                   onPressed: () => _showDeleteConfirmationDialog(workout),
                 ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: Colors.white70,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black,
               ),
             ],
           ),

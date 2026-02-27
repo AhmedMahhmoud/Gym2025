@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/workouts/data/models/set_model.dart';
 import 'package:vibration/vibration.dart';
 
@@ -230,10 +229,12 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                                   : widget.set.duration != null
                                       ? '${widget.set.duration} ${isDurationSec ? 'workouts.sec'.tr() : 'workouts.min'.tr()}'
                                       : 'Set',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 18,
-                                color: Colors.white,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -244,9 +245,11 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                         if (widget.set.weight != null)
                           Text(
                             '${widget.set.weight} ${widget.set.weightUnitId == "d82a14a4-6e4f-4987-8284-93eb3be1102b" ? 'kg'.tr() : 'lbs'.tr()}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white70,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white70
+                                  : Colors.black87,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -254,17 +257,21 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.timer_outlined,
                                 size: 16,
-                                color: Colors.white54,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white54
+                                    : Colors.black54,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '${'workouts.rest'.tr()}: ${widget.set.restTime}  ${isRestTimeSec ? 'workouts.sec'.tr() : 'workouts.min'.tr()}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white54,
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white54
+                                      : Colors.black54,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -276,18 +283,22 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.note_outlined,
                                 size: 16,
-                                color: Colors.white54,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white54
+                                    : Colors.black54,
                               ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   'Note: ${widget.set.note}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.white54,
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.white54
+                                        : Colors.black54,
                                     fontWeight: FontWeight.w400,
                                   ),
                                   overflow: TextOverflow.ellipsis,
@@ -305,9 +316,11 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                     _buildStartTimerButton()
                   else if (!_isRunning)
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.more_vert,
-                        color: Colors.white54,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white54
+                            : Colors.black54,
                         size: 24,
                       ),
                       onPressed: () => _showOptions(context),
@@ -413,9 +426,13 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                   child: CircularProgressIndicator(
                     value: 1.0,
                     strokeWidth: 8,
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.white.withOpacity(0.1),
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.1),
                     ),
                   ),
                 ),
@@ -450,7 +467,9 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                         fontWeight: FontWeight.bold,
                         color: _remainingSeconds! <= 10
                             ? Colors.red
-                            : Colors.white,
+                            : Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
                         letterSpacing: 1.5,
                       ),
                     ),
@@ -461,7 +480,9 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                           : 'workouts.timer_running'.tr(),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white.withOpacity(0.7)
+                            : Colors.black.withOpacity(0.7),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -572,8 +593,11 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                     color: Theme.of(context).colorScheme.primary),
                 title: Text(
                   'workouts.start_timer'.tr(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w500,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                 ),
                 onTap: () {
@@ -581,14 +605,26 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
                   _startTimer();
                 },
               ),
-              Divider(color: Colors.white.withOpacity(0.1)),
+              Divider(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.1),
+              ),
             ],
             ListTile(
-              leading: const Icon(Icons.edit, color: Colors.white70),
+              leading: Icon(
+                Icons.edit,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black87,
+              ),
               title: Text(
                 'workouts.edit_set'.tr(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w500,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
                 ),
               ),
               onTap: () {
@@ -600,8 +636,10 @@ class _SetCardState extends State<SetCard> with SingleTickerProviderStateMixin {
               leading: Icon(Icons.delete, color: Colors.red[400]),
               title: Text(
                 'workouts.delete_set'.tr(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
               ),

@@ -115,7 +115,13 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
       appBar: AppBar(
         title: BlocSelector<WorkoutsCubit, WorkoutsState, String?>(
           selector: (state) => state.currentExercise?.name,
-          builder: (context, name) => Text(name ?? 'Exercise Sets'),
+          builder: (context, name) => Text(
+            name ?? 'Exercise Sets',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
       body: BlocConsumer<WorkoutsCubit, WorkoutsState>(
@@ -138,9 +144,11 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                 children: [
                   Text(
                     'workouts.no_sets_added_yet'.tr(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
-                      color: Colors.white70,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -148,7 +156,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                     ElevatedButton(
                       onPressed: _showAddSetDialog,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: AppColors.primaryLight,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -274,7 +282,9 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                 maxHeight: MediaQuery.of(context).size.height * 0.85,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF1A1A1A),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF1A1A1A)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
                   color: AppColors.primary.withOpacity(0.2),
@@ -317,25 +327,37 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                             color: AppColors.primary.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.edit,
-                            color: Colors.white,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
                             size: 20,
                           ),
                         ),
                         const SizedBox(width: 16),
                         Text(
                           'workouts.edit_set'.tr(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
                           ),
                         ),
                         const Spacer(),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close, color: Colors.white70),
+                          icon: Icon(
+                            Icons.close,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black87,
+                          ),
                         ),
                       ],
                     ),
@@ -468,7 +490,11 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                 child: TextButton(
                                   onPressed: () => Navigator.pop(context),
                                   style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white70,
+                                    foregroundColor:
+                                        Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white70
+                                            : Colors.black87,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 16),
                                     shape: RoundedRectangleBorder(
@@ -597,7 +623,7 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
+                                    backgroundColor: AppColors.primaryLight,
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(
@@ -634,27 +660,39 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF2A2A2A)
+            : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
         title: Text(
           'workouts.delete_set'.tr(),
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
           'workouts.delete_set_confirmation'.tr(),
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black87,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               'common.cancel'.tr(),
-              style: const TextStyle(color: Colors.white70),
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black87,
+              ),
             ),
           ),
           TextButton(
@@ -680,10 +718,14 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white.withOpacity(0.03)
+            : Colors.black.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.black.withOpacity(0.1),
           width: 1,
         ),
       ),
@@ -692,12 +734,14 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 20),
+              Icon(icon, color: AppColors.primaryLight, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -722,24 +766,43 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines ?? 1,
-      style: const TextStyle(color: Colors.white, fontSize: 16),
+      style: TextStyle(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black,
+        fontSize: 16,
+      ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        hintStyle: TextStyle(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.5)
+              : Colors.black.withOpacity(0.5),
+        ),
         prefixIcon: Icon(prefixIcon, color: AppColors.primary.withOpacity(0.7)),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white.withOpacity(0.05)
+            : Colors.black.withOpacity(0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.1),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.1),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.primaryLight, width: 2),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -754,9 +817,15 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white.withOpacity(0.05)
+            : Colors.black.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.black.withOpacity(0.1),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -776,8 +845,11 @@ class _ExerciseSetsScreenState extends State<ExerciseSetsScreen> {
               child: Text(
                 value.tr(),
                 style: TextStyle(
-                  color:
-                      isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                  color: isSelected
+                      ? Colors.white
+                      : Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.7)
+                          : Colors.black.withOpacity(0.7),
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),

@@ -32,16 +32,21 @@ class _AuthScreenState extends State<AuthScreen> {
     final currentLanguageName =
         currentLocale.languageCode == 'ar' ? 'العربية' : 'English';
     final currentFlag = currentLocale.languageCode == 'ar' ? '🇪🇬' : '🇺🇸';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () => _showLanguageDialog(context),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: isDark
+              ? Colors.black.withOpacity(0.3)
+              : Colors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: isDark
+                ? Colors.white.withOpacity(0.2)
+                : Colors.black.withOpacity(0.2),
           ),
         ),
         child: Row(
@@ -54,8 +59,8 @@ class _AuthScreenState extends State<AuthScreen> {
             const SizedBox(width: 6),
             Text(
               currentLanguageName,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -63,7 +68,9 @@ class _AuthScreenState extends State<AuthScreen> {
             const SizedBox(width: 4),
             Icon(
               Icons.keyboard_arrow_down,
-              color: Colors.white.withOpacity(0.7),
+              color: isDark
+                  ? Colors.white.withOpacity(0.7)
+                  : Colors.black.withOpacity(0.7),
               size: 16,
             ),
           ],
@@ -73,6 +80,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _showLanguageDialog(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (dialogContext) => Dialog(
@@ -80,10 +88,12 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Container(
           margin: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A),
+            color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: isDark
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.1),
             ),
           ),
           child: Column(
@@ -100,17 +110,19 @@ class _AuthScreenState extends State<AuthScreen> {
                         color: AppColors.primary.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         FontAwesomeIcons.language,
-                        color: AppColors.primary,
+                        color: isDark
+                            ? AppColors.textPrimary
+                            : AppColors.primaryLight,
                         size: 18,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'profile.select_language',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: isDark ? Colors.white : Colors.black,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -118,7 +130,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   ],
                 ),
               ),
-              const Divider(color: Colors.white24),
+              Divider(
+                color: isDark ? Colors.white24 : Colors.black.withOpacity(0.1),
+              ),
               // Language Options
               _buildLanguageOption(
                 context: dialogContext,
@@ -152,6 +166,7 @@ class _AuthScreenState extends State<AuthScreen> {
     required String flagEmoji,
     required bool isSelected,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () async {
         if (!isSelected) {
@@ -176,12 +191,16 @@ class _AuthScreenState extends State<AuthScreen> {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primary.withOpacity(0.2)
-              : Colors.white.withOpacity(0.05),
+              : isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : AppColors.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? AppColors.primary.withOpacity(0.5)
-                : Colors.white.withOpacity(0.1),
+                : isDark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.1),
           ),
         ),
         child: Row(
@@ -197,8 +216,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 children: [
                   Text(
                     languageName,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -206,7 +225,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   Text(
                     languageNativeName,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: isDark
+                          ? Colors.white.withOpacity(0.7)
+                          : Colors.black.withOpacity(0.7),
                       fontSize: 14,
                     ),
                   ),
@@ -216,7 +237,7 @@ class _AuthScreenState extends State<AuthScreen> {
             if (isSelected)
               const Icon(
                 Icons.check_circle,
-                color: AppColors.primary,
+                color: AppColors.primaryLight,
                 size: 20,
               ),
           ],

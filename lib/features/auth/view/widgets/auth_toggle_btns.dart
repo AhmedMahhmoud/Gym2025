@@ -61,7 +61,9 @@ class AuthTabButton extends StatelessWidget {
             label,
             style: TextStyle(
                 color: isSelected
-                    ? AppColors.textPrimary
+                    ? Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textPrimary
+                        : AppColors.primaryLight
                     : AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 fontSize: 19),
