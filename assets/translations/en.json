@@ -109,6 +109,26 @@
         "admin_missing_videos_desc": "Review and update exercises with missing male/female videos",
         "reset_password_confirmation": "We will send a verification code to your email address to reset your password."
     },
+    "coaches": {
+        "title": "Coaches",
+        "apply_to_become_coach": "Apply to become a coach",
+        "apply_subtitle": "Share your expertise and join our coach community.",
+        "available_coaches": "Available coaches",
+        "no_coaches_yet": "No coaches yet",
+        "no_coaches_message": "Coaches will appear here once they join.",
+        "apply_screen_title": "Apply to become a coach",
+        "join_as_coach": "Join as a coach",
+        "join_subtitle": "Share your expertise and help others reach their goals.",
+        "bio": "Bio",
+        "bio_hint": "Tell us about yourself, your approach to coaching, and what drives you.",
+        "experience": "Experience",
+        "experience_hint": "Describe your coaching experience, certifications, and relevant background.",
+        "submit_application": "Submit application",
+        "application_success": "Application submitted successfully. We'll be in touch!",
+        "bio_required": "Please enter your bio",
+        "experience_required": "Please enter your experience",
+        "failed_to_submit": "Failed to submit coach application"
+    },
     "workouts": {
         "sec": "sec",
         "delete_exercise_confirmation_desc": "This action cannot be undone and will permanently remove this custom exercise.",

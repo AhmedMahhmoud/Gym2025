@@ -109,6 +109,26 @@
         "admin_missing_videos_desc": "راجع وحدّث التمارين التي تفتقد فيديوهات للذكور/الإناث",
         "reset_password_confirmation": "سنرسل رمز تحقق إلى عنوان بريدك الإلكتروني لإعادة تعيين كلمة المرور."
     },
+    "coaches": {
+        "title": "المدربون",
+        "apply_to_become_coach": "التقديم لتصبح مدرباً",
+        "apply_subtitle": "شارك خبرتك وانضم إلى مجتمع المدربين.",
+        "available_coaches": "المدربون المتاحون",
+        "no_coaches_yet": "لا يوجد مدربون بعد",
+        "no_coaches_message": "سيظهر المدربون هنا عند انضمامهم.",
+        "apply_screen_title": "التقديم لتصبح مدرباً",
+        "join_as_coach": "انضم كمدرب",
+        "join_subtitle": "شارك خبرتك وساعد الآخرين على تحقيق أهدافهم.",
+        "bio": "السيرة",
+        "bio_hint": "حدثنا عن نفسك، وأسلوبك في التدريب، وما يدفعك.",
+        "experience": "الخبرة",
+        "experience_hint": "صف خبرتك في التدريب والشهادات والخلفية ذات الصلة.",
+        "submit_application": "إرسال الطلب",
+        "application_success": "تم إرسال طلبك بنجاح. سنتواصل معك!",
+        "bio_required": "يرجى إدخال السيرة",
+        "experience_required": "يرجى إدخال الخبرة",
+        "failed_to_submit": "فشل إرسال طلب المدرب"
+    },
     "workouts": {
         "exercise_removed_from_selection": "تم إزالة التمرين من التحديد",
         "workouts": "التمارين",

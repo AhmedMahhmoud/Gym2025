@@ -11,6 +11,9 @@ import 'package:trackletics/features/auth/data/repositories/auth_repository.dart
 import 'package:trackletics/features/exercises/view/screens/exercise_details_page.dart';
 import 'package:trackletics/features/exercises/view/screens/admin_missing_videos_screen.dart';
 import 'package:trackletics/features/exercises/view/screens/admin_exercise_edit_screen.dart';
+import 'package:trackletics/features/coaches/data/repositories/coaches_repository.dart';
+import 'package:trackletics/features/coaches/view/cubit/apply_to_become_coach_cubit.dart';
+import 'package:trackletics/features/coaches/view/screens/apply_to_become_coach_screen.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:trackletics/shared/widgets/main_scaffold.dart';
 import 'package:trackletics/core/debug/api_logger_page.dart';
@@ -40,6 +43,12 @@ class OnPageRoute {
           (args) => AdminExerciseEditScreen(exercise: args[0]),
         ),
       RouteNames.admin_missing_videos_route => const AdminMissingVideosScreen(),
+      RouteNames.apply_to_become_coach_route => BlocProvider(
+          create: (_) => ApplyToBecomeCoachCubit(
+                coachesRepository: CoachesRepository(),
+              ),
+          child: const ApplyToBecomeCoachScreen(),
+        ),
       RouteNames.api_logger_route => _createPage<ApiLoggerPage>(
           settings.arguments,
           (args) => ApiLoggerPage(logData: args[0] as ApiLoggerModel),

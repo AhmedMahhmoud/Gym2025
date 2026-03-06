@@ -6,6 +6,8 @@ import 'package:trackletics/features/home/view/screens/home.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/view/screens/profile_screen.dart';
 import 'package:trackletics/features/workouts/workouts.dart';
+import 'package:trackletics/features/coaches/data/repositories/coaches_repository.dart';
+import 'package:trackletics/features/coaches/view/cubit/coaches_list_cubit.dart';
 import 'package:trackletics/features/coaches/view/screens/coaches_screen.dart';
 import 'package:trackletics/main.dart';
 import 'package:trackletics/shared/widgets/floating_bottom_nav_bar.dart';
@@ -54,7 +56,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         ),
         FloatingNavBarItem(
           icon: Icons.school_rounded,
-          label: 'Coaches',
+          label: 'coaches.title'.tr(),
         ),
         FloatingNavBarItem(
           icon: Icons.person_rounded,
@@ -82,7 +84,12 @@ class _MainScaffoldState extends State<MainScaffold> {
       case 1:
         return const WorkoutsFeature();
       case 2:
-        return const CoachesScreen();
+        return BlocProvider(
+          create: (_) => CoachesListCubit(
+            coachesRepository: CoachesRepository(),
+          ),
+          child: const CoachesScreen(),
+        );
       case 3:
         return const ProfileScreen();
       default:
