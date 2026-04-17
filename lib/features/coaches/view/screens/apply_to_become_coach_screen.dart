@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
 import 'package:trackletics/features/coaches/view/cubit/apply_to_become_coach_cubit.dart';
+import 'package:trackletics/features/coaches/view/widgets/coach_id_document_picker.dart';
 
 class ApplyToBecomeCoachScreen extends StatefulWidget {
   const ApplyToBecomeCoachScreen({Key? key}) : super(key: key);
@@ -14,6 +15,7 @@ class ApplyToBecomeCoachScreen extends StatefulWidget {
 
 class _ApplyToBecomeCoachScreenState extends State<ApplyToBecomeCoachScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _idDocumentFieldKey = GlobalKey<FormFieldState<String?>>();
   final _bioController = TextEditingController();
   final _experienceController = TextEditingController();
 
@@ -27,9 +29,15 @@ class _ApplyToBecomeCoachScreenState extends State<ApplyToBecomeCoachScreen> {
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
 
+    final idPath = _idDocumentFieldKey.currentState?.value;
+    if (idPath == null || idPath.isEmpty) {
+      return;
+    }
+
     context.read<ApplyToBecomeCoachCubit>().submitApplication(
           bio: _bioController.text,
           experience: _experienceController.text,
+          idDocumentPath: idPath,
         );
   }
 
@@ -198,6 +206,28 @@ class _ApplyToBecomeCoachScreenState extends State<ApplyToBecomeCoachScreen> {
                             return null;
                           },
                         ),
+                        const SizedBox(height: 28),
+                        FormField<String?>(
+                          key: _idDocumentFieldKey,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return 'coaches.id_document_required'.tr();
+                            }
+                            return null;
+                          },
+                          builder: (field) {
+                            return CoachIdDocumentPicker(
+                              imagePath: field.value,
+                              onChanged: (p) => field.didChange(p),
+                              textPrimary: textPrimary,
+                              textSecondary: textSecondary,
+                              surfaceColor: surfaceColor,
+                              theme: theme,
+                              errorText:
+                                  field.hasError ? field.errorText : null,
+                            );
+                          },
+                        ),
                         const SizedBox(height: 32),
                         _buildSubmitButton(context, theme, isLoading),
                       ],
@@ -228,7 +258,7 @@ class _ApplyToBecomeCoachScreenState extends State<ApplyToBecomeCoachScreen> {
               Icon(
                 Icons.sports_martial_arts_rounded,
                 size: 40,
-                color: theme.colorScheme.onPrimary,
+                color: theme.colorScheme.primary,
               ),
               const SizedBox(width: 16),
               Expanded(

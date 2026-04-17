@@ -8,7 +8,6 @@ import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/features/workouts/data/models/set_model.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
-import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/workouts/data/units_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -560,9 +559,7 @@ class _SetsScreenState extends State<SetsScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      state.isViewingStaticPlans
-                          ? 'workouts.no_sets_in_exercise'.tr()
-                          : 'workouts.no_sets_added_yet'.tr(),
+                      'workouts.no_sets_added_yet'.tr(),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -570,28 +567,23 @@ class _SetsScreenState extends State<SetsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      state.isViewingStaticPlans
-                          ? 'workouts.exercise_no_sets_configured'.tr()
-                          : 'workouts.add_first_set_to_start'.tr(),
+                      'workouts.add_first_set_to_start'.tr(),
                       style: const TextStyle(
                         color: Colors.grey,
                       ),
                     ),
-                    if (!state.isViewingStaticPlans ||
-                        context.read<ProfileCubit>().state.isAdmin) ...[
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: _showAddSetDialog,
-                        icon: const Icon(Icons.add),
-                        label: Text('workouts.add_set_button'.tr()),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                        ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: _showAddSetDialog,
+                      icon: const Icon(Icons.add),
+                      label: Text('workouts.add_set_button'.tr()),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                       ),
-                    ],
+                    ),
                   ],
                 ),
               );
@@ -621,9 +613,7 @@ class _SetsScreenState extends State<SetsScreen> {
                 onPressed: _showAddSetDialog,
                 text: 'workouts.add_set_button'.tr(),
                 icon: Icons.add,
-                isVisible: state.sets.isNotEmpty &&
-                    (!state.isViewingStaticPlans ||
-                        context.read<ProfileCubit>().state.isAdmin),
+                isVisible: state.sets.isNotEmpty,
               );
             },
           ),
@@ -745,10 +735,6 @@ class _SetsScreenState extends State<SetsScreen> {
               // Edit and delete buttons
               BlocBuilder<WorkoutsCubit, WorkoutsState>(
                 builder: (context, state) {
-                  if (state.isViewingStaticPlans &&
-                      !context.read<ProfileCubit>().state.isAdmin) {
-                    return const SizedBox.shrink();
-                  }
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

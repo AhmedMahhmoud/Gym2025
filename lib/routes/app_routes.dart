@@ -5,6 +5,7 @@ import 'package:trackletics/features/auth/view/screens/auth_screen.dart';
 import 'package:trackletics/features/auth/view/screens/forgot_password.dart';
 import 'package:trackletics/features/auth/view/screens/otp_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:trackletics/features/auth/view/screens/apple_sign_in_additional_info_screen.dart';
 import 'package:trackletics/features/auth/view/screens/google_sign_in_additional_info_screen.dart';
 import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
 import 'package:trackletics/features/auth/data/repositories/auth_repository.dart';
@@ -15,7 +16,7 @@ import 'package:trackletics/features/coaches/data/repositories/coaches_repositor
 import 'package:trackletics/features/coaches/view/cubit/apply_to_become_coach_cubit.dart';
 import 'package:trackletics/features/coaches/view/screens/apply_to_become_coach_screen.dart';
 import 'package:trackletics/routes/route_names.dart';
-import 'package:trackletics/shared/widgets/main_scaffold.dart';
+import 'package:trackletics/shared/widgets/authenticated_home_shell.dart';
 import 'package:trackletics/core/debug/api_logger_page.dart';
 import 'package:trackletics/core/debug/api_logger_model.dart';
 
@@ -27,9 +28,12 @@ class OnPageRoute {
           (args) => OtpScreen(email: args[0], isResetPassword: args[1]),
         ),
       RouteNames.auth_screen_route => const AuthScreen(),
-      RouteNames.home_route => const MainScaffold(),
+      RouteNames.home_route => const AuthenticatedHomeShell(),
       RouteNames.forgot_password_route => const ForgotPasswordScreen(),
       RouteNames.google_sign_in_additional_info_route => _createGoogleSignInPage(
+          settings.arguments,
+        ),
+      RouteNames.apple_sign_in_additional_info_route => _createAppleSignInPage(
           settings.arguments,
         ),
       RouteNames.exercise_details_route => _createPage<OtpScreen>(
@@ -92,6 +96,21 @@ class OnPageRoute {
       );
     }
     return _errorPage("Invalid arguments for GoogleSignInAdditionalInfoScreen");
+  }
+
+  static Widget _createAppleSignInPage(Object? arguments) {
+    if (arguments is List<dynamic> && arguments.length >= 2) {
+      final appleAccount = arguments[0];
+      final authCubit = arguments.length > 1 && arguments[1] is AuthCubit
+          ? arguments[1] as AuthCubit
+          : AuthCubit(authRepository: AuthRepository());
+
+      return BlocProvider<AuthCubit>.value(
+        value: authCubit,
+        child: AppleSignInAdditionalInfoScreen(appleAccount: appleAccount),
+      );
+    }
+    return _errorPage("Invalid arguments for AppleSignInAdditionalInfoScreen");
   }
 
   /// A function to return the appropriate page route based on platform.

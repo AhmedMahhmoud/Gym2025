@@ -344,11 +344,6 @@ class _ApplyCoachCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: theme.colorScheme.primary,
-              ),
             ],
           ),
         ),

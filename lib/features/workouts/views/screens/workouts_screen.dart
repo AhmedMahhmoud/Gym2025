@@ -9,7 +9,6 @@ import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/features/workouts/data/models/workout_model.dart';
 import 'package:trackletics/features/workouts/views/screens/workout_details_screen.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
-import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
 // import 'package:trackletics/core/debug/api_logger_model.dart';
 // import 'package:trackletics/routes/route_names.dart';
@@ -59,12 +58,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
 
   void _createWorkout() {
     if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
-
-    // Check if user is admin when viewing static plans
-    if (context.read<WorkoutsCubit>().state.isViewingStaticPlans) {
-      final isAdmin = context.read<ProfileCubit>().state.isAdmin;
-      if (!isAdmin) return;
-    }
 
     if (_titleController.text.isNotEmpty) {
       setState(() {
@@ -223,12 +216,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   void _updateWorkout(String workoutId, String title, String notes) {
     if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
 
-    // Check if user is admin when viewing static plans
-    if (context.read<WorkoutsCubit>().state.isViewingStaticPlans) {
-      final isAdmin = context.read<ProfileCubit>().state.isAdmin;
-      if (!isAdmin) return;
-    }
-
     _workoutsCubit.updateWorkout(
       workoutId,
       title: title,
@@ -314,12 +301,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
 
   void _deleteWorkout(WorkoutModel workout) {
     if (context.read<WorkoutsCubit>().state.isGuidedMode) return;
-
-    // Check if user is admin when viewing static plans
-    if (context.read<WorkoutsCubit>().state.isViewingStaticPlans) {
-      final isAdmin = context.read<ProfileCubit>().state.isAdmin;
-      if (!isAdmin) return;
-    }
 
     setState(() {
       _isDeleting[workout.id] = true;
@@ -460,10 +441,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                     backgroundColor: AppColors.primary,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
-                if (_isAddingWorkout &&
-                    !state.isGuidedMode &&
-                    (!state.isViewingStaticPlans ||
-                        context.read<ProfileCubit>().state.isAdmin))
+                if (_isAddingWorkout && !state.isGuidedMode)
                   FadeIn(
                     duration: const Duration(milliseconds: 500),
                     child: Padding(
@@ -687,10 +665,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 30),
                                   child: Text(
-                                    state.isViewingStaticPlans
-                                        ? 'workouts.no_workouts_in_static_plan'
-                                            .tr()
-                                        : 'workouts.add_new_workout'.tr(),
+                                    'workouts.add_new_workout'.tr(),
                                     style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
@@ -704,12 +679,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              if (!state.isGuidedMode &&
-                                  (!state.isViewingStaticPlans ||
-                                      context
-                                          .read<ProfileCubit>()
-                                          .state
-                                          .isAdmin))
+                              if (!state.isGuidedMode)
                                 SlideInUp(
                                   duration: const Duration(milliseconds: 1000),
                                   child: ElevatedButton(
@@ -825,9 +795,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                               },
                             )),
                 ),
-                if (!state.isGuidedMode &&
-                    (!state.isViewingStaticPlans ||
-                        context.read<ProfileCubit>().state.isAdmin))
+                if (!state.isGuidedMode)
                   BlocBuilder<WorkoutsCubit, WorkoutsState>(
                     builder: (context, state) {
                       return StickyAddButton(
@@ -891,9 +859,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (!context.read<WorkoutsCubit>().state.isGuidedMode &&
-                  (!context.read<WorkoutsCubit>().state.isViewingStaticPlans ||
-                      context.read<ProfileCubit>().state.isAdmin))
+              if (!context.read<WorkoutsCubit>().state.isGuidedMode)
                 IconButton(
                   icon: Icon(FontAwesomeIcons.edit,
                       color: Theme.of(context).brightness == Brightness.dark
@@ -901,9 +867,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                           : AppColors.textSecondary),
                   onPressed: () => _showEditWorkoutDialog(workout),
                 ),
-              if (!context.read<WorkoutsCubit>().state.isGuidedMode &&
-                  (!context.read<WorkoutsCubit>().state.isViewingStaticPlans ||
-                      context.read<ProfileCubit>().state.isAdmin))
+              if (!context.read<WorkoutsCubit>().state.isGuidedMode)
                 IconButton(
                   icon: const Icon(FontAwesomeIcons.circleXmark,
                       color: Colors.redAccent),

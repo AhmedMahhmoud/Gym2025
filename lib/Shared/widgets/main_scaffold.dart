@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:trackletics/features/auth/view/cubit/auth_cubit.dart';
 import 'package:trackletics/features/home/view/screens/home.dart';
+import 'package:trackletics/features/workouts/cubits/workouts_cubit.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/view/screens/profile_screen.dart';
 import 'package:trackletics/features/workouts/workouts.dart';
-import 'package:trackletics/features/coaches/data/repositories/coaches_repository.dart';
-import 'package:trackletics/features/coaches/view/cubit/coaches_list_cubit.dart';
-import 'package:trackletics/features/coaches/view/screens/coaches_screen.dart';
-import 'package:trackletics/main.dart';
 import 'package:trackletics/shared/widgets/floating_bottom_nav_bar.dart';
 import 'dart:async';
 
@@ -41,6 +37,9 @@ class _MainScaffoldState extends State<MainScaffold> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchRequirements(context);
+      if (mounted) {
+        context.read<WorkoutsCubit>().loadPlans();
+      }
     });
   }
 
@@ -53,10 +52,6 @@ class _MainScaffoldState extends State<MainScaffold> {
         FloatingNavBarItem(
           icon: Icons.fitness_center_rounded,
           label: 'workouts.workouts'.tr(),
-        ),
-        FloatingNavBarItem(
-          icon: Icons.school_rounded,
-          label: 'coaches.title'.tr(),
         ),
         FloatingNavBarItem(
           icon: Icons.person_rounded,
@@ -80,17 +75,16 @@ class _MainScaffoldState extends State<MainScaffold> {
 
     switch (index) {
       case 0:
-        return const Home();
+        return Home(
+          onOpenWorkoutsTab: () {
+            if (_currentIndex != 1) {
+              _onNavItemTapped(1);
+            }
+          },
+        );
       case 1:
         return const WorkoutsFeature();
       case 2:
-        return BlocProvider(
-          create: (_) => CoachesListCubit(
-            coachesRepository: CoachesRepository(),
-          ),
-          child: const CoachesScreen(),
-        );
-      case 3:
         return const ProfileScreen();
       default:
         return const SizedBox.shrink();

@@ -1,10 +1,15 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/core/services/token_manager.dart';
 import 'package:trackletics/features/auth/data/models/sign_up_model.dart';
+import 'package:trackletics/features/auth/data/models/apple_login_request.dart';
+import 'package:trackletics/features/auth/data/models/apple_sign_in_model.dart';
 import 'package:trackletics/features/auth/data/models/google_sign_in_model.dart';
 import 'package:trackletics/features/auth/data/models/google_login_request.dart';
+import 'package:trackletics/features/auth/data/services/apple_sign_in_service.dart';
 import 'package:trackletics/features/auth/data/services/google_sign_in_service.dart';
+import 'package:trackletics/features/auth/data/utils/apple_sign_in_error_handler.dart';
 import 'package:trackletics/features/auth/data/utils/google_sign_in_error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/dio_service.dart';
@@ -13,10 +18,14 @@ import '../../../../core/network/error_handler.dart';
 class AuthRepository {
   AuthRepository({
     GoogleSignInService? googleSignInService,
-  }) : _googleSignInService = googleSignInService ?? GoogleSignInServiceImpl();
+    AppleSignInService? appleSignInService,
+  })  : _googleSignInService = googleSignInService ?? GoogleSignInServiceImpl(),
+        _appleSignInService = appleSignInService ?? AppleSignInServiceImpl();
   final DioService _dioService = DioService();
   final TokenManager _tokenManager = TokenManager();
+  final StorageService _storageService = StorageService();
   final GoogleSignInService _googleSignInService;
+  final AppleSignInService _appleSignInService;
 
   Future<Either<Failure, Unit>> signUp(SignUpModel signModel) async {
     try {
@@ -146,6 +155,8 @@ class AuthRepository {
             final errorMessage = errorData['message']?.toString().toLowerCase() ?? 
                                 errorData['title']?.toString().toLowerCase() ?? '';
             
+            // Do not use .contains('email') — it matches unrelated errors such as
+            // "This email is already registered using Google login".
             if (errorMessage.contains('validation error') ||
                 errorMessage.contains('required') ||
                 errorMessage.contains('missing') ||
@@ -163,8 +174,7 @@ class AuthRepository {
         // Other errors (like 401, 500, etc.) - return the error
         return Left(ErrorHandler.handle(dioError));
       } catch (e) {
-        // Other errors - assume user needs additional info
-        return Right(googleAccount);
+        return Left(ErrorHandler.handle(e));
       }
     } catch (e) {
       return Left(GoogleSignInErrorHandler.handleError(e));
@@ -205,7 +215,155 @@ class AuthRepository {
         return Left(ServerFailure(
           message: 'Unexpected response from server',
           statusCode: res.statusCode,
-        ));
+        ),);
+      }
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  /// Sign in with Apple (same flow as Google: token or [AppleSignInModel] for profile completion)
+  Future<Either<Failure, dynamic>> signInWithApple() async {
+    try {
+      final appleAccount = await _appleSignInService.signIn();
+
+      // Apple only shares email on the first authorization; later sign-ins often omit it.
+      // Reuse email we stored for this appleUserId so the API still receives an email.
+      var resolvedEmail = appleAccount.email;
+      if (resolvedEmail.isEmpty) {
+        final cached = await _storageService.getAppleSignInEmailForUserId(
+          appleAccount.id,
+        );
+        if (cached != null && cached.isNotEmpty) {
+          resolvedEmail = cached;
+        }
+      }
+
+      final accountForApi = AppleSignInModel(
+        email: resolvedEmail,
+        displayName: appleAccount.displayName,
+        id: appleAccount.id,
+        photoUrl: appleAccount.photoUrl,
+      );
+
+      // No email from Apple and none cached — collect email (and rest) on complete-profile flow.
+      if (accountForApi.email.isEmpty) {
+        return Right(appleAccount);
+      }
+
+      try {
+        final requestData = <String, dynamic>{
+          'appleUserId': accountForApi.id,
+          'email': accountForApi.email,
+          if (accountForApi.photoUrl != null)
+            'profilePictureUrl': accountForApi.photoUrl,
+        };
+
+        final res = await _dioService.post(
+          '/api/Auth/AppleLogin',
+          data: requestData,
+        );
+
+        if (res.statusCode == 200 || res.statusCode == 201) {
+          final token = res.data['message']['jwtToken'];
+          await _tokenManager.setToken(token);
+          await _storageService.setAppleSignInEmailForUserId(
+            accountForApi.id,
+            accountForApi.email,
+          );
+          return Right(token);
+        } else {
+          return Right(appleAccount);
+        }
+      } on DioException catch (dioError) {
+        final statusCode = dioError.response?.statusCode;
+        final errorData = dioError.response?.data;
+
+        if (statusCode == 400 || statusCode == 404) {
+          bool needsAdditionalInfo = false;
+
+          if (errorData is Map) {
+            final errors = errorData['errors'];
+            if (errors is Map) {
+              final hasEmailFieldError = errors.containsKey('Email') ||
+                  errors.containsKey('email');
+              final hasGenderError = errors.containsKey('Gender') ||
+                  errors.containsKey('gender') ||
+                  errors.values.toString().toLowerCase().contains('gender');
+              final hasInAppNameError = errors.containsKey('InAppName') ||
+                  errors.containsKey('inAppName') ||
+                  errors.containsKey('Inappname') ||
+                  errors.values.toString().toLowerCase().contains('inappname');
+
+              if (hasEmailFieldError ||
+                  hasGenderError ||
+                  hasInAppNameError) {
+                needsAdditionalInfo = true;
+              }
+            }
+
+            final errorMessage = errorData['message']?.toString().toLowerCase() ??
+                errorData['title']?.toString().toLowerCase() ??
+                '';
+
+            // Do not use .contains('email') — it matches unrelated errors such as
+            // "This email is already registered using Google login".
+            if (errorMessage.contains('validation error') ||
+                errorMessage.contains('required') ||
+                errorMessage.contains('missing') ||
+                errorMessage.contains('inappname') ||
+                errorMessage.contains('gender')) {
+              needsAdditionalInfo = true;
+            }
+          }
+
+          if (needsAdditionalInfo || statusCode == 404) {
+            return Right(appleAccount);
+          }
+        }
+        return Left(ErrorHandler.handle(dioError));
+      } catch (e) {
+        return Left(ErrorHandler.handle(e));
+      }
+    } catch (e) {
+      return Left(AppleSignInErrorHandler.handleError(e));
+    }
+  }
+
+  /// Complete Sign in with Apple when [inAppName] and [gender] (and [email] if missing) are required
+  Future<Either<Failure, String>> completeAppleSignIn({
+    required AppleSignInModel appleAccount,
+    required String inAppName,
+    required String gender,
+    required String email,
+  }) async {
+    try {
+      final request = AppleLoginRequest(
+        email: email,
+        appleUserId: appleAccount.id,
+        inAppName: inAppName,
+        gender: gender,
+        profilePictureUrl: appleAccount.photoUrl,
+      );
+
+      final res = await _dioService.post(
+        '/api/Auth/AppleLogin',
+        data: request.toJson(),
+      );
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final token = res.data['message']['jwtToken'];
+        await _tokenManager.setToken(token);
+        await _storageService.setAppleSignInEmailForUserId(
+          appleAccount.id,
+          email,
+        );
+        return Right(token);
+      } else {
+        return Left(ServerFailure(
+          message: 'Unexpected response from server',
+          statusCode: res.statusCode,
+        ),);
       }
     } catch (e) {
       return Left(ErrorHandler.handle(e));

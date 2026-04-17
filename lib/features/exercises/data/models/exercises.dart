@@ -100,6 +100,25 @@ class Exercise {
     return gender == 'male' ? maleVideoUrl : femaleVideoUrl;
   }
 
+  /// Resolves which video URL to use for thumbnails / previews when [videoUrl] is empty.
+  /// Uses account [userGender] ('Male'/'Female'/etc.) to prefer [maleVideoUrl] or [femaleVideoUrl],
+  /// with fallback to the other if the preferred URL is missing.
+  String videoUrlForThumbnail({String? userGender}) {
+    if (videoUrl.isNotEmpty) return videoUrl;
+
+    final g = (userGender ?? '').toLowerCase();
+    final preferFemale = g == 'female' || g == 'f';
+
+    if (preferFemale) {
+      if (femaleVideoUrl.isNotEmpty) return femaleVideoUrl;
+      if (maleVideoUrl.isNotEmpty) return maleVideoUrl;
+    } else {
+      if (maleVideoUrl.isNotEmpty) return maleVideoUrl;
+      if (femaleVideoUrl.isNotEmpty) return femaleVideoUrl;
+    }
+    return '';
+  }
+
   // Check if exercise has both male and female videos
   bool get hasBothVideos =>
       maleVideoUrl.isNotEmpty && femaleVideoUrl.isNotEmpty;

@@ -18,7 +18,6 @@ import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/features/workouts/views/widgets/loading_indicator.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/routes/route_names.dart';
-import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -441,9 +440,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    if (!state.isGuidedMode &&
-                        (!state.isViewingStaticPlans ||
-                            context.read<ProfileCubit>().state.isAdmin))
+                    if (!state.isGuidedMode)
                       ElevatedButton(
                         onPressed: _showAddExerciseBottomSheet,
                         style: ElevatedButton.styleFrom(
@@ -462,10 +459,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
             return Column(
               children: [
                 // Reordering controls
-                if (state.selectedExercises.isNotEmpty &&
-                    !state.isGuidedMode &&
-                    (!state.isViewingStaticPlans ||
-                        context.read<ProfileCubit>().state.isAdmin))
+                if (state.selectedExercises.isNotEmpty && !state.isGuidedMode)
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -577,10 +571,7 @@ class _WorkoutDetailsScreenState extends State<WorkoutDetailsScreen> {
                         ),
                 ),
                 // Add button integrated into the scrollable content
-                if (state.selectedExercises.isNotEmpty &&
-                    !state.isGuidedMode &&
-                    (!state.isViewingStaticPlans ||
-                        context.read<ProfileCubit>().state.isAdmin))
+                if (state.selectedExercises.isNotEmpty && !state.isGuidedMode)
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),

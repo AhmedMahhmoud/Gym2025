@@ -11,7 +11,6 @@ import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/Shared/ui/custom_snackbar.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
-import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
 // import 'package:trackletics/core/debug/api_logger_model.dart';
 
@@ -466,19 +465,6 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
   void _addExerciseToWorkout(BuildContext context, Exercise exercise) {
     final workoutsCubit = context.read<WorkoutsCubit>();
     final selectedExercises = workoutsCubit.state.selectedExercises;
-
-    // Check if user is admin when viewing static plans
-    if (workoutsCubit.state.isViewingStaticPlans) {
-      final isAdmin = context.read<ProfileCubit>().state.isAdmin;
-      if (!isAdmin) {
-        CustomSnackbar.show(
-          context,
-          'workouts.only_admins_can_add'.tr(),
-          isError: true,
-        );
-        return;
-      }
-    }
 
     // Check if exercise already exists in the workout (already saved to backend)
     final exerciseExistsInWorkout =
@@ -1063,15 +1049,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet>
         // Add custom exercise row (only for admins when viewing static plans)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: BlocBuilder<WorkoutsCubit, WorkoutsState>(
+            child: BlocBuilder<WorkoutsCubit, WorkoutsState>(
             builder: (context, workoutsState) {
-              final isViewingStaticPlans = workoutsState.isViewingStaticPlans;
-              final isAdmin = context.read<ProfileCubit>().state.isAdmin;
-
-              if (isViewingStaticPlans && !isAdmin) {
-                return const SizedBox.shrink();
-              }
-
               return Row(
                 children: [
                   Expanded(

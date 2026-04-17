@@ -16,7 +16,7 @@ enum WorkoutsStatus {
   addingSet,
   addingExercise,
   creatingPlan,
-  creatingStaticPlan,
+  generatingRecommendation,
   creatingWorkout,
   deletingPlan,
   deletingWorkout,
@@ -30,7 +30,8 @@ class WorkoutsState extends Equatable {
   final WorkoutsStatus status;
   final String? errorMessage;
   final List<PlanResponse> plans;
-  final List<PlanResponse> staticPlans;
+  final List<PlanResponse> recommendedPlans;
+  final Set<String> recommendedPlanIds;
   final List<WorkoutModel> workouts;
   final List<Exercise> exercises;
   final List<Exercise> selectedExercises;
@@ -40,13 +41,13 @@ class WorkoutsState extends Equatable {
   final Exercise? currentExercise;
   final WorkoutExercise? currentWorkoutExercise;
   final bool isGuidedMode;
-  final bool isViewingStaticPlans;
 
   const WorkoutsState({
     this.status = WorkoutsStatus.initial,
     this.errorMessage,
     this.plans = const [],
-    this.staticPlans = const [],
+    this.recommendedPlans = const [],
+    this.recommendedPlanIds = const {},
     this.workouts = const [],
     this.exercises = const [],
     this.selectedExercises = const [],
@@ -56,14 +57,14 @@ class WorkoutsState extends Equatable {
     this.currentExercise,
     this.currentWorkoutExercise,
     this.isGuidedMode = false,
-    this.isViewingStaticPlans = false,
   });
 
   WorkoutsState copyWith({
     WorkoutsStatus? status,
     String? errorMessage,
     List<PlanResponse>? plans,
-    List<PlanResponse>? staticPlans,
+    List<PlanResponse>? recommendedPlans,
+    Set<String>? recommendedPlanIds,
     List<WorkoutModel>? workouts,
     List<Exercise>? exercises,
     List<Exercise>? selectedExercises,
@@ -73,7 +74,6 @@ class WorkoutsState extends Equatable {
     Exercise? currentExercise,
     WorkoutExercise? currentWorkoutExercise,
     bool? isGuidedMode,
-    bool? isViewingStaticPlans,
     bool clearError = false,
     bool clearCurrentPlan = false,
     bool clearCurrentWorkout = false,
@@ -83,7 +83,8 @@ class WorkoutsState extends Equatable {
       status: status ?? this.status,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       plans: plans ?? this.plans,
-      staticPlans: staticPlans ?? this.staticPlans,
+      recommendedPlans: recommendedPlans ?? this.recommendedPlans,
+      recommendedPlanIds: recommendedPlanIds ?? this.recommendedPlanIds,
       workouts: workouts ?? this.workouts,
       exercises: exercises ?? this.exercises,
       selectedExercises: selectedExercises ?? this.selectedExercises,
@@ -96,7 +97,6 @@ class WorkoutsState extends Equatable {
       currentWorkoutExercise:
           currentWorkoutExercise ?? this.currentWorkoutExercise,
       isGuidedMode: isGuidedMode ?? this.isGuidedMode,
-      isViewingStaticPlans: isViewingStaticPlans ?? this.isViewingStaticPlans,
     );
   }
 
@@ -105,7 +105,8 @@ class WorkoutsState extends Equatable {
         status,
         errorMessage,
         plans,
-        staticPlans,
+        recommendedPlans,
+        recommendedPlanIds,
         workouts,
         exercises,
         selectedExercises,
@@ -115,6 +116,5 @@ class WorkoutsState extends Equatable {
         currentExercise,
         currentWorkoutExercise,
         isGuidedMode,
-        isViewingStaticPlans,
       ];
 }

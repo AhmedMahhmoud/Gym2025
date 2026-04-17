@@ -12,6 +12,7 @@ class ApplyToBecomeCoachCubit extends Cubit<ApplyToBecomeCoachState> {
   Future<void> submitApplication({
     required String bio,
     required String experience,
+    required String idDocumentPath,
   }) async {
     emit(const ApplyToBecomeCoachLoading());
 
@@ -19,6 +20,7 @@ class ApplyToBecomeCoachCubit extends Cubit<ApplyToBecomeCoachState> {
       await coachesRepository.becomeCoach(
         bio: bio.trim(),
         experience: experience.trim(),
+        idDocumentPath: idDocumentPath,
       );
       emit(const ApplyToBecomeCoachSuccess());
     } catch (e) {

@@ -4,6 +4,7 @@ import 'package:trackletics/core/utils/shared_utils.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/features/exercises/view/widgets/exercise_pop_widget.dart';
 import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/routes/route_names.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:trackletics/core/theme/app_colors.dart';
@@ -22,6 +23,8 @@ class ExerciseListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userGender = context.watch<ProfileCubit>().state.gender;
+
     return BlocBuilder<ExercisesCubit, ExercisesState>(
       builder: (context, state) {
         return Column(
@@ -44,8 +47,11 @@ class ExerciseListView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final exercise =
                           isLoading ? Exercise.fake() : exercises[index];
-                      final imageUrl =
-                          SharedUtils.extractThumbnail(exercise.videoUrl);
+                      final imageUrl = SharedUtils.extractThumbnail(
+                        exercise.videoUrlForThumbnail(
+                          userGender: userGender,
+                        ),
+                      );
 
                       return PopAnimatedCard(
                         exercise: exercise,

@@ -11,8 +11,10 @@ import 'package:trackletics/features/workouts/data/models/plan_response.dart';
 import 'package:trackletics/features/workouts/views/screens/workouts_screen.dart';
 import 'package:trackletics/features/workouts/views/widgets/error_message.dart';
 import 'package:trackletics/Shared/ui/sticky_add_button.dart';
-import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:trackletics/features/recommendation/cubit/plan_recommendation_chat_cubit.dart';
+import 'package:trackletics/features/recommendation/cubit/plan_recommendation_chat_state.dart';
+import 'package:trackletics/features/recommendation/view/draggable_plan_chat_bubble.dart';
 // import 'package:trackletics/core/debug/api_logger_model.dart';
 // import 'package:trackletics/routes/route_names.dart';
 
@@ -25,31 +27,47 @@ class PlansScreen extends StatefulWidget {
 
 class _PlansScreenState extends State<PlansScreen>
     with TickerProviderStateMixin {
+  static const int _kAiPlansTabIndex = 1;
+
   final _titleController = TextEditingController();
   final _notesController = TextEditingController();
-  final _staticTitleController = TextEditingController();
-  final _staticNotesController = TextEditingController();
   bool _isAddingPlan = false;
-  bool _isAddingStaticPlan = false;
   final Map<String, bool> _isDeleting = {};
   late WorkoutsCubit _workoutsCubit;
   late TabController _tabController;
+
+  void _onPlansTabControllerChanged() {
+    if (_tabController.indexIsChanging) return;
+    setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
     _workoutsCubit = context.read<WorkoutsCubit>();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onPlansTabControllerChanged);
     log('WORKOUT SCREEN LOAD');
     _workoutsCubit.loadPlans();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _consumePendingAiPlansTab());
+  }
+
+  void _consumePendingAiPlansTab() {
+    if (!mounted) return;
+    final cubit = context.read<PlanRecommendationChatCubit>();
+    if (!cubit.state.pendingOpenAiPlansTab) return;
+    if (_tabController.index != _kAiPlansTabIndex) {
+      _tabController.animateTo(_kAiPlansTabIndex);
+    }
+    cubit.clearPendingOpenAiPlansTab();
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onPlansTabControllerChanged);
     _titleController.dispose();
     _notesController.dispose();
-    _staticTitleController.dispose();
-    _staticNotesController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -93,28 +111,6 @@ class _PlansScreenState extends State<PlansScreen>
         _notesController.clear();
         setState(() {
           _isAddingPlan = false;
-        });
-      });
-    }
-  }
-
-  void _createStaticPlan() {
-    if (_staticTitleController.text.isNotEmpty) {
-      setState(() {
-        _isAddingStaticPlan = true;
-      });
-      _workoutsCubit
-          .createStaticPlan(
-        _staticTitleController.text,
-        notes: _staticNotesController.text.isNotEmpty
-            ? _staticNotesController.text
-            : null,
-      )
-          .then((_) {
-        _staticTitleController.clear();
-        _staticNotesController.clear();
-        setState(() {
-          _isAddingStaticPlan = false;
         });
       });
     }
@@ -242,54 +238,64 @@ class _PlansScreenState extends State<PlansScreen>
     // Access locale to trigger rebuild on language change
     context.locale;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'plans.workout_plans'.tr(),
-          style: TextStyle(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-            fontWeight: FontWeight.w700,
+    return BlocListener<PlanRecommendationChatCubit,
+        PlanRecommendationChatState>(
+      listenWhen: (previous, current) =>
+          current.pendingOpenAiPlansTab && !previous.pendingOpenAiPlansTab,
+      listener: (context, state) {
+        _consumePendingAiPlansTab();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'plans.workout_plans'.tr(),
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(50),
+            child: Builder(
+              builder: (context) {
+                final theme = Theme.of(context);
+                final colorScheme = theme.colorScheme;
+                return TabBar(
+                  dividerColor: Colors.transparent,
+                  controller: _tabController,
+                  indicatorColor: colorScheme.primary,
+                  labelColor: colorScheme.onSurface,
+                  unselectedLabelColor: colorScheme.onSurface.withOpacity(0.7),
+                  tabs: [
+                    Tab(text: 'plans.my_plans'.tr()),
+                    Tab(text: 'plans.ai_plans'.tr()),
+                  ],
+                );
+              },
+            ),
           ),
         ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: Builder(
-            builder: (context) {
-              final theme = Theme.of(context);
-              final colorScheme = theme.colorScheme;
-              return TabBar(
-                dividerColor: Colors.transparent,
-                controller: _tabController,
-                indicatorColor: colorScheme.primary,
-                labelColor: colorScheme.onSurface,
-                unselectedLabelColor: colorScheme.onSurface.withOpacity(0.7),
-                tabs: [
-                  Tab(text: 'plans.my_plans'.tr()),
-                  Tab(text: 'plans.static_plans'.tr()),
-                ],
-                onTap: (index) {
-                  if (index == 0) {
-                    _workoutsCubit.switchToUserPlans();
-                  } else {
-                    _workoutsCubit.switchToStaticPlans();
-                  }
-                },
-              );
-            },
-          ),
-        ),
-      ),
-      body: SafeArea(
-        bottom: false,
-        child: TabBarView(
-          controller: _tabController,
+        body: Stack(
+          clipBehavior: Clip.none,
           children: [
-            _buildUserPlansTab(),
-            _buildStaticPlansTab(),
+            SafeArea(
+              bottom: false,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildUserPlansTab(),
+                  _buildRecommendedPlansTab(),
+                ],
+              ),
+            ),
+            if (_tabController.index == _kAiPlansTabIndex)
+              DraggablePlanChatBubble(
+                onOpenWorkoutsTab: () {},
+              ),
           ],
         ),
       ),
@@ -301,15 +307,15 @@ class _PlansScreenState extends State<PlansScreen>
       listenWhen: (previous, current) =>
           (current.status == WorkoutsStatus.creatingPlan &&
               previous.status != WorkoutsStatus.creatingPlan) ||
-          (current.status == WorkoutsStatus.creatingStaticPlan &&
-              previous.status != WorkoutsStatus.creatingStaticPlan) ||
+          (current.status == WorkoutsStatus.generatingRecommendation &&
+              previous.status != WorkoutsStatus.generatingRecommendation) ||
           (current.status == WorkoutsStatus.deletingPlan &&
               previous.status != WorkoutsStatus.deletingPlan) ||
           (current.status == WorkoutsStatus.updatingPlan &&
               previous.status != WorkoutsStatus.updatingPlan) ||
           (current.status == WorkoutsStatus.error &&
               (previous.status == WorkoutsStatus.creatingPlan ||
-                  previous.status == WorkoutsStatus.creatingStaticPlan ||
+                  previous.status == WorkoutsStatus.generatingRecommendation ||
                   previous.status == WorkoutsStatus.deletingPlan ||
                   previous.status == WorkoutsStatus.updatingPlan)),
       listener: (context, state) {
@@ -548,15 +554,6 @@ class _PlansScreenState extends State<PlansScreen>
                   backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
-            if (state.status == WorkoutsStatus.creatingStaticPlan)
-              Container(
-                width: double.infinity,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                child: LinearProgressIndicator(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-              ),
             Expanded(
               child: state.plans.isEmpty &&
                       !_isAddingPlan &&
@@ -699,7 +696,7 @@ class _PlansScreenState extends State<PlansScreen>
     );
   }
 
-  Widget _buildStaticPlansTab() {
+  Widget _buildRecommendedPlansTab() {
     return BlocBuilder<WorkoutsCubit, WorkoutsState>(
       builder: (context, state) {
         if (state.status == WorkoutsStatus.loadingPlans) {
@@ -731,17 +728,17 @@ class _PlansScreenState extends State<PlansScreen>
           );
         }
 
-        if (state.status == WorkoutsStatus.error && state.staticPlans.isEmpty) {
+        if (state.status == WorkoutsStatus.error &&
+            state.recommendedPlans.isEmpty) {
           return ErrorMessage(
-            message:
-                state.errorMessage ?? 'plans.failed_to_load_static_plans'.tr(),
+            message: state.errorMessage ?? 'plans.failed_to_load_plans'.tr(),
             onRetry: () => _workoutsCubit.loadPlans(),
           );
         }
 
         return Column(
           children: [
-            if (state.status == WorkoutsStatus.creatingStaticPlan)
+            if (state.status == WorkoutsStatus.generatingRecommendation)
               Container(
                 width: double.infinity,
                 height: 4,
@@ -750,297 +747,54 @@ class _PlansScreenState extends State<PlansScreen>
                   backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
-            if (_isAddingStaticPlan &&
-                context.read<ProfileCubit>().state.isAdmin)
-              FadeIn(
-                duration: const Duration(milliseconds: 500),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _staticTitleController,
-                        decoration: InputDecoration(
-                          labelText: 'plans.static_plan_title'.tr(),
-                          floatingLabelStyle: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black,
-                          ),
-                          hintText: 'plans.static_plan_title_hint'.tr(),
-                          filled: true,
-                          fillColor:
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.white.withOpacity(0.1)
-                                  : Colors.black.withOpacity(0.05),
-                          labelStyle: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.grey
-                                    : Colors.black54,
-                          ),
-                          hintStyle: TextStyle(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white38
-                                    : Colors.black38,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
-                          ),
-                        ),
-                        style: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                        onTapOutside: (event) =>
-                            FocusScope.of(context).unfocus(),
-                        autofocus: true,
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _staticNotesController,
-                        decoration: InputDecoration(
-                          labelText: 'plans.notes_optional'.tr(),
-                          floatingLabelStyle: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black,
-                          ),
-                          hintText: 'plans.static_notes_hint'.tr(),
-                          filled: true,
-                          fillColor:
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.white.withOpacity(0.1)
-                                  : Colors.black.withOpacity(0.05),
-                          labelStyle: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.grey
-                                    : Colors.black54,
-                          ),
-                          hintStyle: TextStyle(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white38
-                                    : Colors.black38,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
-                          ),
-                        ),
-                        style: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                        onTapOutside: (event) =>
-                            FocusScope.of(context).unfocus(),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _isAddingStaticPlan = false;
-                                _staticTitleController.clear();
-                                _staticNotesController.clear();
-                              });
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.white70
-                                  : Colors.black87,
-                            ),
-                            child: Text('plans.cancel'.tr()),
-                          ),
-                          const SizedBox(width: 8),
-                          if (state.status == WorkoutsStatus.creatingStaticPlan)
-                            Container(
-                              width: double.infinity,
-                              height: 4,
-                              margin: const EdgeInsets.only(bottom: 20),
-                              child: LinearProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                              ),
-                            )
-                          else
-                            Flexible(
-                              child: ElevatedButton(
-                                onPressed: _createStaticPlan,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 15,
-                                  ),
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ).copyWith(
-                                  backgroundColor: MaterialStateProperty.all(
-                                    Colors.transparent,
-                                  ),
-                                  overlayColor: MaterialStateProperty.all(
-                                    Colors.white.withOpacity(0.1),
-                                  ),
-                                ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Theme.of(context).primaryColor,
-                                        Theme.of(context)
-                                            .primaryColor
-                                            .withOpacity(0.7),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(30),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Theme.of(context)
-                                            .primaryColor
-                                            .withOpacity(0.5),
-                                        blurRadius: 10,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 15,
-                                  ),
-                                  child: Text(
-                                    'plans.create_static_plan'.tr(),
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             Expanded(
-              child: state.staticPlans.isEmpty
+              child: state.recommendedPlans.isEmpty &&
+                      state.status != WorkoutsStatus.loadingPlans
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.fitness_center,
-                            size: 64,
-                            color: Colors.grey,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'plans.no_static_plans_available'.tr(),
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.white70
-                                  : Colors.black87,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.auto_awesome,
+                              size: 56,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            context.read<ProfileCubit>().state.isAdmin
-                                ? 'plans.create_first_static_plan'.tr()
-                                : 'plans.check_back_later'.tr(),
-                            style: TextStyle(
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey
-                                  : Colors.black54,
-                            ),
-                          ),
-                          if (context.read<ProfileCubit>().state.isAdmin) ...[
-                            const SizedBox(height: 24),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                setState(() {
-                                  _isAddingStaticPlan = true;
-                                });
-                              },
-                              icon: const Icon(Icons.add),
-                              label: Text('plans.create_static_plan'.tr()),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
+                            const SizedBox(height: 16),
+                            Text(
+                              'plans.no_ai_plans_yet'.tr(),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
+                              textAlign: TextAlign.center,
                             ),
+                            // const SizedBox(height: 10),
+                            // Text(
+                            //   'plans.use_home_chat_hint'.tr(),
+                            //   style: TextStyle(
+                            //     color: Theme.of(context)
+                            //         .colorScheme
+                            //         .onSurface
+                            //         .withOpacity(0.7),
+                            //   ),
+                            //   textAlign: TextAlign.center,
+                            // ),
                           ],
-                        ],
+                        ),
                       ),
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                      itemCount: state.staticPlans.length,
+                      itemCount: state.recommendedPlans.length,
                       itemBuilder: (context, index) {
-                        final plan = state.staticPlans[index];
-                        return _buildStaticPlanCard(plan, index);
+                        final plan = state.recommendedPlans[index];
+                        return _buildPlanCard(plan, index);
                       },
                     ),
             ),
-            if (context.read<ProfileCubit>().state.isAdmin)
-              BlocBuilder<WorkoutsCubit, WorkoutsState>(
-                builder: (context, state) {
-                  return StickyAddButton(
-                    onPressed: () {
-                      setState(() {
-                        _isAddingStaticPlan = true;
-                      });
-                    },
-                    text: 'plans.add_static_plan'.tr(),
-                    icon: Icons.add,
-                    isVisible:
-                        !_isAddingStaticPlan && state.staticPlans.isNotEmpty,
-                  );
-                },
-              ),
           ],
         );
       },
@@ -1118,67 +872,6 @@ class _PlansScreenState extends State<PlansScreen>
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStaticPlanCard(PlanResponse plan, int index) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Card(
-      key: ValueKey(plan.id),
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? [
-                    Colors.white.withOpacity(0.1),
-                    Colors.white.withOpacity(0.05),
-                  ]
-                : [
-                    colorScheme.surface.withOpacity(0.8),
-                    colorScheme.surface.withOpacity(0.6),
-                  ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: ListTile(
-          title: Text(
-            plan.title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          subtitle: plan.notes != null && plan.notes!.isNotEmpty
-              ? Text(
-                  plan.notes!,
-                  style: TextStyle(
-                    color: colorScheme.onSurface.withOpacity(0.7),
-                    fontSize: 14,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                )
-              : null,
-          trailing: Icon(
-            Icons.chevron_right,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white70
-                : Colors.black87,
-          ),
-          onTap: () => _navigateToWorkouts(plan),
         ),
       ),
     );

@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -21,7 +24,11 @@ class SignInView extends StatefulWidget {
 }
 
 class _SignInViewState extends State<SignInView> {
-  bool _hasNavigatedToAdditionalInfo = false;
+  bool _hasNavigatedToGoogleAdditionalInfo = false;
+  bool _hasNavigatedToAppleAdditionalInfo = false;
+
+  bool get _showAppleSignIn =>
+      !kIsWeb && (Platform.isIOS || Platform.isMacOS);
 
   @override
   Widget build(BuildContext context) {
@@ -73,13 +80,12 @@ class _SignInViewState extends State<SignInView> {
           const SizedBox(
             height: 30,
           ),
-          // Google Sign-In Button
+          // Sign in with Apple (iOS / macOS) and Google
           BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               if (state is GoogleSignInNeedsAdditionalInfo &&
-                  !_hasNavigatedToAdditionalInfo) {
-                _hasNavigatedToAdditionalInfo = true;
-                // Pass both the googleAccount and the AuthCubit instance
+                  !_hasNavigatedToGoogleAdditionalInfo) {
+                _hasNavigatedToGoogleAdditionalInfo = true;
                 Navigator.pushNamed(
                   context,
                   RouteNames.google_sign_in_additional_info_route,
@@ -88,18 +94,47 @@ class _SignInViewState extends State<SignInView> {
                     context.read<AuthCubit>(),
                   ],
                 ).then((_) {
-                  // Reset flag when returning from the screen
-                  _hasNavigatedToAdditionalInfo = false;
+                  _hasNavigatedToGoogleAdditionalInfo = false;
+                });
+              }
+              if (state is AppleSignInNeedsAdditionalInfo &&
+                  !_hasNavigatedToAppleAdditionalInfo) {
+                _hasNavigatedToAppleAdditionalInfo = true;
+                Navigator.pushNamed(
+                  context,
+                  RouteNames.apple_sign_in_additional_info_route,
+                  arguments: [
+                    state.appleAccount,
+                    context.read<AuthCubit>(),
+                  ],
+                ).then((_) {
+                  _hasNavigatedToAppleAdditionalInfo = false;
                 });
               }
             },
             builder: (context, state) {
-              return GoogleSignInButton(
-                onPressed: state is AuthLoading
-                    ? () {}
-                    : () {
-                        context.read<AuthCubit>().signInWithGoogle();
-                      },
+              final loading = state is AuthLoading;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_showAppleSignIn) ...[
+                    AppleSignInButton(
+                      onPressed: loading
+                          ? () {}
+                          : () {
+                              context.read<AuthCubit>().signInWithApple();
+                            },
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  GoogleSignInButton(
+                    onPressed: loading
+                        ? () {}
+                        : () {
+                            context.read<AuthCubit>().signInWithGoogle();
+                          },
+                  ),
+                ],
               );
             },
           ),

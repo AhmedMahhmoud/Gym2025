@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:trackletics/core/network/dio_service.dart';
 import 'package:trackletics/features/coaches/data/models/coach_model.dart';
@@ -11,7 +13,7 @@ class CoachesRepository {
       final response = await _dioService.get('/api/Coaches');
       final data = response.data;
       if (data is! List) return [];
-      return (data as List)
+      return data
           .map((e) => CoachModel.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -22,18 +24,31 @@ class CoachesRepository {
   }
 
   /// Submit an application to become a coach.
-  /// Sends [bio] and [experience] to the API.
+  /// Sends [bio], [experience], and [IdDocument] (national ID front) as multipart.
   Future<void> becomeCoach({
     required String bio,
     required String experience,
+    required String idDocumentPath,
   }) async {
     try {
-      await _dioService.post(
+      final file = File(idDocumentPath);
+      if (!file.existsSync()) {
+        throw Exception('ID document file not found');
+      }
+      final fileName = file.path.split('/').last;
+
+      final formData = FormData.fromMap({
+        'bio': bio,
+        'experience': experience,
+        'IdDocument': await MultipartFile.fromFile(
+          idDocumentPath,
+          filename: fileName,
+        ),
+      });
+
+      await _dioService.multipart(
         '/api/Coaches/BecomeCoach',
-        data: {
-          'bio': bio,
-          'experience': experience,
-        },
+        formData: formData,
       );
     } on DioException catch (e) {
       throw Exception(e.error ?? 'Failed to submit coach application');

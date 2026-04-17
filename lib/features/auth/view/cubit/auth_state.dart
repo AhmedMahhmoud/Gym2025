@@ -11,6 +11,7 @@ enum AuthStatus {
   verifyResetLoading,
   verifyResetSuccess,
   googleSignInNeedsAdditionalInfo,
+  appleSignInNeedsAdditionalInfo,
 }
 
 /// 🔹 Sealed Class for State Management
@@ -53,4 +54,12 @@ final class GoogleSignInNeedsAdditionalInfo extends AuthState {
     required this.googleAccount,
   }) : super(status: AuthStatus.googleSignInNeedsAdditionalInfo);
   final GoogleSignInModel googleAccount;
-}/// Temporary class to hold Google account info
+}
+
+/// ✅ Sign in with Apple needs additional info (inAppName and gender; email if Apple did not provide it)
+final class AppleSignInNeedsAdditionalInfo extends AuthState {
+  const AppleSignInNeedsAdditionalInfo({
+    required this.appleAccount,
+  }) : super(status: AuthStatus.appleSignInNeedsAdditionalInfo);
+  final AppleSignInModel appleAccount;
+}

@@ -7,6 +7,7 @@ import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
+import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/main.dart';
 
 class UpdateCustomExerciseForm extends StatefulWidget {
@@ -38,7 +39,9 @@ class _UpdateCustomExerciseFormState extends State<UpdateCustomExerciseForm>
     // Pre-fill the form with existing exercise data
     _titleController.text = widget.exercise.name;
     _descriptionController.text = widget.exercise.description ?? '';
-    _videoUrlController.text = widget.exercise.videoUrl ?? '';
+    _videoUrlController.text = widget.exercise.videoUrlForThumbnail(
+      userGender: context.read<ProfileCubit>().state.gender,
+    );
     _categoryController.text = widget.exercise.primaryMuscle ?? '';
 
     _animationController = AnimationController(

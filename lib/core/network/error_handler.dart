@@ -28,7 +28,9 @@ class ErrorHandler {
 
       case DioExceptionType.badResponse:
         return _handleResponseError(
-            error.response?.statusCode, error.response?.data);
+          error.response?.statusCode,
+          error.response?.data,
+        );
 
       default:
         return ServerFailure(
@@ -40,10 +42,15 @@ class ErrorHandler {
   static Failure _handleResponseError(int? statusCode, dynamic data) {
     // Default message if data is null, not a map, or doesn't contain 'message'
     String defaultMessage;
-    String? message =
-        (data is Map<String, dynamic> && data.containsKey('message'))
-            ? data['message'] as String?
-            : null;
+    String? message;
+    if (data is Map) {
+      final raw = data['message'];
+      if (raw is String) {
+        message = raw;
+      } else if (raw != null) {
+        message = raw.toString();
+      }
+    }
 
     switch (statusCode) {
       case 400:

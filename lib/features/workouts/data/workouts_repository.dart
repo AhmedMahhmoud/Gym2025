@@ -520,6 +520,31 @@ class WorkoutsRepository {
     }
   }
 
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      getRecommendationTemplates() async {
+    try {
+      final response = await _dioService.get('/api/Recommendation/Templates');
+      final list = response.data as List<dynamic>;
+      return Right(list.map((e) => Map<String, dynamic>.from(e as Map)).toList());
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  Future<Either<Failure, PlanResponse>> generateRecommendationPlan(
+    String templateId,
+  ) async {
+    try {
+      final response = await _dioService.post(
+        '/api/Recommendation/generate',
+        data: {'templateId': templateId},
+      );
+      return Right(PlanResponse.fromJson(response.data));
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
   // Get workouts for a plan
   Future<Either<Failure, List<WorkoutModel>>> getWorkoutsForPlan(
       String planId) async {

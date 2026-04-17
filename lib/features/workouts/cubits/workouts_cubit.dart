@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/features/workouts/cubits/workouts_state.dart';
 import 'package:trackletics/features/exercises/data/models/exercises.dart';
 import 'package:trackletics/features/workouts/data/models/plan_response.dart';
@@ -76,9 +77,13 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     );
   }
 
-  // Load all plans (both user and static)
+  // Load all plans; splits manual vs AI-recommended using persisted ids
   Future<void> loadPlans() async {
     emit(state.copyWith(status: WorkoutsStatus.loadingPlans, clearError: true));
+
+    final storage = StorageService();
+    await storage.init();
+    final recommendedIds = await storage.getRecommendedPlanIds();
 
     final result = await _repository.getPlans();
 
@@ -90,28 +95,57 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
         ));
       },
       (allPlansData) {
-        // Filter plans based on isStatic field
         final userPlans =
             allPlansData.where((plan) => plan.isStatic != true).toList();
-        final staticPlans =
-            allPlansData.where((plan) => plan.isStatic == true).toList();
+
+        final stillTracked = recommendedIds
+            .where((id) => userPlans.any((p) => p.id == id))
+            .toSet();
+        if (stillTracked.length != recommendedIds.length) {
+          storage.setRecommendedPlanIds(stillTracked);
+        }
+
+        final recommendedPlans = userPlans
+            .where((p) => stillTracked.contains(p.id))
+            .toList()
+          ..sort((a, b) => b.id.compareTo(a.id));
+
+        final manualPlans =
+            userPlans.where((p) => !stillTracked.contains(p.id)).toList();
 
         emit(state.copyWith(
           status: WorkoutsStatus.success,
-          plans: userPlans,
-          staticPlans: staticPlans,
+          plans: manualPlans,
+          recommendedPlans: recommendedPlans,
+          recommendedPlanIds: stillTracked,
         ));
       },
     );
   }
 
-  // Switch between user plans and static plans view
-  void switchToStaticPlans() {
-    emit(state.copyWith(isViewingStaticPlans: true));
-  }
+  Future<void> generateRecommendationPlan(String templateId) async {
+    emit(state.copyWith(
+      status: WorkoutsStatus.generatingRecommendation,
+      clearError: true,
+    ));
 
-  void switchToUserPlans() {
-    emit(state.copyWith(isViewingStaticPlans: false));
+    final result = await _repository.generateRecommendationPlan(templateId);
+
+    await result.fold(
+      (failure) async {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: failure.message,
+        ));
+      },
+      (plan) async {
+        final storage = StorageService();
+        await storage.init();
+        final ids = Set<String>.from(state.recommendedPlanIds)..add(plan.id);
+        await storage.setRecommendedPlanIds(ids);
+        await loadPlans();
+      },
+    );
   }
 
   void updateExercisesOrder(List<Exercise> updatedExercises) {
@@ -150,31 +184,6 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     );
   }
 
-  // Create a new static plan (admin only)
-  Future<void> createStaticPlan(String title, {String? notes}) async {
-    emit(state.copyWith(
-        status: WorkoutsStatus.creatingStaticPlan, clearError: true));
-
-    final result = await _repository.createStaticPlan(title, notes: notes);
-
-    result.fold(
-      (failure) {
-        emit(state.copyWith(
-          status: WorkoutsStatus.error,
-          errorMessage: 'Failed to create static plan: ${failure.message}',
-        ));
-      },
-      (response) {
-        final List<PlanResponse> staticPlans = state.staticPlans..add(response);
-        emit(state.copyWith(
-          status: WorkoutsStatus.success,
-          staticPlans: staticPlans,
-          currentPlan: response,
-        ));
-      },
-    );
-  }
-
   // Delete a plan
   Future<void> deletePlan(String planId) async {
     emit(state.copyWith(status: WorkoutsStatus.deletingPlan, clearError: true));
@@ -188,13 +197,24 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           errorMessage: 'Failed to delete plan: ${failure.message}',
         ));
       },
-      (_) {
+      (_) async {
+        final storage = StorageService();
+        await storage.init();
+        final newRecIds = Set<String>.from(state.recommendedPlanIds);
+        if (newRecIds.remove(planId)) {
+          await storage.setRecommendedPlanIds(newRecIds);
+        }
+
         final updatedPlans = List<PlanResponse>.from(state.plans)
+          ..removeWhere((plan) => plan.id == planId);
+        final updatedRec = List<PlanResponse>.from(state.recommendedPlans)
           ..removeWhere((plan) => plan.id == planId);
 
         emit(state.copyWith(
           status: WorkoutsStatus.success,
           plans: updatedPlans,
+          recommendedPlans: updatedRec,
+          recommendedPlanIds: newRecIds,
           clearCurrentPlan: state.currentPlan?.id == planId,
         ));
       },

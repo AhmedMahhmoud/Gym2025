@@ -30,6 +30,7 @@ class StorageService {
   static const String _userNameKey = 'user_name';
   static const String _themeModeKey = 'theme_mode';
   static const String _languageKey = 'language';
+  static const String _recommendedPlanIdsKey = 'recommended_plan_ids';
   static const String _registrationInProgressKey = 'registration_in_progress';
   static const String _pendingVerificationEmailKey =
       'pending_verification_email';
@@ -175,6 +176,29 @@ class StorageService {
     return await read<String>(key: _userNameKey, type: StorageType.secure);
   }
 
+  /// Email last used for Sign in with Apple for this Apple user id (Apple often omits email on later sign-ins).
+  static String _appleSignInEmailKey(String appleUserId) =>
+      'apple_sign_in_email_$appleUserId';
+
+  Future<void> setAppleSignInEmailForUserId(
+    String appleUserId,
+    String email,
+  ) async {
+    if (email.isEmpty) return;
+    await write(
+      key: _appleSignInEmailKey(appleUserId),
+      value: email,
+      type: StorageType.secure,
+    );
+  }
+
+  Future<String?> getAppleSignInEmailForUserId(String appleUserId) async {
+    return await read<String>(
+      key: _appleSignInEmailKey(appleUserId),
+      type: StorageType.secure,
+    );
+  }
+
   // Theme Mode
   Future<void> setThemeMode(String themeMode) async {
     await write(key: _themeModeKey, value: themeMode);
@@ -191,6 +215,17 @@ class StorageService {
 
   Future<String?> getLanguage() async {
     return await read<String>(key: _languageKey, defaultValue: 'en');
+  }
+
+  Future<Set<String>> getRecommendedPlanIds() async {
+    if (_prefs == null) await init();
+    final list = _prefs!.getStringList(_recommendedPlanIdsKey);
+    if (list == null) return {};
+    return Set<String>.from(list);
+  }
+
+  Future<void> setRecommendedPlanIds(Set<String> ids) async {
+    await write(key: _recommendedPlanIdsKey, value: ids.toList());
   }
 
   // Onboarding

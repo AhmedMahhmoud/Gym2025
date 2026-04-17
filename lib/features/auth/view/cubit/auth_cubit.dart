@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:trackletics/core/services/storage_service.dart';
 import 'package:trackletics/features/auth/data/models/sign_up_model.dart';
+import 'package:trackletics/features/auth/data/models/apple_sign_in_model.dart';
 import 'package:trackletics/features/auth/data/models/google_sign_in_model.dart';
 import 'package:trackletics/features/auth/data/repositories/auth_repository.dart';
 
@@ -103,6 +104,53 @@ class AuthCubit extends Cubit<AuthState> {
       },
       (token) async {
         // Clear any pending registration state
+        await _storageService.clearRegistrationState();
+        emit(AuthAuthenticated(token: token));
+      },
+    );
+  }
+
+  Future<void> signInWithApple() async {
+    emit(const AuthLoading());
+    final result = await authRepository.signInWithApple();
+
+    result.fold(
+      (failure) {
+        emit(AuthUnauthenticated(errorMessage: failure.message));
+        log(failure.message);
+      },
+      (response) async {
+        await _storageService.clearRegistrationState();
+
+        if (response is String) {
+          emit(AuthAuthenticated(token: response));
+        } else if (response is AppleSignInModel) {
+          emit(AppleSignInNeedsAdditionalInfo(appleAccount: response));
+        }
+      },
+    );
+  }
+
+  Future<void> completeAppleSignIn({
+    required AppleSignInModel appleAccount,
+    required String inAppName,
+    required String gender,
+    required String email,
+  }) async {
+    emit(const AuthLoading());
+    final result = await authRepository.completeAppleSignIn(
+      appleAccount: appleAccount,
+      inAppName: inAppName,
+      gender: gender,
+      email: email,
+    );
+
+    result.fold(
+      (failure) {
+        emit(AuthUnauthenticated(errorMessage: failure.message));
+        log(failure.message);
+      },
+      (token) async {
         await _storageService.clearRegistrationState();
         emit(AuthAuthenticated(token: token));
       },

@@ -21,7 +21,7 @@ import 'package:trackletics/features/exercises/view/cubit/exercises_cubit.dart';
 import 'package:trackletics/features/onboarding/screens/onboarding_screen.dart';
 import 'package:trackletics/features/profile/cubit/profile_cubit.dart';
 import 'package:trackletics/features/profile/data/repositories/profile_repository.dart';
-import 'package:trackletics/shared/widgets/main_scaffold.dart';
+import 'package:trackletics/shared/widgets/authenticated_home_shell.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'package:trackletics/routes/app_routes.dart';
@@ -139,7 +139,7 @@ class _MyAppState extends State<MyApp> {
         );
 
       case AuthInitStatus.authenticated:
-        return const MainScaffold();
+        return const AuthenticatedHomeShell();
 
       case AuthInitStatus.unauthenticated:
         return _hasSeenOnboarding

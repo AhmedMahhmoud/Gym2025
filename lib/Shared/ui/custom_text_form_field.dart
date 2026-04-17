@@ -9,6 +9,7 @@ class AppTextField extends StatefulWidget {
     this.controller,
     this.keyboardType = TextInputType.text,
     this.isPassword = false,
+    this.readOnly = false,
     this.onSaved,
     this.prefixIcon,
     this.suffixIcon,
@@ -21,6 +22,7 @@ class AppTextField extends StatefulWidget {
   final TextEditingController? controller;
   final TextInputType keyboardType;
   final bool isPassword;
+  final bool readOnly;
   final TextInputAction? textInputAction;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
@@ -47,6 +49,7 @@ class _AppTextFieldState extends State<AppTextField> {
     
     return TextFormField(
       controller: widget.controller,
+      readOnly: widget.readOnly,
       onChanged: (value) =>
           widget.onChanged == null ? null : widget.onChanged!(value),
       keyboardType: widget.keyboardType,
