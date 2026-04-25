@@ -10,7 +10,7 @@
 		<string>ar</string>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>Trackletics</string>
+	<string>Tamrenty</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

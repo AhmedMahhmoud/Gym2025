@@ -951,7 +951,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                                       child: Icon(
-                                        isDarkMode
+                                        !isDarkMode
                                             ? FontAwesomeIcons.moon
                                             : FontAwesomeIcons.sun,
                                         color: AppColors.primaryLight,
@@ -965,7 +965,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            isDarkMode
+                                            !isDarkMode
                                                 ? 'profile.dark_mode'.tr()
                                                 : 'profile.light_mode'.tr(),
                                             style: TextStyle(
@@ -980,7 +980,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            isDarkMode
+                                            !isDarkMode
                                                 ? 'profile.dark_mode_desc'.tr()
                                                 : 'profile.light_mode_desc'
                                                     .tr(),
