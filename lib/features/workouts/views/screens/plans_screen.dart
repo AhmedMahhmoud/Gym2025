@@ -292,10 +292,6 @@ class _PlansScreenState extends State<PlansScreen>
                 ],
               ),
             ),
-            if (_tabController.index == _kAiPlansTabIndex)
-              DraggablePlanChatBubble(
-                onOpenWorkoutsTab: () {},
-              ),
           ],
         ),
       ),
@@ -315,9 +311,10 @@ class _PlansScreenState extends State<PlansScreen>
               previous.status != WorkoutsStatus.updatingPlan) ||
           (current.status == WorkoutsStatus.error &&
               (previous.status == WorkoutsStatus.creatingPlan ||
-                  previous.status == WorkoutsStatus.generatingRecommendation ||
                   previous.status == WorkoutsStatus.deletingPlan ||
-                  previous.status == WorkoutsStatus.updatingPlan)),
+                  previous.status == WorkoutsStatus.updatingPlan ||
+                  (previous.status == WorkoutsStatus.success &&
+                      _tabController.index != _kAiPlansTabIndex))),
       listener: (context, state) {
         if (state.status == WorkoutsStatus.error) {
           _showErrorSnackBar(
@@ -646,13 +643,21 @@ class _PlansScreenState extends State<PlansScreen>
                         ],
                       ),
                     )
-                  : ListView.builder(
+                  : ReorderableListView.builder(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                       itemCount: state.plans.length,
+                      onReorder: (oldIndex, newIndex) async {
+                        await _workoutsCubit.reorderPlansOrder(
+                          oldIndex,
+                          newIndex,
+                          isRecommended: false,
+                        );
+                      },
                       itemBuilder: (context, index) {
                         final plan = state.plans[index];
                         final isDeleting = _isDeleting[plan.id] ?? false;
                         return AnimatedSwitcher(
+                          key: ValueKey(plan.id),
                           duration: const Duration(milliseconds: 300),
                           switchOutCurve: Curves.easeOut,
                           switchInCurve: Curves.easeIn,
@@ -697,7 +702,17 @@ class _PlansScreenState extends State<PlansScreen>
   }
 
   Widget _buildRecommendedPlansTab() {
-    return BlocBuilder<WorkoutsCubit, WorkoutsState>(
+    return BlocConsumer<WorkoutsCubit, WorkoutsState>(
+      listenWhen: (previous, current) =>
+          _tabController.index == _kAiPlansTabIndex &&
+          current.status == WorkoutsStatus.error &&
+          previous.status != WorkoutsStatus.error,
+      listener: (context, state) {
+        if (state.status == WorkoutsStatus.error) {
+          _showErrorSnackBar(
+              state.errorMessage ?? 'plans.an_error_occurred'.tr());
+        }
+      },
       builder: (context, state) {
         if (state.status == WorkoutsStatus.loadingPlans) {
           return SizedBox(
@@ -786,9 +801,16 @@ class _PlansScreenState extends State<PlansScreen>
                         ),
                       ),
                     )
-                  : ListView.builder(
+                  : ReorderableListView.builder(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                       itemCount: state.recommendedPlans.length,
+                      onReorder: (oldIndex, newIndex) async {
+                        await _workoutsCubit.reorderPlansOrder(
+                          oldIndex,
+                          newIndex,
+                          isRecommended: true,
+                        );
+                      },
                       itemBuilder: (context, index) {
                         final plan = state.recommendedPlans[index];
                         return _buildPlanCard(plan, index);

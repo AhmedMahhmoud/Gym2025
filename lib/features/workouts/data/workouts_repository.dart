@@ -790,15 +790,18 @@ class WorkoutsRepository {
     }
   }
 
-  // Update workout order for a plan
+  /// Reorder workouts within a plan (`order` is typically 1-based).
   Future<Either<Failure, void>> updateWorkoutOrder(
     String planId,
     List<Map<String, dynamic>> workoutOrders,
   ) async {
     try {
       await _dioService.put(
-        '/api/Plans/$planId/workouts/reorder',
-        data: {'workoutOrders': workoutOrders},
+        '/api/Workouts/ReorderWorkouts',
+        data: {
+          'planId': planId,
+          'workoutOrders': workoutOrders,
+        },
       );
       return const Right(null);
     } catch (e) {
@@ -818,6 +821,21 @@ class WorkoutsRepository {
           'workoutId': workoutId,
           'exerciseOrders': exerciseOrders,
         },
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  /// Reorder plans (My Plans or AI plans tab sends that subset with `order` 1..n).
+  Future<Either<Failure, void>> reorderPlans(
+    List<Map<String, dynamic>> planOrders,
+  ) async {
+    try {
+      await _dioService.put(
+        '/api/Plans/ReorderPlans',
+        data: {'planOrders': planOrders},
       );
       return const Right(null);
     } catch (e) {

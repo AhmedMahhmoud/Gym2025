@@ -107,8 +107,7 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
 
         final recommendedPlans = userPlans
             .where((p) => stillTracked.contains(p.id))
-            .toList()
-          ..sort((a, b) => b.id.compareTo(a.id));
+            .toList();
 
         final manualPlans =
             userPlans.where((p) => !stillTracked.contains(p.id)).toList();
@@ -179,6 +178,64 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           status: WorkoutsStatus.success,
           plans: plans,
           currentPlan: response,
+        ));
+      },
+    );
+  }
+
+  /// Reorder plans for the My Plans or AI Plans tab; persists via [WorkoutsRepository.reorderPlans].
+  Future<void> reorderPlansOrder(
+    int oldIndex,
+    int newIndex, {
+    required bool isRecommended,
+  }) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    final List<PlanResponse> list = List<PlanResponse>.from(
+      isRecommended ? state.recommendedPlans : state.plans,
+    );
+
+    if (oldIndex < 0 ||
+        oldIndex >= list.length ||
+        newIndex < 0 ||
+        newIndex >= list.length) {
+      return;
+    }
+
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+
+    emit(isRecommended
+        ? state.copyWith(recommendedPlans: list)
+        : state.copyWith(plans: list));
+
+    final planOrders = list
+        .asMap()
+        .entries
+        .map(
+          (e) => <String, dynamic>{
+            'planId': e.value.id,
+            'order': e.key + 1,
+          },
+        )
+        .toList();
+
+    final result = await _repository.reorderPlans(planOrders);
+
+    await result.fold(
+      (failure) async {
+        emit(state.copyWith(
+          status: WorkoutsStatus.error,
+          errorMessage: 'Failed to save plan order: ${failure.message}',
+        ));
+        await loadPlans();
+      },
+      (_) async {
+        emit(state.copyWith(
+          status: WorkoutsStatus.success,
+          clearError: true,
         ));
       },
     );
@@ -1537,11 +1594,11 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
     // Persist the new order to backend
     if (state.currentPlan != null) {
       try {
-        // Create workout orders list with new positions
+        // Create workout orders list with new positions (API uses 1-based order)
         final workoutOrders = workouts.asMap().entries.map((entry) {
           return {
             'workoutId': entry.value.id,
-            'order': entry.key,
+            'order': entry.key + 1,
           };
         }).toList();
 
@@ -1550,23 +1607,23 @@ class WorkoutsCubit extends Cubit<WorkoutsState> {
           workoutOrders,
         );
 
-        result.fold(
-          (failure) {
-            // If backend update fails, show error but keep local changes
+        await result.fold(
+          (failure) async {
             emit(state.copyWith(
               status: WorkoutsStatus.error,
               errorMessage: 'Failed to save workout order: ${failure.message}',
             ));
+            await loadWorkoutsForPlan(state.currentPlan!.id);
           },
-          (_) {
-            // Success - update workouts with sort order values
+          (_) async {
             final updatedWorkouts = workouts.asMap().entries.map((entry) {
-              return entry.value.copyWith(sortOrder: entry.key);
+              return entry.value.copyWith(sortOrder: entry.key + 1);
             }).toList();
 
             emit(state.copyWith(
               workouts: updatedWorkouts,
               status: WorkoutsStatus.success,
+              clearError: true,
             ));
           },
         );
